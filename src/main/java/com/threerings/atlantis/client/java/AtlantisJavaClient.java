@@ -3,7 +3,6 @@
 
 package com.threerings.atlantis.client.java;
 
-import forplay.java.JavaAssetManager;
 import forplay.java.JavaPlatform;
 import forplay.core.ForPlay;
 
@@ -16,8 +15,8 @@ public class AtlantisJavaClient
 {
     public static void main (String[] args)
     {
-        JavaAssetManager assets = JavaPlatform.register().assetManager();
-        assets.setPathPrefix("src/main/resources");
+        JavaPlatform platform = JavaPlatform.register();
+        platform.assetManager().setPathPrefix("src/main/resources");
         ForPlay.run(new AtlantisClient());
     }
 }
