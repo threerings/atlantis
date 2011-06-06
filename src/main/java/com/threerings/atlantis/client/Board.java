@@ -20,13 +20,21 @@ public class Board
     /**
      * Loads up our resources and performs other one-time initialization tasks.
      */
-    public void init (AtlantisClient client)
+    public void init ()
     {
-        for (int ii = 0; ii < AtlantisTiles.TERRAIN_COUNT; ii++) {
-            ImageLayer tile = client.tiles.getTerrainTile(ii);
-            tile.setTranslation(ii * (AtlantisTiles.TERRAIN_WIDTH + 5), 0);
-            layer.add(tile);
+        // temp: add some random tiles
+        for (int xx = 0; xx < 10; xx++) {
+            for (int yy = 0; yy < 10; yy++) {
+                addTile(xx, yy, Atlantis.rando.nextInt(AtlantisTiles.TERRAIN_COUNT));
+            }
         }
     }
 
+    protected void addTile (int xx, int yy, int tileIdx)
+    {
+        ImageLayer tile = Atlantis.tiles.getTerrainTile(tileIdx);
+        // TODO: use tile.width(), tile.height() once those exist
+        tile.setTranslation(xx * AtlantisTiles.TERRAIN_WIDTH, yy * AtlantisTiles.TERRAIN_HEIGHT);
+        layer.add(tile);
+    }
 }
