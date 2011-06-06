@@ -4,10 +4,10 @@
 package com.threerings.atlantis.client;
 
 import forplay.core.GroupLayer;
-import forplay.core.Image;
 import forplay.core.ImageLayer;
 
 import static forplay.core.ForPlay.*;
+import static com.threerings.atlantis.client.AtlantisClient.*;
 
 /**
  * Manages the layer that displays the game board.
@@ -20,12 +20,13 @@ public class Board
     /**
      * Loads up our resources and performs other one-time initialization tasks.
      */
-    public void init ()
+    public void init (AtlantisClient client)
     {
-        _tiles = assetManager().getImage("images/tiles.png");
-        // temp
-        layer.add(graphics().createImageLayer(_tiles));
+        for (int ii = 0; ii < AtlantisTiles.TERRAIN_COUNT; ii++) {
+            ImageLayer tile = client.tiles.getTerrainTile(ii);
+            tile.setTranslation(ii * (AtlantisTiles.TERRAIN_WIDTH + 5), 0);
+            layer.add(tile);
+        }
     }
 
-    protected Image _tiles;
 }

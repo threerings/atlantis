@@ -12,6 +12,9 @@ import static forplay.core.ForPlay.*;
  */
 public class AtlantisClient implements Game
 {
+    /** Provides tile services. */
+    public final AtlantisTiles tiles = new AtlantisTiles();
+
     /** Manages the game board. */
     public final Board board = new Board();
 
@@ -23,7 +26,8 @@ public class AtlantisClient implements Game
     {
         graphics().setSize(800, 600);
 
-        board.init();
+        tiles.init();
+        board.init(this);
 
         // set up our layers; we do this here because order is important
         graphics().rootLayer().add(board.layer);
