@@ -1,7 +1,7 @@
 //
 // $Id$
 
-package com.threerings.atlantis.data;
+package com.threerings.atlantis.shared;
 
 import java.util.Arrays;
 
@@ -9,11 +9,37 @@ import pythagoras.f.AffineTransform;
 import pythagoras.f.Path;
 import pythagoras.f.Point;
 
+import static com.threerings.atlantis.shared.Edge.*;
+
 /**
  * Contains all of the information for a particular feature of a particular tile.
  */
 public class Feature
 {
+    /** Creates a city features with the specified metrics. */
+    public static Feature city (int edgeMask, int piecenX, int piecenY, int... shape)
+    {
+        return new Feature(Type.CITY, edgeMask, piecenX, piecenY, shape);
+    }
+
+    /** Creates a grass features with the specified metrics. */
+    public static Feature grass (int edgeMask, int piecenX, int piecenY, int... shape)
+    {
+        return new Feature(Type.GRASS, edgeMask, piecenX, piecenY, shape);
+    }
+
+    /** Creates a road features with the specified metrics. */
+    public static Feature road (int edgeMask, int piecenX, int piecenY, int... shape)
+    {
+        return new Feature(Type.ROAD, edgeMask, piecenX, piecenY, shape);
+    }
+
+    /** Creates a cloister features with the specified metrics. */
+    public static Feature cloister (int edgeMask, int piecenX, int piecenY, int... shape)
+    {
+        return new Feature(Type.CLOISTER, edgeMask, piecenX, piecenY, shape);
+    }
+
     /** Enumerates the different types of features. */
     public enum Type { CITY, GRASS, ROAD, CLOISTER };
 
@@ -24,9 +50,18 @@ public class Feature
     public final int edgeMask;
 
     /**
+     * Returns true if the feature contains the supplied mouse coordinates (which should be
+     * relative to the tile origin) given the supplied orientation information.
+     */
+    public boolean contains (int mouseX, int mouseY, Orient orient)
+    {
+        return _polys[orient.index].contains(mouseX, mouseY);
+    }
+
+    /**
      * Creates a new feature with the supplied metadata.
      */
-    public Feature (Type type, int edgeMask, int piecenX, int piecenY, int[] shape)
+    protected Feature (Type type, int edgeMask, int piecenX, int piecenY, int[] shape)
     {
         this.type = type;
         this.edgeMask = edgeMask;
@@ -95,15 +130,6 @@ public class Feature
             _piecenSpots[orient] = new Point();
             xform.transform(_piecenSpots[Orient.NORTH.index], _piecenSpots[orient]);
         }
-    }
-
-    /**
-     * Returns true if the feature contains the supplied mouse coordinates (which should be
-     * relative to the tile origin) given the supplied orientation information.
-     */
-    public boolean contains (int mouseX, int mouseY, Orient orient)
-    {
-        return _polys[orient.index].contains(mouseX, mouseY);
     }
 
     /**
@@ -212,4 +238,21 @@ public class Feature
 
     /** The polygons used to render and hit test this feature (one for each orientation). */
     protected final Path[] _polys = new Path[4];
+
+    // multiply used features
+    static final Feature NESW_CITY = city(NORTH_F|EAST_F|SOUTH_F|WEST_F, 2,2, 0,0, 4,0, 4,4, 0,4);
+    static final Feature NEW_CITY = city(NORTH_F|EAST_F|WEST_F, 2,2, 0,0, 4,0, 4,4, 3,3, 1,3, 0,4);
+    static final Feature EW_CITY = city(EAST_F|WEST_F, 2,2, 0,0, 1,1, 3,1, 4,0, 4,4, 3,3, 1,3, 0,4);
+    static final Feature NW_CITY = city(NORTH_F|WEST_F, 1,2, 0,0, 4,0, 0,4);
+    static final Feature N_CITY = city(NORTH_F, 2,-1, 0,0, 1,1, 3,1, 4,0);
+    static final Feature E_CITY = city(EAST_F, -4,2, 4,0, 3,1, 3,3, 4,4);
+    static final Feature W_CITY = city(WEST_F, -1,2, 0,0, 1,1, 1,3, 0,4);
+
+    static final Feature E_ROAD = road(EAST_F, 3,2, 2,2, 4,2);
+    static final Feature S_ROAD = road(SOUTH_F, 2,3, 2,2, 2,4);
+    static final Feature W_ROAD = road(WEST_F, 1,2, 0,2, 2,2);
+
+    static final Feature S_GRASS = grass(SOUTH_F, 2,-4, 0,4, 1,3, 3,3, 4,4);
+    static final Feature SE_GRASS = grass(ESE_F|SSE_F, -4,-4, 2,2, 4,2, 4,4, 2,4);
+    static final Feature SW_GRASS = grass(WSW_F|SSW_F, -1,-4, 0,2, 2,2, 2,4, 0,4);
 }

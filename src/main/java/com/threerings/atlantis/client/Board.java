@@ -3,10 +3,15 @@
 
 package com.threerings.atlantis.client;
 
+import java.util.EnumSet;
+
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
-
 import static forplay.core.ForPlay.*;
+
+import com.threerings.atlantis.shared.Orient;
+import com.threerings.atlantis.shared.Placement;
+import com.threerings.atlantis.shared.Terrain;
 import static com.threerings.atlantis.client.AtlantisClient.*;
 
 /**
@@ -22,23 +27,38 @@ public class Board
      */
     public void init ()
     {
-        // temp: add some random tiles
+        // _placing will be populated with children only when we have an in-progress placement
+        layer.add(_placing);
+
+        // temp: add some random placements
+        EnumSet<Terrain> tiles = EnumSet.allOf(Terrain.class);
+        EnumSet<Orient> orients = EnumSet.allOf(Orient.class);
         for (int xx = 0; xx < 10; xx++) {
+            Orient orient = Orient.NORTH;
             for (int yy = 0; yy < 10; yy++) {
-                addTile(xx, yy, Atlantis.rando.nextInt(AtlantisTiles.TERRAIN_COUNT));
+                addPlacement(new Placement(Atlantis.rands.pick(tiles, null),
+                                           false, orient, xx, yy));
+                orient = orient.rotate(1);
             }
         }
     }
 
-    public void addTile (int xx, int yy, int tileIdx)
+    public void addPlacement (Placement play)
     {
-        ImageLayer tile = Atlantis.tiles.getTerrainTile(tileIdx);
-        // TODO: use tile.width(), tile.height() once those exist
-        tile.setTranslation(xx * AtlantisTiles.TERRAIN_WIDTH, yy * AtlantisTiles.TERRAIN_HEIGHT);
-        layer.add(tile);
+        float hwid = AtlantisTiles.TERRAIN_WIDTH/2, hhei = AtlantisTiles.TERRAIN_HEIGHT/2;
+        GroupLayer group = graphics().createGroupLayer();
+        group.setOrigin(hwid, hhei);
+        group.setRotation((float)Math.PI * play.orient.index / 2);
+        group.setTranslation(play.x * AtlantisTiles.TERRAIN_WIDTH + hwid,
+                             play.y * AtlantisTiles.TERRAIN_HEIGHT + hhei);
+        group.add(Atlantis.tiles.getTerrainTile(play.tile.tileIdx));
+        // TODO: shield and piecen
+        layer.add(group);
     }
 
-    public void setPlacingTile (int xx, int yy, int tileIdx)
+    public void setPlacing (Placement play)
     {
     }
+
+    protected final GroupLayer _placing = graphics().createGroupLayer();
 }
