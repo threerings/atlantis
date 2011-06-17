@@ -30,11 +30,15 @@ public class Board
         }
     }
 
-    protected void addTile (int xx, int yy, int tileIdx)
+    public void addTile (int xx, int yy, int tileIdx)
     {
         ImageLayer tile = Atlantis.tiles.getTerrainTile(tileIdx);
         // TODO: use tile.width(), tile.height() once those exist
         tile.setTranslation(xx * AtlantisTiles.TERRAIN_WIDTH, yy * AtlantisTiles.TERRAIN_HEIGHT);
         layer.add(tile);
+    }
+
+    public void setPlacingTile (int xx, int yy, int tileIdx)
+    {
     }
 }
