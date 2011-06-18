@@ -7,8 +7,13 @@ import java.util.EnumSet;
 
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
+import forplay.core.Mouse;
+
 import static forplay.core.ForPlay.*;
 
+import pythagoras.f.Points;
+
+import com.threerings.atlantis.shared.Log;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Placement;
 import com.threerings.atlantis.shared.Terrain;
@@ -27,23 +32,37 @@ public class Board
      */
     public void init ()
     {
-        // _placing will be populated with children only when we have an in-progress placement
-        layer.add(_placing);
-
         // temp: add some random placements
         EnumSet<Terrain> tiles = EnumSet.allOf(Terrain.class);
         EnumSet<Orient> orients = EnumSet.allOf(Orient.class);
-        for (int xx = 0; xx < 10; xx++) {
+        for (int xx = 0; xx < 5; xx++) {
             Orient orient = Orient.NORTH;
-            for (int yy = 0; yy < 10; yy++) {
+            for (int yy = 0; yy < 5; yy++) {
                 addPlacement(new Placement(Atlantis.rands.pick(tiles, null),
                                            false, orient, xx, yy));
                 orient = orient.rotate(1);
             }
         }
+
+        mouse().setListener(_placer);
     }
 
     public void addPlacement (Placement play)
+    {
+        layer.add(glyphFor(play));
+    }
+
+    public void setPlacing (Placement play)
+    {
+        if (_placing != null) {
+            _placing.destroy();
+        }
+        _placing = glyphFor(play);
+        _placing.setAlpha(0.5f);
+        layer.add(_placing);
+    }
+
+    protected GroupLayer glyphFor (Placement play)
     {
         float hwid = AtlantisTiles.TERRAIN_WIDTH/2, hhei = AtlantisTiles.TERRAIN_HEIGHT/2;
         GroupLayer group = graphics().createGroupLayer();
@@ -53,12 +72,20 @@ public class Board
                              play.y * AtlantisTiles.TERRAIN_HEIGHT + hhei);
         group.add(Atlantis.tiles.getTerrainTile(play.tile.tileIdx));
         // TODO: shield and piecen
-        layer.add(group);
+        return group;
     }
 
-    public void setPlacing (Placement play)
-    {
-    }
+    protected GroupLayer _placing;
 
-    protected final GroupLayer _placing = graphics().createGroupLayer();
+    protected final Mouse.Listener _placer = new Mouse.Listener() {
+        public void onMouseDown (float x, float y, int button) {
+            Log.info("Mouse down! " + Points.pointToString(x, y));
+        }
+        public void onMouseMove (float x, float y) {
+        }
+        public void onMouseUp (float x, float y, int button) {
+        }
+        public void onMouseWheelScroll (float velocity) {
+        }
+    };
 }
