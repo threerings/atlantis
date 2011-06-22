@@ -4,13 +4,15 @@
 package com.threerings.atlantis.client;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
 import forplay.core.Mouse;
-
 import static forplay.core.ForPlay.*;
 
+import pythagoras.f.IPoint;
+import pythagoras.f.Point;
 import pythagoras.f.Points;
 
 import com.threerings.atlantis.shared.Log;
@@ -30,62 +32,117 @@ public class Board
     /**
      * Loads up our resources and performs other one-time initialization tasks.
      */
-    public void init ()
+    public void init (GameController ctrl)
     {
-        // temp: add some random placements
-        EnumSet<Terrain> tiles = EnumSet.allOf(Terrain.class);
-        EnumSet<Orient> orients = EnumSet.allOf(Orient.class);
-        for (int xx = 0; xx < 5; xx++) {
-            Orient orient = Orient.NORTH;
-            for (int yy = 0; yy < 5; yy++) {
-                addPlacement(new Placement(Atlantis.rands.pick(tiles, null),
-                                           false, orient, xx, yy));
-                orient = orient.rotate(1);
-            }
-        }
+        _ctrl = ctrl;
+        mouse().setListener(_scroller);
+        layer.setTranslation((graphics().width() - AtlantisTiles.TERRAIN_WIDTH)/2,
+                             (graphics().height() - AtlantisTiles.TERRAIN_HEIGHT)/2);
+    }
 
-        mouse().setListener(_placer);
+    /**
+     * Resets the board, and prepares for a new game.
+     */
+    public void reset (Set<Placement> plays)
+    {
+        // TODO: the resetting part
+        for (Placement play : plays) {
+            addPlacement(play);
+        }
     }
 
     public void addPlacement (Placement play)
     {
-        layer.add(glyphFor(play));
+        layer.add(new PlayGlyph(play).layer);
     }
 
-    public void setPlacing (Placement play)
+    public void setPlacing (Terrain terrain, boolean hasShield)
     {
+        if (_placingGlyph != null) {
+            _placingGlyph.layer.destroy();
+        }
+        _placing = play;
+        _placingGlyph = new PlayGlyph(terrain, hasShield);
+        _placingGlyph.layer.setAlpha(0.5f);
+        layer.add(_placingGlyph.layer);
+    }
+
+    protected void updateHover (float mx, float my)
+    {
+        // TODO: we'd like to just apply the layer transform to the mouse coords
+        float lx = mx - layer.transform().tx();
+        float ly = my - layer.transform().ty();
+
+        int hx = (int)Math.floor(lx / AtlantisTiles.TERRAIN_WIDTH);
+        int hy = (int)Math.floor(ly / AtlantisTiles.TERRAIN_HEIGHT);
+        if (hx == _hoverX && hy == _hoverY) return;
+
+        _hoverX = hx;
+        _hoverY = hy;
+
+        Log.info("New hover " + Points.pointToString(hx, hy));
+
         if (_placing != null) {
-            _placing.destroy();
         }
-        _placing = glyphFor(play);
-        _placing.setAlpha(0.5f);
-        layer.add(_placing);
     }
 
-    protected GroupLayer glyphFor (Placement play)
-    {
-        float hwid = AtlantisTiles.TERRAIN_WIDTH/2, hhei = AtlantisTiles.TERRAIN_HEIGHT/2;
-        GroupLayer group = graphics().createGroupLayer();
-        group.setOrigin(hwid, hhei);
-        group.setRotation((float)Math.PI * play.orient.index / 2);
-        group.setTranslation(play.x * AtlantisTiles.TERRAIN_WIDTH + hwid,
-                             play.y * AtlantisTiles.TERRAIN_HEIGHT + hhei);
-        group.add(Atlantis.tiles.getTerrainTile(play.tile.tileIdx));
-        // TODO: shield and piecen
-        return group;
-    }
+    protected GameController _ctrl;
+    protected Placement _placing;
+    protected GroupLayer _placingGlyph;
 
-    protected GroupLayer _placing;
+    /** The x and y coordinate of the tile over which the mouse is hovering. */
+    protected int _hoverX, _hoverY;
 
-    protected final Mouse.Listener _placer = new Mouse.Listener() {
+    protected final Mouse.Listener _scroller = new Mouse.Listener() {
         public void onMouseDown (float x, float y, int button) {
-            Log.info("Mouse down! " + Points.pointToString(x, y));
+            _drag = new Point(x, y);
         }
+
         public void onMouseMove (float x, float y) {
+            _current.move(x, y);
+            if (_drag != null) {
+                layer.setTranslation(layer.transform().tx() + (x - _drag.x),
+                                     layer.transform().ty() + (y - _drag.y));
+                _drag.move(x, y);
+            }
+            updateHover(x, y);
         }
+
         public void onMouseUp (float x, float y, int button) {
+            _drag = null;
         }
+
         public void onMouseWheelScroll (float velocity) {
         }
+
+        protected Point _current = new Point(), _drag;
     };
+
+    // TODO: piecen?
+    protected static class PlayGlyph {
+        public final GroupLayer layer;
+
+        public PlayGlyph (Placement play) {
+            this(play.terrain, play.hasShield);
+            setOrigin(play.orient);
+            setLocation(play.x, play.y);
+        }
+
+        public PlayGlyph (Terrain terrain, boolean hasShield) {
+            float hwid = AtlantisTiles.TERRAIN_WIDTH/2, hhei = AtlantisTiles.TERRAIN_HEIGHT/2;
+            layer = graphics().createGroupLayer();
+            layer.setOrigin(hwid, hhei);
+            layer.add(Atlantis.tiles.getTerrainTile(terrain.tileIdx));
+            // TODO: add shield glyph if requested
+        }
+
+        public void setOrient (Orient orient) {
+            layer.setRotation((float)Math.PI * orient.index / 2);
+        }
+
+        public void setLocation (int x, int y) {
+            layer.setTranslation((x + 0.5f) * AtlantisTiles.TERRAIN_WIDTH,
+                                 (y + 0.5f) * AtlantisTiles.TERRAIN_HEIGHT + hhei);
+        }
+    }
 }

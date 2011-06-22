@@ -23,6 +23,7 @@ public class AtlantisTiles extends Tiles
         _terrain = ForPlay.assetManager().getImage("images/tiles.png");
         _piecens = ForPlay.assetManager().getImage("images/piecens.png");
         _shield = ForPlay.assetManager().getImage("images/shield.png");
+        _table = ForPlay.assetManager().getImage("images/table.png");
         // TODO: delay initialization completion until images are loaded
     }
 
@@ -50,5 +51,13 @@ public class AtlantisTiles extends Tiles
         return createTile(_shield, SHIELD_WIDTH, SHIELD_HEIGHT, 0); // only one tile for now
     }
 
-    protected Image _terrain, _piecens, _shield;
+    /**
+     * Returns the (tileable) table background image.
+     */
+    public Image getTableImage ()
+    {
+        return _table;
+    }
+
+    protected Image _terrain, _piecens, _shield, _table;
 }

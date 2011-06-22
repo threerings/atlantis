@@ -32,6 +32,13 @@
 
     <dependency>
       <groupId>com.threerings</groupId>
+      <artifactId>nexus-core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.threerings</groupId>
       <artifactId>tripleplay</artifactId>
       <version>1.0-SNAPSHOT</version>
       <scope>compile</scope>
