@@ -15,11 +15,8 @@ import pythagoras.i.Points;
  */
 public class Placement
 {
-    /** The type of terrain tile that was placed. */
-    public final Terrain tile;
-
-    /** Whether the terrain tile has a shield on it. */
-    public final boolean hasShield;
+    /** The metadata for the tile that was placed. */
+    public final GameTile tile;
 
     /** The terrain tile's orientation. */
     public final Orient orient;
@@ -38,14 +35,13 @@ public class Placement
     /**
      * Creates a placement with the supplied configuration.
      */
-    public Placement (Terrain tile, boolean hasShield, Orient orient, int x, int y)
+    public Placement (GameTile tile, Orient orient, int x, int y)
     {
         this.tile = tile;
-        this.hasShield = hasShield;
         this.orient = orient;
         this.x = x;
         this.y = y;
-        this.claims = new int[tile.features.length];
+        this.claims = new int[tile.features().length];
     }
 
     /**
@@ -82,8 +78,9 @@ public class Placement
         edgeMask = Edge.translateMask(edgeMask, orient); // TODO: -orient.index?
 
         // look for a feature with a matching edge mask
-        for (int ii = 0; ii < tile.features.length; ii ++) {
-            if ((tile.features[ii].edgeMask & edgeMask) != 0) {
+        Feature[] features = tile.features();
+        for (int ii = 0; ii < features.length; ii ++) {
+            if ((features[ii].edgeMask & edgeMask) != 0) {
                 return ii;
             }
         }
@@ -103,8 +100,9 @@ public class Placement
     {
         // we search our features in reverse order because road features overlap grass features
         // geometrically and are known to be specified after the grass features
-        for (int ii = tile.features.length-1; ii >= 0; ii--) {
-            if (tile.features[ii].contains(mouseX, mouseY, orient)) {
+        Feature[] features = tile.features();
+        for (int ii = features.length-1; ii >= 0; ii--) {
+            if (features[ii].contains(mouseX, mouseY, orient)) {
                 return ii;
             }
         }
@@ -214,7 +212,6 @@ public class Placement
     {
         return Objects.toStringHelper(this).
             add("tile", tile).
-            add("shield", hasShield).
             add("orient", orient).
             add("pos", Points.pointToString(x, y)).
             add("claims", claims).

@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Placement;
-import com.threerings.atlantis.shared.Terrain;
 
 /**
  * Manages the game flow. Listens for distributed state changes, handles submitting a player's
@@ -27,7 +27,7 @@ public class GameController
     {
         // TODO: this will come from somewhere better
         Set<Placement> plays = new HashSet<Placement>();
-        plays.add(new Placement(Terrain.CITY_ONE_ROAD_STRAIGHT, false, Orient.NORTH, 0, 0));
+        plays.add(new Placement(GameTile.STARTER, Orient.NORTH, 0, 0));
 
         // prepare the board
         _board.reset(plays);

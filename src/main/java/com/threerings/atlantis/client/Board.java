@@ -15,10 +15,10 @@ import pythagoras.f.IPoint;
 import pythagoras.f.Point;
 import pythagoras.f.Points;
 
+import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Log;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Placement;
-import com.threerings.atlantis.shared.Terrain;
 import static com.threerings.atlantis.client.AtlantisClient.*;
 
 /**
@@ -56,13 +56,13 @@ public class Board
         layer.add(new PlayGlyph(play).layer);
     }
 
-    public void setPlacing (Terrain terrain, boolean hasShield)
+    public void setPlacing (GameTile tile)
     {
         if (_placingGlyph != null) {
             _placingGlyph.layer.destroy();
         }
-        _placing = play;
-        _placingGlyph = new PlayGlyph(terrain, hasShield);
+        _placing = tile;
+        _placingGlyph = new PlayGlyph(tile);
         _placingGlyph.layer.setAlpha(0.5f);
         layer.add(_placingGlyph.layer);
     }
@@ -87,8 +87,8 @@ public class Board
     }
 
     protected GameController _ctrl;
-    protected Placement _placing;
-    protected GroupLayer _placingGlyph;
+    protected GameTile _placing;
+    protected PlayGlyph _placingGlyph;
 
     /** The x and y coordinate of the tile over which the mouse is hovering. */
     protected int _hoverX, _hoverY;
@@ -123,16 +123,16 @@ public class Board
         public final GroupLayer layer;
 
         public PlayGlyph (Placement play) {
-            this(play.terrain, play.hasShield);
-            setOrigin(play.orient);
+            this(play.tile);
+            setOrient(play.orient);
             setLocation(play.x, play.y);
         }
 
-        public PlayGlyph (Terrain terrain, boolean hasShield) {
+        public PlayGlyph (GameTile tile) {
             float hwid = AtlantisTiles.TERRAIN_WIDTH/2, hhei = AtlantisTiles.TERRAIN_HEIGHT/2;
             layer = graphics().createGroupLayer();
             layer.setOrigin(hwid, hhei);
-            layer.add(Atlantis.tiles.getTerrainTile(terrain.tileIdx));
+            layer.add(Atlantis.tiles.getTerrainTile(tile.terrain.tileIdx));
             // TODO: add shield glyph if requested
         }
 
@@ -142,7 +142,7 @@ public class Board
 
         public void setLocation (int x, int y) {
             layer.setTranslation((x + 0.5f) * AtlantisTiles.TERRAIN_WIDTH,
-                                 (y + 0.5f) * AtlantisTiles.TERRAIN_HEIGHT + hhei);
+                                 (y + 0.5f) * AtlantisTiles.TERRAIN_HEIGHT);
         }
     }
 }
