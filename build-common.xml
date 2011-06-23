@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <project name="build-common" default="compile" xmlns:artifact="urn:maven-artifact-ant">
-  <property name="src.dir"     value="src/main/java"/>
-  <property name="target.dir"  value="target"/>
-  <property name="classes.dir" value="${target.dir}/classes"/>
-  <property name="webapp.dir"  value="${target.dir}/webapp"/>
+  <property name="target.dir"   value="target"/>
+  <property name="src.dir"      value="src/main/java"/>
+  <property name="classes.dir"  value="${target.dir}/classes"/>
+  <property name="tsrc.dir"     value="src/test/java"/>
+  <property name="tclasses.dir" value="${target.dir}/test-classes"/>
+  <property name="webapp.dir"   value="${target.dir}/webapp"/>
 
   <!-- Maven Ant task wiring -->
   <property name="maven-ant.vers" value="2.1.3"/>
@@ -43,13 +45,45 @@
   </target>
 
   <target name="compile" depends="-prepare" description="Compiles the code.">
+    <property name="java.vers" value="1.6"/>
     <mkdir dir="${classes.dir}"/>
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
-           debug="on" deprecation="on" source="1.6" target="1.6">
+           debug="on" deprecation="on" source="${java.vers}" target="${java.vers}">
       <classpath refid="classpath"/>
       <compilerarg value="-Xlint"/>
       <compilerarg value="-Xlint:-serial"/>
     </javac>
+
+    <mkdir dir="${tclasses.dir}"/>
+    <javac srcdir="${tsrc.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
+           debug="on" deprecation="on" source="${java.vers}" target="${java.vers}">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <path refid="test.classpath"/>
+      </classpath>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
+  <property name="test" value=""/>
+  <target name="test" depends="compile"
+          description="Runs unit tests. Use -Dtest=Foo to run only FooTest.">
+    <taskdef name="unit" classpathref="test.classpath"
+      classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
+    <mkdir dir="${target.dir}/test-reports"/>
+    <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="${tclasses.dir}"/>
+        <path refid="test.classpath"/>
+      </classpath>
+      <formatter type="brief" usefile="false"/>
+      <formatter type="xml"/>
+      <batchtest todir="${target.dir}/test-reports">
+        <fileset dir="${tsrc.dir}" includes="**/*${test}*Test.java"/>
+      </batchtest>
+    </unit>
   </target>
 
   <target name="compile-html" depends="-prep-webapp,compile" description="Compiles HTML game.">
@@ -61,7 +95,7 @@
       </classpath>
       <jvmarg value="-Djava.awt.headless=true"/>
       <!--<arg value="-style"/><arg value="pretty"/>-->
-      <!--<arg value="-gen"/><arg value="${deploy.dir}/gwt-gen"/>-->
+      <!--<arg value="-gen"/><arg value="${target.dir}/gwt-gen"/>-->
       <arg value="-war"/>
       <arg value="${target.dir}/webapp"/>
       <arg value="${html.classname}"/>
