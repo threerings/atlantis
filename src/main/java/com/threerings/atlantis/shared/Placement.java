@@ -8,8 +8,6 @@ import java.util.List;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Ints;
 
-import pythagoras.i.Points;
-
 /**
  * Describes the placement of a tile.
  */
@@ -22,7 +20,7 @@ public class Placement
     public final Orient orient;
 
     /** The terrain tile's x and y coordinates. */
-    public final int x, y;
+    public final Location loc;
 
     /** An array of claim group values that correspond to the features of this tile. If a piecen
      * has claimed a feature on this tile or that connects to this tile, it will be represented
@@ -35,28 +33,24 @@ public class Placement
     /**
      * Creates a placement with the supplied configuration.
      */
-    public Placement (GameTile tile, Orient orient, int x, int y)
-    {
+    public Placement (GameTile tile, Orient orient, Location loc) {
         this.tile = tile;
         this.orient = orient;
-        this.x = x;
-        this.y = y;
+        this.loc = loc;
         this.claims = new int[tile.features().length];
     }
 
     /**
      * Returns true if the placed tile has at least one unclaimed feature.
      */
-    public boolean hasUnclaimedFeature ()
-    {
+    public boolean hasUnclaimedFeature () {
         return (getUnclaimedCount() > 0);
     }
 
     /**
      * Returns the count of unclaimed features on our placed tile.
      */
-    public int getUnclaimedCount ()
-    {
+    public int getUnclaimedCount () {
         int count = 0;
         for (int claim : claims) {
             if (claim == 0) {
@@ -72,8 +66,7 @@ public class Placement
      *
      * @return the index of the matching feature or -1 if no feature matched.
      */
-    public int getFeatureIndex (int edgeMask)
-    {
+    public int getFeatureIndex (int edgeMask) {
         // translate the feature mask into our orientation
         edgeMask = Edge.translateMask(edgeMask, orient); // TODO: -orient.index?
 
@@ -96,8 +89,7 @@ public class Placement
      * @return the index of the feature that contains the mouse coordinates. Some feature should
      * always contain the mouse.
      */
-    public int getFeatureIndex (int mouseX, int mouseY)
-    {
+    public int getFeatureIndex (int mouseX, int mouseY) {
         // we search our features in reverse order because road features overlap grass features
         // geometrically and are known to be specified after the grass features
         Feature[] features = tile.features();
@@ -120,8 +112,7 @@ public class Placement
      * @return the claim group to which the feature that matches the supplied mask belongs, or
      * zero if no feature matched the supplied mask.
      */
-    public int getFeatureGroup (int edgeMask)
-    {
+    public int getFeatureGroup (int edgeMask) {
         int fidx = getFeatureIndex(edgeMask);
         return fidx < 0 ? 0 : claims[fidx];
     }
@@ -133,8 +124,7 @@ public class Placement
      * @param featureIndex the index of the feature to update.
      * @param claimGroup the claim group to associate with the feature.
      */
-    public void setClaimGroup (int featureIndex, int claimGroup)
-    {
+    public void setClaimGroup (int featureIndex, int claimGroup) {
         // update the claim group slot for this feature
         claims[featureIndex] = claimGroup;
 
@@ -158,8 +148,7 @@ public class Placement
      * claim group to all features connected to this newly claimed feature, or null if propagation
      * of the claim group is not desired at this time.
      */
-    public void setPiecen (Piecen piecen, Placements places)
-    {
+    public void setPiecen (Piecen piecen, Placements places) {
         int claimGroup = 0;
 
         // if we're adding a piecen to a feature that's already claimed, we want to inherit the
@@ -178,8 +167,7 @@ public class Placement
 
         // keep a reference to this piecen and configure its position
         this.piecen = piecen;
-        piecen.x = x;
-        piecen.y = y;
+        piecen.loc = loc;
 
         // assign a brand spanking new claim group to the feature and the piecen and propagate it
         // to neighboring features
@@ -194,26 +182,22 @@ public class Placement
      * Clears out any piecen reference that was previously set (does not clear out its associated
      * claim group, however).
      */
-    public void clearPiecen ()
-    {
+    public void clearPiecen () {
         piecen = null;
     }
 
     @Override
-    public boolean equals (Object other)
-    {
-        Placement op = (Placement)other;
+    public boolean equals (Object other) {
         // only one placement can ever exist at a given x,y so that's sufficient for equals
-        return op.x == x && op.y == y;
+        return loc.equals(((Placement)other).loc);
     }
 
     @Override
-    public String toString ()
-    {
+    public String toString () {
         return Objects.toStringHelper(this).
             add("tile", tile).
             add("orient", orient).
-            add("pos", Points.pointToString(x, y)).
+            add("loc", loc).
             add("claims", claims).
             add("piecen", piecen).
             toString();

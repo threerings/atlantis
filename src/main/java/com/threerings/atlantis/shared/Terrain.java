@@ -150,16 +150,21 @@ public enum Terrain
     /** The index of this tile in the tiles bitmap. */
     public final int tileIdx;
 
-    /** The edges of this terrain tile. */
-    public final Edge[] edges;
-
     /** The features on this terrain tile. */
     public final Feature[] features;
+
+    /** Returns the edge of this tile in the specified direction. */
+    public Edge getEdge (Orient orient) {
+        return _edges[orient.index];
+    }
 
     Terrain (int tileIdx, Edge north, Edge east, Edge south, Edge west, Feature... features)
     {
         this.tileIdx = tileIdx;
-        this.edges = new Edge[] { north, east, south, west };
         this.features = features;
+        _edges = new Edge[] { north, east, south, west };
     }
+
+    /** The edges of this terrain tile. */
+    protected final Edge[] _edges;
 }

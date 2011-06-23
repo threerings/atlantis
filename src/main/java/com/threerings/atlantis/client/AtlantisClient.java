@@ -46,7 +46,8 @@ public class AtlantisClient implements Game
 
         // TEMP: create a game controller and board and throw them up
         Board board = new Board();
-        graphics().rootLayer().add(board.layer);
+        graphics().rootLayer().add(board.tiles);
+        graphics().rootLayer().add(board.turnInfo);
 
         GameController ctrl = new GameController(board);
         ctrl.startGame();

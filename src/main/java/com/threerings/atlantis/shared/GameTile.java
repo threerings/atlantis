@@ -10,9 +10,6 @@ package com.threerings.atlantis.shared;
  */
 public class GameTile
 {
-    /** The tile used to start a game. */
-    public static final GameTile STARTER = new GameTile(Terrain.CITY_ONE_ROAD_STRAIGHT, false);
-
     /** This tile's terrain and features. */
     public final Terrain terrain;
 
@@ -25,13 +22,6 @@ public class GameTile
     }
 
     /**
-     * Returns the edges of this game tile.
-     */
-    public Edge[] edges () {
-        return terrain.edges;
-    }
-
-    /**
      * Returns the features on this game tile.
      */
     public Feature[] features () {
@@ -41,5 +31,16 @@ public class GameTile
     @Override
     public String toString () {
         return terrain + " (" + (hasShield ? "" : "no") + "shield)";
+    }
+
+    @Override
+    public boolean equals (Object other) {
+        GameTile otile = (GameTile)other;
+        return otile.terrain == terrain && otile.hasShield == hasShield;
+    }
+
+    @Override
+    public int hashCode () {
+        return terrain.hashCode() ^ (hasShield ? 1 : 0);
     }
 }

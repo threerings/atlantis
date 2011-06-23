@@ -5,8 +5,6 @@ package com.threerings.atlantis.shared;
 
 import com.google.common.base.Objects;
 
-import pythagoras.i.Points;
-
 /**
  * A piecen is a person and a piece all rolled into one! Players can play a single piecen on a tile
  * feature as a part of their turn and that piecen then claims that feature and all of the features
@@ -26,8 +24,8 @@ public class Piecen
     /** The owner of this piecen. */
     public Color owner;
 
-    /** The x and y coordinates of the tile on which this piecen is placed. */
-    public int x,  y;
+    /** The coordinates of the tile on which this piecen is placed. */
+    public Location loc;
 
     /** The index in the tile's feature array of the feature on which this piecen is placed. */
     public int featureIndex;
@@ -38,23 +36,18 @@ public class Piecen
     /**
      * Constructs a piecen with the specified configuration.
      */
-    public Piecen (Color owner, int x, int y, int featureIndex)
+    public Piecen (Color owner, Location loc, int featureIndex)
     {
         this.owner = owner;
-        this.x = x;
-        this.y = y;
+        this.loc = loc;
         this.featureIndex = featureIndex;
     }
 
     @Override
     public boolean equals (Object other)
     {
-        if (other instanceof Piecen) {
-            Piecen piecen = (Piecen)other;
-            return (piecen.x == x) && (y == piecen.y);
-        } else {
-            return false;
-        }
+        // only one piecen can ever exist at a given x,y so that's sufficient for equals
+        return loc.equals(((Piecen)other).loc);
     }
 
     @Override
@@ -62,7 +55,7 @@ public class Piecen
     {
         return Objects.toStringHelper(this).
             add("owner", owner).
-            add("pos", Points.pointToString(x, y)).
+            add("loc", loc).
             add("feat", featureIndex).
             add("claim", claimGroup).
             toString();

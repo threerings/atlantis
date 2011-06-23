@@ -3,10 +3,13 @@
 
 package com.threerings.atlantis.shared;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Implements various game logic.
@@ -44,6 +47,61 @@ public class Logic
     }
 
     /**
+     * Computes and returns the set of board positions where the supplied tile can be legally
+     * played, given the supplied preexisting plays.
+     */
+    public static Set<Location> computeLegalPlays (Placements plays, GameTile tile)
+    {
+        Set<Location> locs = Sets.newHashSet();
+
+        // compute the neighbors of all existing tiles
+        for (Placement play : plays) {
+            locs.addAll(play.loc.neighbors());
+        }
+
+        // now go back and remove the occupied tiles
+        for (Placement play : plays) {
+            locs.remove(play.loc);
+        }
+
+        // now remove any position that is not a legal play
+      OUTER:
+        for (Iterator<Location> iter = locs.iterator(); iter.hasNext(); ) {
+            Location pos = iter.next();
+          ORIENT:
+            for (Orient orient : Orient.values()) {
+                Placement play = new Placement(tile, orient, pos);
+                for (Location npos : pos.neighbors()) {
+                    Placement neighbor = plays.get(npos);
+                    if (neighbor != null && !tilesMatch(neighbor, play)) {
+                        continue ORIENT; // try next orientation
+                    }
+                }
+                continue OUTER; // this orientation matches
+            }
+        }
+
+        return locs;
+    }
+
+    /**
+     * Returns true if the two supplied placements match up (represent a legal board position).
+     */
+    protected static boolean tilesMatch (Placement play1, Placement play2)
+    {
+        // based on the relative positions of the two placements, determine the "natural" edges to
+        // be compared (east/west or north/south)
+        Orient orient1 = play1.loc.directionTo(play2.loc), orient2 = orient1.opposite();
+
+        // now rotate those "natural" edges based on the orientations of the placements
+        orient1 = orient1.rotate(-play1.orient.index);
+        orient2 = orient2.rotate(-play2.orient.index);
+
+        // now make suer those two edges match
+        return play1.tile.terrain.getEdge(orient1) == play2.tile.terrain.getEdge(orient2);
+    }
+
+    /**
      * Enumerates all of the features that are in the group of which the specified feature is a
      * member.
      *
@@ -65,7 +123,7 @@ public class Logic
         target.add(feat);
 
         boolean complete = true;
-        int fmask = play.tile.features[featureIdx].edgeMask;
+        int fmask = play.tile.features()[featureIdx].edgeMask;
 
         // iterate over all of the possible adjacency possibilities
         for (Edge.Adjacency adj : Edge.ADJACENCIES) {
@@ -74,16 +132,8 @@ public class Logic
                 continue;
             }
 
-            // look up our neighbor
-            Placement neighbor = null;
-            switch (adj.dir.rotate(play.orient.index)) {
-            case NORTH: neighbor = plays.get(play.x, play.y-1); break;
-            case EAST:  neighbor = plays.get(play.x+1, play.y); break;
-            case SOUTH: neighbor = plays.get(play.x, play.y+1); break;
-            case WEST:  neighbor = plays.get(play.x-1, play.y); break;
-            }
-
-            // make sure we have a neighbor in this direction
+            // look up our neighbor in this direction
+            Placement neighbor = plays.get(play.loc.neighbor(adj.dir.rotate(play.orient.index)));
             if (neighbor == null) {
                 // if we don't have a neighbor in a direction that we need, we're incomplete
                 complete = false;
@@ -141,4 +191,9 @@ public class Logic
 
     /** Used to generate claim group values. */
     protected static int _claimGroupCounter;
+
+    /** Used to iterate through a tile's neighbors. */
+    protected static final Location[] NEIGHBORS = {
+        new Location(-1, -1), new Location(-1, +1), new Location(+1, +1), new Location(+1, -1)
+    };
 }

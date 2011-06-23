@@ -3,7 +3,6 @@
 
 package com.threerings.atlantis.client;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 import forplay.core.GroupLayer;
@@ -11,14 +10,14 @@ import forplay.core.ImageLayer;
 import forplay.core.Mouse;
 import static forplay.core.ForPlay.*;
 
-import pythagoras.f.IPoint;
 import pythagoras.f.Point;
-import pythagoras.f.Points;
 
 import com.threerings.atlantis.shared.GameTile;
+import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Placement;
+import com.threerings.atlantis.shared.Placements;
 import static com.threerings.atlantis.client.AtlantisClient.*;
 
 /**
@@ -27,7 +26,10 @@ import static com.threerings.atlantis.client.AtlantisClient.*;
 public class Board
 {
     /** The layer that contains the tiles. */
-    public final GroupLayer layer = graphics().createGroupLayer();
+    public final GroupLayer tiles = graphics().createGroupLayer();
+
+    /** The layer that contains the current turn info. */
+    public final GroupLayer turnInfo = graphics().createGroupLayer();
 
     /**
      * Loads up our resources and performs other one-time initialization tasks.
@@ -36,14 +38,14 @@ public class Board
     {
         _ctrl = ctrl;
         mouse().setListener(_scroller);
-        layer.setTranslation((graphics().width() - AtlantisTiles.TERRAIN_WIDTH)/2,
+        tiles.setTranslation((graphics().width() - AtlantisTiles.TERRAIN_WIDTH)/2,
                              (graphics().height() - AtlantisTiles.TERRAIN_HEIGHT)/2);
     }
 
     /**
      * Resets the board, and prepares for a new game.
      */
-    public void reset (Set<Placement> plays)
+    public void reset (Placements plays)
     {
         // TODO: the resetting part
         for (Placement play : plays) {
@@ -53,38 +55,41 @@ public class Board
 
     public void addPlacement (Placement play)
     {
-        layer.add(new PlayGlyph(play).layer);
+        Log.info("Adding " + play);
+        // TODO: clear out any placing graphics
+        tiles.add(new PlayGlyph(play).layer);
     }
 
-    public void setPlacing (GameTile tile)
+    public void setPlacing (Placements plays, GameTile tile)
     {
-        if (_placingGlyph != null) {
-            _placingGlyph.layer.destroy();
-        }
         _placing = tile;
         _placingGlyph = new PlayGlyph(tile);
-        _placingGlyph.layer.setAlpha(0.5f);
-        layer.add(_placingGlyph.layer);
+        _placingGlyph.setLocation(0, 0);
+        turnInfo.add(_placingGlyph.layer);
+
+        // compute the legal placement positions for this tile
+        Set<Location> canPlay = Logic.computeLegalPlays(plays, tile);
+        Log.info("Legal plays " + canPlay);
     }
 
-    protected void updateHover (float mx, float my)
-    {
-        // TODO: we'd like to just apply the layer transform to the mouse coords
-        float lx = mx - layer.transform().tx();
-        float ly = my - layer.transform().ty();
+    // protected void updateHover (float mx, float my)
+    // {
+    //     // TODO: we'd like to just apply the layer transform to the mouse coords
+    //     float lx = mx - tiles.transform().tx();
+    //     float ly = my - tiles.transform().ty();
 
-        int hx = (int)Math.floor(lx / AtlantisTiles.TERRAIN_WIDTH);
-        int hy = (int)Math.floor(ly / AtlantisTiles.TERRAIN_HEIGHT);
-        if (hx == _hoverX && hy == _hoverY) return;
+    //     int hx = (int)Math.floor(lx / AtlantisTiles.TERRAIN_WIDTH);
+    //     int hy = (int)Math.floor(ly / AtlantisTiles.TERRAIN_HEIGHT);
+    //     if (hx == _hoverX && hy == _hoverY) return;
 
-        _hoverX = hx;
-        _hoverY = hy;
+    //     _hoverX = hx;
+    //     _hoverY = hy;
 
-        Log.info("New hover " + Points.pointToString(hx, hy));
+    //     Log.info("New hover " + Points.pointToString(hx, hy));
 
-        if (_placing != null) {
-        }
-    }
+    //     if (_placing != null) {
+    //     }
+    // }
 
     protected GameController _ctrl;
     protected GameTile _placing;
@@ -101,11 +106,11 @@ public class Board
         public void onMouseMove (float x, float y) {
             _current.move(x, y);
             if (_drag != null) {
-                layer.setTranslation(layer.transform().tx() + (x - _drag.x),
-                                     layer.transform().ty() + (y - _drag.y));
+                tiles.setTranslation(tiles.transform().tx() + (x - _drag.x),
+                                     tiles.transform().ty() + (y - _drag.y));
                 _drag.move(x, y);
             }
-            updateHover(x, y);
+            // updateHover(x, y);
         }
 
         public void onMouseUp (float x, float y, int button) {
@@ -125,7 +130,7 @@ public class Board
         public PlayGlyph (Placement play) {
             this(play.tile);
             setOrient(play.orient);
-            setLocation(play.x, play.y);
+            setLocation(play.loc.x, play.loc.y);
         }
 
         public PlayGlyph (GameTile tile) {

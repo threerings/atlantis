@@ -3,6 +3,7 @@
 
 package com.threerings.atlantis.shared;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -11,29 +12,30 @@ import com.google.common.collect.Maps;
  * A mapping from coordinates to tile placements. Implemented such that looking up a placement by x
  * and y coordinate is fast.
  */
-public class Placements
+public class Placements implements Iterable<Placement>
 {
     /**
      * Adds a placement to this mapping.
      */
-    public void add (int x, int y, Placement placement)
+    public void add (Placement placement)
     {
-        _map.put(toKey(x, y), placement);
+        _map.put(placement.loc, placement);
     }
 
     /**
      * Returns the placement at the specified coordinates, or null if no placement has been made at
      * said coordinates.
      */
-    public Placement get (int x, int y)
+    public Placement get (Location loc)
     {
-        return _map.get(toKey(x, y));
+        return _map.get(loc);
     }
 
-    protected static int toKey (int x, int y)
+    @Override // from interface Iterable<Placment>
+    public Iterator<Placement> iterator ()
     {
-        return (x << 16) | (y & 0xFFFF);
+        return _map.values().iterator();
     }
 
-    protected Map<Integer, Placement> _map = Maps.newHashMap();
+    protected Map<Location, Placement> _map = Maps.newHashMap();
 }
