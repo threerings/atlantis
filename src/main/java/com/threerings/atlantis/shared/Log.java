@@ -102,5 +102,18 @@ public class Log
         }
     };
 
-    protected static Impl _impl;
+    protected static Impl _impl = new Impl() {
+        public void debug (String message, Throwable t) {
+            info(message, t);
+        }
+        public void info (String message, Throwable t) {
+            System.out.println(message);
+            if (t != null) {
+                t.printStackTrace(System.out);
+            }
+        }
+        public void warning (String message, Throwable t) {
+            info(message, t);
+        }
+    };
 }
