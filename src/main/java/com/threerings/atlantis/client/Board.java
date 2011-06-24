@@ -15,6 +15,7 @@ import pythagoras.f.Point;
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
+import com.threerings.atlantis.shared.Logic;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Placement;
 import com.threerings.atlantis.shared.Placements;
