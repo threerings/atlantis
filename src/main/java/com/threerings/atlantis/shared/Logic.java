@@ -79,6 +79,7 @@ public class Logic
                 }
                 continue OUTER; // this orientation matches
             }
+            iter.remove(); // no matches, remove the location
         }
 
         return locs;
