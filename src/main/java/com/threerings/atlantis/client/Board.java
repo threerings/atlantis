@@ -68,38 +68,13 @@ public class Board
 
     public void setPlacing (Placements plays, GameTile tile) {
         clearPlacing();
-
-        _placing = tile;
-        _placingPlays = plays;
-        _placingGlyph = new PlayGlyph(tile);
-        _placingGlyph.setLocation(new Location(0, 0));
-        turnInfo.add(_placingGlyph.layer);
-
-        // compute the legal placement positions for this tile
-        Set<Location> canPlay = Logic.computeLegalPlays(plays, tile);
-        if (canPlay.isEmpty()) {
-            Log.warning("Pants! Impossible tile! " + tile);
-            // TODO: freak out, end the game, something useful?
-        }
-
-        // display targets for all legal moves
-        for (Location ploc : canPlay) {
-            TargetGlyph target = new TargetGlyph(Atlantis.tiles.getTargetTile(), ploc);
-            tiles.add(target.layer);
-            _targets.add(target);
-        }
+        _placer = new Placer(plays, tile);
     }
 
     protected void clearPlacing () {
-        for (TargetGlyph target : _targets) {
-            target.layer.destroy();
-        }
-        _targets.clear();
-        _activeTarget = null;
-        _placing = null;
-        if (_placingGlyph != null) {
-            _placingGlyph.layer.destroy();
-            _placingGlyph = null;
+        if (_placer != null) {
+            _placer.clear();
+            _placer = null;
         }
     }
 
@@ -107,35 +82,9 @@ public class Board
     public void onMouseDown (float x, float y, int button) {
         // translate the click into (translated) view coordinates
         float vx = x - tiles.transform().tx(), vy = y - tiles.transform().ty();
-        TargetGlyph clicked;
 
-        // if they clicked on the active target tile...
-        if (_activeTarget != null && _activeTarget.hitTest(vx, vy)) {
-            // ...rotate the placing glyph upon't
-            int cidx = _placingOrients.indexOf(_placingOrient);
-            _placingOrient = _placingOrients.get((cidx + 1) % _placingOrients.size());
-            _placingGlyph.setOrient(_placingOrient);
-        }
-
-        // check whether they've clicked a non-active target tile (and activate it)
-        else if ((clicked = checkHitTarget(vx, vy)) != null) {
-            _activeTarget = clicked;
-            // if this is the first placement, we need to move our placing glyph from the
-            // (non-scrolling) turn info layer, to the (scrolling) tiles layer
-            if (_placingGlyph.layer.parent() == turnInfo) {
-                turnInfo.remove(_placingGlyph.layer);
-                tiles.add(_placingGlyph.layer);
-            }
-            // compute the valid orientations for the placing tile at this location
-            _placingOrients = Logic.computeLegalOrients(_placingPlays, _placing, _activeTarget.loc);
-            // TODO: animate!
-            _placingOrient = _placingOrients.get(0); // start in the first orientation
-            _placingGlyph.setLocation(_activeTarget.loc);
-            _placingGlyph.setOrient(_placingOrient);
-        }
-
-        // otherwise, let them drag the display around
-        else {
+        // if the click isn't consumed by tile placement, let it start a drag
+        if (_placer == null || _placer.onMouseDown(vx, vy)) {
             _drag = new Point(x, y);
         }
     }
@@ -180,29 +129,100 @@ public class Board
     //     }
     // }
 
-    protected TargetGlyph checkHitTarget (float x, float y) {
-        for (TargetGlyph target : _targets) {
-            if (target.hitTest(x, y)) {
-                return target;
-            }
-        }
-        return null;
-    }
-
     protected GameController _ctrl;
-
-    protected GameTile _placing;
-    protected Placements _placingPlays;
-    protected PlayGlyph _placingGlyph;
-    protected Orient _placingOrient;
-    protected List<Orient> _placingOrients;
-    protected List<TargetGlyph> _targets = Lists.newArrayList();
-    protected TargetGlyph _activeTarget;
+    protected Point _current = new Point(), _drag;
+    protected Placer _placer;
 
     /** The x and y coordinate of the tile over which the mouse is hovering. */
     protected int _hoverX, _hoverY;
 
-    protected Point _current = new Point(), _drag;
+    /** Handles the interaction of placing a new tile on the board. */
+    protected class Placer {
+        public Placer (Placements plays, GameTile placing) {
+            _placing = placing;
+            _plays = plays;
+            _glyph = new PlayGlyph(placing);
+            _glyph.setLocation(new Location(0, 0));
+            turnInfo.add(_glyph.layer);
+
+            // compute the legal placement positions for this tile
+            Set<Location> canPlay = Logic.computeLegalPlays(plays, placing);
+            if (canPlay.isEmpty()) {
+                Log.warning("Pants! Impossible tile! " + placing);
+                // TODO: freak out, end the game, something useful?
+            }
+
+            // display targets for all legal moves
+            for (Location ploc : canPlay) {
+                TargetGlyph target = new TargetGlyph(Atlantis.tiles.getTargetTile(), ploc);
+                tiles.add(target.layer);
+                _targets.add(target);
+            }
+        }
+
+        public boolean onMouseDown (float vx, float vy) {
+            TargetGlyph clicked;
+            // if they clicked on the active target tile...
+            if (_active != null && _active.hitTest(vx, vy)) {
+                // ...rotate the placing glyph upon't
+                int cidx = _orients.indexOf(_orient);
+                _orient = _orients.get((cidx + 1) % _orients.size());
+                _glyph.setOrient(_orient);
+                return true;
+            }
+
+            // check whether they've clicked a non-active target tile (and activate it)
+            if ((clicked = checkHitTarget(vx, vy)) != null) {
+                _active = clicked;
+                // if this is the first placement, we need to move our placing glyph from the
+                // (non-scrolling) turn info layer, to the (scrolling) tiles layer
+                if (_glyph.layer.parent() == turnInfo) {
+                    turnInfo.remove(_glyph.layer);
+                    tiles.add(_glyph.layer);
+                }
+                // compute the valid orientations for the placing tile at this location
+                _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
+                // TODO: animate!
+                _orient = _orients.get(0); // start in the first orientation
+                _glyph.setLocation(_active.loc);
+                _glyph.setOrient(_orient);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void clear () {
+            for (TargetGlyph target : _targets) {
+                target.layer.destroy();
+            }
+            _targets.clear();
+            _active = null;
+            _placing = null;
+            if (_glyph != null) {
+                _glyph.layer.destroy();
+                _glyph = null;
+            }
+        }
+
+        protected TargetGlyph checkHitTarget (float x, float y) {
+            for (TargetGlyph target : _targets) {
+                if (target.hitTest(x, y)) {
+                    return target;
+                }
+            }
+            return null;
+        }
+
+        protected GameTile _placing;
+        protected Placements _plays;
+        protected PlayGlyph _glyph;
+        protected Orient _orient;
+        protected List<Orient> _orients;
+        protected List<TargetGlyph> _targets = Lists.newArrayList();
+        protected TargetGlyph _active;
+    }
 
     protected static abstract class TileGlyph {
         public final GroupLayer layer;
