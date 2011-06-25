@@ -6,6 +6,7 @@ package com.threerings.atlantis.client;
 
 import java.util.Random;
 
+import com.threerings.anim.Animator;
 import com.threerings.util.Randoms;
 
 /**
@@ -15,6 +16,9 @@ public class Atlantis
 {
     /** Provides our tile images. */
     public static final GameTiles tiles = new GameTiles();
+
+    /** Performs fancy animations. */
+    public static Animator anim = Animator.create();
 
     /** For great randomization. */
     public static final Random rando = new Random();

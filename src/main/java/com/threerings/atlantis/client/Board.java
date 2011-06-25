@@ -142,7 +142,7 @@ public class Board
             _placing = placing;
             _plays = plays;
             _glyph = new PlayGlyph(placing);
-            _glyph.setLocation(new Location(0, 0));
+            _glyph.setLocation(new Location(0, 0), false);
             turnInfo.add(_glyph.layer);
 
             // compute the legal placement positions for this tile
@@ -179,12 +179,16 @@ public class Board
                 if (_glyph.layer.parent() == turnInfo) {
                     turnInfo.remove(_glyph.layer);
                     tiles.add(_glyph.layer);
+                    // we also need to update its position so that it can be animated into place
+                    _glyph.layer.transform().translate(
+                        turnInfo.transform().tx() - tiles.transform().tx(),
+                        turnInfo.transform().ty() - tiles.transform().ty());
                 }
                 // compute the valid orientations for the placing tile at this location
                 _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
                 // TODO: animate!
                 _orient = _orients.get(0); // start in the first orientation
-                _glyph.setLocation(_active.loc);
+                _glyph.setLocation(_active.loc, true);
                 _glyph.setOrient(_orient);
 
                 return true;
@@ -240,19 +244,24 @@ public class Board
         }
 
         public void setOrient (Orient orient) {
-            layer.setRotation((float)Math.PI * orient.index / 2);
+            float norient = (float)Math.PI * orient.index / 2;
+            Atlantis.anim.tweenRotation(layer).easeInOut().from(_orient).to(norient).in(1000);
+            _orient = norient; // TODO: bleah
         }
 
-        public void setLocation (Location loc) {
+        public void setLocation (Location loc, boolean animate) {
+            // TODO: disable hit testing while animating
             _bounds.setLocation((loc.x + 0.5f) * GameTiles.TERRAIN_WIDTH,
                                 (loc.y + 0.5f) * GameTiles.TERRAIN_HEIGHT);
-            layer.setTranslation(_bounds.x, _bounds.y);
+            float duration = animate ? 1000 : 0;
+            Atlantis.anim.tweenXY(layer).easeInOut().to(_bounds.x, _bounds.y).in(duration);
         }
 
         public boolean hitTest (float x, float y) {
             return _bounds.contains(x + _bounds.width/2, y + _bounds.height/2);
         }
 
+        protected float _orient;
         protected Rectangle _bounds;
     }
 
@@ -262,7 +271,7 @@ public class Board
         public TargetGlyph (ImageLayer tile, Location loc) {
             super(tile);
             this.loc = loc;
-            setLocation(loc);
+            setLocation(loc, false);
         }
     }
 
@@ -271,7 +280,7 @@ public class Board
         public PlayGlyph (Placement play) {
             this(play.tile);
             setOrient(play.orient);
-            setLocation(play.loc);
+            setLocation(play.loc, false);
         }
 
         public PlayGlyph (GameTile tile) {

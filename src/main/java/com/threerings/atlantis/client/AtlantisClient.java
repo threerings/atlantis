@@ -57,11 +57,14 @@ public class AtlantisClient implements Game
     // from interface Game
     public void update (float delta)
     {
+        _elapsed += delta;
     }
 
     // from interface Game
     public void paint (float alpha)
     {
+        float current = _elapsed + alpha * updateRate();
+        Atlantis.anim.update(current);
         _bground.surface().fillRect(0, 0, graphics().width(), graphics().height());
     }
 
@@ -71,5 +74,6 @@ public class AtlantisClient implements Game
         return 30;
     }
 
+    protected float _elapsed;
     protected SurfaceLayer _bground;
 }
