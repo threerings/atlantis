@@ -86,6 +86,36 @@ public class Logic
     }
 
     /**
+     * Computes the legal orientations in which the specified tile can be placed at the supplied
+     * location.
+     */
+    public static List<Orient> computeLegalOrients (Placements plays, GameTile tile, Location loc)
+    {
+        List<Orient> orients = Lists.newArrayList();
+
+        // fetch the neighbors of this tile
+        List<Placement> neighbors = Lists.newArrayList();
+        for (Location nloc : loc.neighbors()) {
+            Placement nplay = plays.get(nloc);
+            if (nplay != null) {
+                neighbors.add(nplay);
+            }
+        }
+
+        // and validate each candidate orientation against them
+      ORIENT:
+        for (Orient orient : Orient.values()) {
+            Placement play = new Placement(tile, orient, loc);
+            for (Placement nplay : neighbors) {
+                if (!tilesMatch(nplay, play)) continue ORIENT;
+            }
+            orients.add(orient);
+        }
+
+        return orients;
+    }
+
+    /**
      * Returns true if the two supplied placements match up (represent a legal board position).
      */
     protected static boolean tilesMatch (Placement play1, Placement play2)

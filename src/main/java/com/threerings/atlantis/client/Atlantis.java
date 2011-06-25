@@ -12,8 +12,8 @@ import com.threerings.util.Randoms;
  */
 public class Atlantis
 {
-    /** Provides tile services. */
-    public static final AtlantisTiles tiles = new AtlantisTiles();
+    /** Provides our tile images. */
+    public static final GameTiles tiles = new GameTiles();
 
     /** For great randomization. */
     public static final Random rando = new Random();

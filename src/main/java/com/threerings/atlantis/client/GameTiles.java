@@ -12,15 +12,16 @@ import forplay.core.ImageLayer;
 /**
  * Provides easy access to Atlantis tiles.
  */
-public class AtlantisTiles extends Tiles
+public class GameTiles extends Tiles
 {
     public static final int TERRAIN_WIDTH = 64, TERRAIN_HEIGHT = 64, TERRAIN_COUNT = 19;
     public static final int PIECEN_WIDTH  = 16, PIECEN_HEIGHT  = 16, PIECEN_COUNT  = 6;
-    public static final int SHIELD_WIDTH  = 17, SHIELD_HEIGHT  = 17, SHIELD_COUNT  = 1;
+    public static final int SHIELD_WIDTH  = 17, SHIELD_HEIGHT  = 17;
 
     public void init ()
     {
         _terrain = ForPlay.assetManager().getImage("images/tiles.png");
+        _target = ForPlay.assetManager().getImage("images/target.png");
         _piecens = ForPlay.assetManager().getImage("images/piecens.png");
         _shield = ForPlay.assetManager().getImage("images/shield.png");
         _table = ForPlay.assetManager().getImage("images/table.png");
@@ -33,6 +34,14 @@ public class AtlantisTiles extends Tiles
     public ImageLayer getTerrainTile (int tileIdx)
     {
         return createTile(_terrain, TERRAIN_WIDTH, TERRAIN_HEIGHT, tileIdx);
+    }
+
+    /**
+     * Creates a target tile (the tile shown for legal play positions).
+     */
+    public ImageLayer getTargetTile ()
+    {
+        return createTile(_target, TERRAIN_WIDTH, TERRAIN_HEIGHT, 0); // only one tile for now
     }
 
     /**
@@ -59,5 +68,5 @@ public class AtlantisTiles extends Tiles
         return _table;
     }
 
-    protected Image _terrain, _piecens, _shield, _table;
+    protected Image _terrain, _target, _piecens, _shield, _table;
 }
