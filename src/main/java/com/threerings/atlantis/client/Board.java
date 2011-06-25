@@ -167,13 +167,14 @@ public class Board
                 // ...rotate the placing glyph upon't
                 int cidx = _orients.indexOf(_orient);
                 _orient = _orients.get((cidx + 1) % _orients.size());
-                _glyph.setOrient(_orient);
+                _glyph.setOrient(_orient, true);
                 return true;
             }
 
             // check whether they've clicked a non-active target tile (and activate it)
             if ((clicked = checkHitTarget(vx, vy)) != null) {
                 _active = clicked;
+
                 // if this is the first placement, we need to move our placing glyph from the
                 // (non-scrolling) turn info layer, to the (scrolling) tiles layer
                 if (_glyph.layer.parent() == turnInfo) {
@@ -184,12 +185,12 @@ public class Board
                         turnInfo.transform().tx() - tiles.transform().tx(),
                         turnInfo.transform().ty() - tiles.transform().ty());
                 }
+
                 // compute the valid orientations for the placing tile at this location
                 _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
-                // TODO: animate!
                 _orient = _orients.get(0); // start in the first orientation
+                _glyph.setOrient(_orient, true);
                 _glyph.setLocation(_active.loc, true);
-                _glyph.setOrient(_orient);
 
                 return true;
             }
@@ -243,9 +244,10 @@ public class Board
             return _bounds;
         }
 
-        public void setOrient (Orient orient) {
+        public void setOrient (Orient orient, boolean animate) {
             float norient = (float)Math.PI * orient.index / 2;
-            Atlantis.anim.tweenRotation(layer).easeInOut().from(_orient).to(norient).in(1000);
+            float duration = animate ? 1000 : 0;
+            Atlantis.anim.tweenRotation(layer).easeInOut().from(_orient).to(norient).in(duration);
             _orient = norient; // TODO: bleah
         }
 
@@ -279,7 +281,7 @@ public class Board
     protected static class PlayGlyph extends TileGlyph {
         public PlayGlyph (Placement play) {
             this(play.tile);
-            setOrient(play.orient);
+            setOrient(play.orient, false);
             setLocation(play.loc, false);
         }
 
