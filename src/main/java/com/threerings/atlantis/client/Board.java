@@ -84,7 +84,7 @@ public class Board
         float vx = x - tiles.transform().tx(), vy = y - tiles.transform().ty();
 
         // if the click isn't consumed by tile placement, let it start a drag
-        if (_placer == null || _placer.onMouseDown(vx, vy)) {
+        if (_placer == null || !_placer.onMouseDown(vx, vy)) {
             _drag = new Point(x, y);
         }
     }
