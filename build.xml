@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="atlantis" default="compile">
-  <property name="java.classname" value="com.threerings.atlantis.client.java.AtlantisJavaClient"/>
-  <property name="html.classname" value="com.threerings.atlantis.client.html.AtlantisHtmlClient"/>
-  <property name="html.index" value="atlantis.html"/>
+  <property name="java.classname" value="com.threerings.atlantis.java.Atlantis"/>
+  <property name="gwt.module" value="com.threerings.atlantis.Atlantis"/>
+  <property name="html.index" value="index.html"/>
   <import file="build-common.xml"/>
 </project>

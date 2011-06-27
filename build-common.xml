@@ -36,9 +36,14 @@
   <target name="-prep-webapp" depends="-prepare">
     <mkdir dir="${webapp.dir}"/>
     <copy todir="${webapp.dir}">
-      <fileset dir="war" includes="**"/>
+      <fileset dir="src/main/webapp" includes="**"/>
     </copy>
-  </target>
+    <!-- we need to resolve this for the GWT classpath to avoid a bunch of warnings -->
+    <artifact:dependencies sourcesFileSetId="validation.sources.fileset">
+      <dependency groupId="javax.validation" artifactId="validation-api" version="1.0.0.GA"/>
+    </artifact:dependencies>
+    <pathconvert property="validation.source.jar" refid="validation.sources.fileset"/>
+ </target>
 
   <target name="clean" description="Cleans out all build results.">
     <delete dir="${target.dir}"/>
@@ -89,6 +94,8 @@
   <target name="compile-html" depends="-prep-webapp,compile" description="Compiles HTML game.">
     <java fork="true" maxmemory="1024M" failonerror="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
+        <pathelement location="${javax.validation:validation-api:jar}"/>
+        <pathelement location="${validation.source.jar}"/>
         <pathelement path="${src.dir}"/>
         <pathelement location="${classes.dir}"/>
         <path refid="test.classpath"/>
@@ -98,7 +105,7 @@
       <!--<arg value="-gen"/><arg value="${target.dir}/gwt-gen"/>-->
       <arg value="-war"/>
       <arg value="${target.dir}/webapp"/>
-      <arg value="${html.classname}"/>
+      <arg value="${gwt.module}"/>
     </java>
   </target>
 
@@ -122,6 +129,8 @@
           description="Runs game in GWT development mode.">
     <java fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
+        <pathelement location="${javax.validation:validation-api:jar}"/>
+        <pathelement location="${validation.source.jar}"/>
         <pathelement path="${src.dir}"/>
         <pathelement location="${classes.dir}"/>
         <path refid="test.classpath"/>
@@ -133,7 +142,7 @@
       <arg value="${target.dir}/webapp"/>
       <arg value="-startupUrl"/>
       <arg value="${html.index}"/>
-      <arg value="${html.classname}"/>
+      <arg value="${gwt.module}"/>
     </java>
   </target>
 
