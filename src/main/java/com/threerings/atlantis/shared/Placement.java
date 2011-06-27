@@ -4,8 +4,6 @@
 
 package com.threerings.atlantis.shared;
 
-import com.google.common.base.Objects;
-
 /**
  * Describes the placement of a tile.
  */
@@ -192,12 +190,7 @@ public class Placement
 
     @Override
     public String toString () {
-        return Objects.toStringHelper(this).
-            add("tile", tile).
-            add("orient", orient).
-            add("loc", loc).
-            add("claims", claims).
-            add("piecen", piecen).
-            toString();
+        return Log.format("tile", tile, "orient", orient, "loc", loc, "claims", claims,
+                          "piecen", piecen);
     }
 }

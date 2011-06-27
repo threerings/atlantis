@@ -4,8 +4,6 @@
 
 package com.threerings.atlantis.shared;
 
-import com.google.common.base.Objects;
-
 /**
  * A piecen is a person and a piece all rolled into one! Players can play a single piecen on a tile
  * feature as a part of their turn and that piecen then claims that feature and all of the features
@@ -54,11 +52,6 @@ public class Piecen
     @Override
     public String toString ()
     {
-        return Objects.toStringHelper(this).
-            add("owner", owner).
-            add("loc", loc).
-            add("feat", featureIndex).
-            add("claim", claimGroup).
-            toString();
+        return Log.format("owner", owner, "loc", loc, "feat", featureIndex, "claim", claimGroup);
     }
 }

@@ -6,8 +6,7 @@ package com.threerings.atlantis.shared;
 
 import java.util.Iterator;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 
 /**
  * A mapping from coordinates to tile placements. Implemented such that looking up a placement by x
@@ -38,5 +37,5 @@ public class Placements implements Iterable<Placement>
         return _map.values().iterator();
     }
 
-    protected Map<Location, Placement> _map = Maps.newHashMap();
+    protected Map<Location, Placement> _map = new HashMap<Location, Placement>();
 }

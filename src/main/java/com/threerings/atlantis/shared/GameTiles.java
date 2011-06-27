@@ -5,8 +5,7 @@
 package com.threerings.atlantis.shared;
 
 import java.util.List;
-
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 
 /**
  * {@link GameTile} related utilities.
@@ -21,7 +20,7 @@ public class GameTiles
      */
     public static List<GameTile> standard ()
     {
-        List<GameTile> tiles = Lists.newArrayList();
+        List<GameTile> tiles = new ArrayList<GameTile>();
         add(tiles, Terrain.CITY_FOUR, true, 1);
 
         add(tiles, Terrain.CITY_THREE, false, 3);

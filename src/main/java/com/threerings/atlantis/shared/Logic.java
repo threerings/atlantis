@@ -7,10 +7,8 @@ package com.threerings.atlantis.shared;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 /**
  * Implements various game logic.
@@ -30,7 +28,7 @@ public class Logic
         Placements plays, Placement tile, int featureIdx, int claimGroup)
     {
         // load up this feature group
-        List<TileFeature> flist = Lists.newArrayList();
+        List<TileFeature> flist = new ArrayList<TileFeature>();
         enumerateGroup(plays, tile, featureIdx, flist);
 
         // and assign the claim number to all features in the group
@@ -53,7 +51,7 @@ public class Logic
      */
     public static Set<Location> computeLegalPlays (Placements plays, GameTile tile)
     {
-        Set<Location> locs = Sets.newHashSet();
+        Set<Location> locs = new HashSet<Location>();
 
         // compute the neighbors of all existing tiles
         for (Placement play : plays) {
@@ -92,10 +90,10 @@ public class Logic
      */
     public static List<Orient> computeLegalOrients (Placements plays, GameTile tile, Location loc)
     {
-        List<Orient> orients = Lists.newArrayList();
+        List<Orient> orients = new ArrayList<Orient>();
 
         // fetch the neighbors of this tile
-        List<Placement> neighbors = Lists.newArrayList();
+        List<Placement> neighbors = new ArrayList<Placement>();
         for (Location nloc : loc.neighbors()) {
             Placement nplay = plays.get(nloc);
             if (nplay != null) {
@@ -216,8 +214,7 @@ public class Logic
         }
 
         @Override public String toString () {
-            return Objects.toStringHelper(this).
-                add("play", play).add("fidx", featureIdx).toString();
+            return Log.format("play", play, "fidx", featureIdx);
         }
     }
 

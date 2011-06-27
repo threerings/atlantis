@@ -65,18 +65,37 @@ public class Log
         log(WARNING_TARGET, message, args);
     }
 
+    /**
+     * Formats and returns the supplied key/value arguments as {@code [key=value, key=value, ...]}.
+     */
+    public static String format (Object... args)
+    {
+        return format(new StringBuilder("["), args).append("]").toString();
+    }
+
+    /**
+     * Formats the supplied key/value arguments into the supplied string builder as {@code
+     * key=value, key=value, ...}.
+     * @return the supplied string builder.
+     */
+    public static StringBuilder format (StringBuilder into, Object... args)
+    {
+        for (int ii = 0, ll = args.length/2; ii < ll; ii++) {
+            if (ii > 0) {
+                into.append(", ");
+            }
+            into.append(args[2*ii]).append("=").append(args[2*ii+1]);
+        }
+        return into;
+    }
+
     protected static void log (Target target, String message, Object... args)
     {
         StringBuilder sb = new StringBuilder();
         sb.append(message);
         if (args.length > 1) {
             sb.append(" [");
-            for (int ii = 0, ll = args.length/2; ii < ll; ii++) {
-                if (ii > 0) {
-                    sb.append(", ");
-                }
-                sb.append(args[2*ii]).append("=").append(args[2*ii+1]);
-            }
+            format(sb, args);
             sb.append("]");
         }
         Object error = (args.length % 2 == 1) ? args[args.length-1] : null;
