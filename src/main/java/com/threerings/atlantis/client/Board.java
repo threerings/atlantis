@@ -166,10 +166,13 @@ public class Board
             TargetGlyph clicked;
             // if they clicked on the active target tile...
             if (_active != null && _active.hitTest(vx, vy)) {
-                // ...rotate the placing glyph upon't
-                int cidx = _orients.indexOf(_orient);
-                _orient = _orients.get((cidx + 1) % _orients.size());
-                _glyph.setOrient(_orient, true);
+                // ...and we have more than one orientation...
+                if (_orients.size() > 1) {
+                    // ...rotate the placing glyph upon't
+                    int cidx = _orients.indexOf(_orient);
+                    _orient = _orients.get((cidx + 1) % _orients.size());
+                    _glyph.setOrient(_orient, true);
+                }
                 return true;
             }
 
