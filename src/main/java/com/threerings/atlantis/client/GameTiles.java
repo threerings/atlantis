@@ -18,6 +18,8 @@ public class GameTiles extends Tiles
     public static final int TERRAIN_WIDTH = 64, TERRAIN_HEIGHT = 64, TERRAIN_COUNT = 19;
     public static final int PIECEN_WIDTH  = 16, PIECEN_HEIGHT  = 16, PIECEN_COUNT  = 6;
     public static final int SHIELD_WIDTH  = 17, SHIELD_HEIGHT  = 17;
+    public static final int ACTION_WIDTH  = 16, ACTION_HEIGHT  = 16;
+    public static final int OK_ACTION = 0, CANCEL_ACTION = 1, ROTATE_ACTION = 2;
 
     public void init ()
     {
@@ -26,6 +28,7 @@ public class GameTiles extends Tiles
         _piecens = ForPlay.assetManager().getImage("images/piecens.png");
         _shield = ForPlay.assetManager().getImage("images/shield.png");
         _table = ForPlay.assetManager().getImage("images/table.png");
+        _actions = ForPlay.assetManager().getImage("images/actions.png");
         // TODO: delay initialization completion until images are loaded
     }
 
@@ -62,6 +65,14 @@ public class GameTiles extends Tiles
     }
 
     /**
+     * Creates a action tile for the specified index.
+     */
+    public ImageLayer getActionTile (int tileIdx)
+    {
+        return createTile(_actions, ACTION_WIDTH, ACTION_HEIGHT, tileIdx);
+    }
+
+    /**
      * Returns the (tileable) table background image.
      */
     public Image getTableImage ()
@@ -69,5 +80,5 @@ public class GameTiles extends Tiles
         return _table;
     }
 
-    protected Image _terrain, _target, _piecens, _shield, _table;
+    protected Image _terrain, _target, _piecens, _shield, _actions, _table;
 }
