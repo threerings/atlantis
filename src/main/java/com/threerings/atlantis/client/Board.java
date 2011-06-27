@@ -18,6 +18,8 @@ import pythagoras.f.Rectangle;
 
 import com.google.common.collect.Lists;
 
+import com.threerings.anim.Animation;
+
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
@@ -245,24 +247,29 @@ public class Board
         }
 
         public void setOrient (Orient orient, boolean animate) {
-            float norient = (float)Math.PI * orient.index / 2;
             float duration = animate ? 1000 : 0;
-            Atlantis.anim.tweenRotation(layer).easeInOut().from(_orient).to(norient).in(duration);
-            _orient = norient; // TODO: bleah
+            if (_rotA != null) {
+                _rotA.cancel();
+            }
+            _rotA = Atlantis.anim.tweenRotation(layer).easeInOut().to(orient.rotation()).in(duration);
         }
 
         public void setLocation (Location loc, boolean animate) {
             // TODO: disable hit testing while animating
             _bounds.setLocation((loc.x + 0.5f) * GameTiles.TERRAIN_WIDTH,
                                 (loc.y + 0.5f) * GameTiles.TERRAIN_HEIGHT);
+            if (_moveA != null) {
+                _moveA.cancel();
+            }
             float duration = animate ? 1000 : 0;
-            Atlantis.anim.tweenXY(layer).easeInOut().to(_bounds.x, _bounds.y).in(duration);
+            _moveA = Atlantis.anim.tweenXY(layer).easeInOut().to(_bounds.x, _bounds.y).in(duration);
         }
 
         public boolean hitTest (float x, float y) {
             return _bounds.contains(x + _bounds.width/2, y + _bounds.height/2);
         }
 
+        protected Animation _rotA, _moveA;
         protected float _orient;
         protected Rectangle _bounds;
     }
