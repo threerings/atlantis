@@ -4,9 +4,6 @@
 
 package com.threerings.atlantis.client;
 
-import java.util.Random;
-
-import forplay.core.ForPlay;
 import forplay.core.Game;
 import forplay.core.SurfaceLayer;
 import static forplay.core.ForPlay.*;

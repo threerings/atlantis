@@ -4,10 +4,7 @@
 
 package com.threerings.atlantis.shared;
 
-import java.util.List;
-
 import com.google.common.base.Objects;
-import com.google.common.primitives.Ints;
 
 /**
  * Describes the placement of a tile.

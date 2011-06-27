@@ -14,11 +14,8 @@ import static forplay.core.ForPlay.*;
 
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
-import pythagoras.f.Rectangle;
 
 import com.google.common.collect.Lists;
-
-import com.threerings.anim.Animation;
 
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
@@ -65,7 +62,7 @@ public class Board
 
     public void addPlacement (Placement play) {
         clearPlacing();
-        tiles.add(new PlayGlyph(play).layer);
+        tiles.add(new Glyphs.Play(play).layer);
     }
 
     public void setPlacing (Placements plays, GameTile tile) {
@@ -152,7 +149,7 @@ public class Board
         public Placer (Placements plays, GameTile placing) {
             _placing = placing;
             _plays = plays;
-            _glyph = new PlayGlyph(placing);
+            _glyph = new Glyphs.Play(placing);
             _glyph.setLocation(new Location(0, 0), false, null);
             turnInfo.add(_glyph.layer);
 
@@ -165,106 +162,18 @@ public class Board
 
             // display targets for all legal moves
             for (Location ploc : canPlay) {
-                TargetGlyph target = new TargetGlyph(Atlantis.tiles.getTargetTile(), ploc);
+                Glyphs.Target target = new Glyphs.Target(Atlantis.tiles.getTargetTile(), ploc);
                 tiles.add(target.layer);
                 _targets.add(target);
             }
         }
 
         public boolean onMouseDown (float vx, float vy) {
-            // if they clicked on the active target tile...
-            if (_active != null && _active.hitTest(vx, vy)) {
-                // if we're in the middle of animating, the controls will not yet be added to the
-                // view and we should swallow any clicks on the target tile for now
-                if (_ctrls.layer.parent() == null) return true;
-
-                switch (quad(_active.bounds(), vx, vy)) {
-                // if they were in the upper-left quadrant, (possibly) rotate
-                case 0:
-                    // only rotate if we have more than one orientation
-                    if (_orients.size() > 1) {
-                        int cidx = _orients.indexOf(_orient);
-                        _orient = _orients.get((cidx + 1) % _orients.size());
-                        _glyph.setOrient(_orient, true);
-                    }
-                    break;
-                // if they were in the lower-right quadrant, move to confirm/piecen placement
-                case 3:
-                    if (_commit != null) {
-                        _ctrl.place(new Placement(_placing, _orient, _active.loc));
-                    } else if (_placep != null) {
-                        System.err.println("Place piecen!");
-                    }
-                    break;
-                }
-                return true;
-            }
-
-            // check whether they've clicked a non-active target tile (and activate it)
-            TargetGlyph clicked;
-            if ((clicked = checkHitTarget(vx, vy)) != null) {
-                _active = clicked;
-
-                // if this is the first placement, we need to...
-                if (_ctrls == null) {
-                    // ...move our placing glyph from the (non-scrolling) turn info layer, to the
-                    // (scrolling) tiles layer
-                    turnInfo.remove(_glyph.layer);
-                    tiles.add(_glyph.layer);
-                    // we also need to update its position so that it can be animated into place
-                    _glyph.layer.transform().translate(
-                        turnInfo.transform().tx() - tiles.transform().tx(),
-                        turnInfo.transform().ty() - tiles.transform().ty());
-
-                    // ...create our controls UI
-                    _ctrls = new TileGlyph();
-
-                } else {
-                    // otherwise remove the controls, we'll put them back when the location
-                    // animation has completed
-                    tiles.remove(_ctrls.layer);
-                }
-
-                // compute the valid orientations for the placing tile at this location
-                _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
-                _orient = _orients.get(0); // start in the first orientation
-                _glyph.setOrient(_orient, true);
-                _glyph.setLocation(_active.loc, true, new Runnable() {
-                    public void run () {
-                        tiles.add(_ctrls.layer);
-                    }
-                });
-
-                // update the controls, and move them to this location
-                _ctrls.setLocation(_active.loc, false, null);
-                float quadw = GameTiles.TERRAIN_WIDTH/2, quadh = GameTiles.TERRAIN_HEIGHT/2;
-                boolean canRotate = (_orients.size() > 1);
-                if (canRotate && _rotate == null) {
-                    _rotate = Atlantis.tiles.getActionTile(GameTiles.ROTATE_ACTION);
-                    _rotate.setTranslation((quadw - GameTiles.ACTION_WIDTH)/2,
-                                           (quadh - GameTiles.ACTION_HEIGHT)/2);
-                    _ctrls.layer.add(_rotate);
-                    // _placep = Atlantis.tiles.getPiecenTile(0); // TODO: pidx
-                } else if (!canRotate && _rotate != null) {
-                    _rotate.destroy();
-                    _rotate = null;
-                }
-                // TEMP
-                if (_commit == null) {
-                    _commit = Atlantis.tiles.getActionTile(GameTiles.OK_ACTION);
-                    _commit.setTranslation(quadw + (quadw - GameTiles.ACTION_WIDTH)/2,
-                                           quadh + (quadh - GameTiles.ACTION_HEIGHT)/2);
-                    _ctrls.layer.add(_commit);
-                }
-
-                return true;
-            }
-
-            return false;
+            return checkActiveClick(vx, vy) || checkTargetClick(vx, vy);
         }
 
         public void clear () {
-            for (TargetGlyph target : _targets) {
+            for (Glyphs.Target target : _targets) {
                 target.layer.destroy();
             }
             _targets.clear();
@@ -281,8 +190,99 @@ public class Board
             }
         }
 
-        protected TargetGlyph checkHitTarget (float x, float y) {
-            for (TargetGlyph target : _targets) {
+        protected boolean checkActiveClick (float vx, float vy) {
+            if (_active == null || !_active.hitTest(vx, vy)) return false;
+
+            // if we're in the middle of animating, the controls will not yet be added to the
+            // view and we should swallow any clicks on the target tile for now
+            if (_ctrls.layer.parent() == null) return true;
+
+            switch (quad(_active.bounds(), vx, vy)) {
+            // if they were in the upper-left quadrant, (possibly) rotate
+            case 0:
+                // only rotate if we have more than one orientation
+                if (_orients.size() > 1) {
+                    int cidx = _orients.indexOf(_orient);
+                    _orient = _orients.get((cidx + 1) % _orients.size());
+                    _glyph.setOrient(_orient, true);
+                }
+                break;
+
+            // if they were in the lower-right quadrant, move to confirm/piecen placement
+            case 3:
+                if (_commit != null) {
+                    _ctrl.place(new Placement(_placing, _orient, _active.loc));
+                } else if (_placep != null) {
+                    System.err.println("Place piecen!");
+                }
+                break;
+            }
+            return true;
+        }
+
+        protected boolean checkTargetClick (float vx, float vy) {
+            // check whether they've clicked a non-active target tile (and activate it)
+            Glyphs.Target clicked;
+            if ((clicked = checkHitTarget(vx, vy)) == null) return false;
+            _active = clicked;
+
+            // if this is the first placement, we need to...
+            if (_ctrls == null) {
+                // ...move our placing glyph from the (non-scrolling) turn info layer, to the
+                // (scrolling) tiles layer
+                turnInfo.remove(_glyph.layer);
+                tiles.add(_glyph.layer);
+                // we also need to update its position so that it can be animated into place
+                _glyph.layer.transform().translate(
+                    turnInfo.transform().tx() - tiles.transform().tx(),
+                    turnInfo.transform().ty() - tiles.transform().ty());
+
+                // ...create our controls UI
+                _ctrls = new Glyphs.Tile();
+
+            } else {
+                // otherwise remove the controls, we'll put them back when the location
+                // animation has completed
+                tiles.remove(_ctrls.layer);
+            }
+
+            // compute the valid orientations for the placing tile at this location
+            _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
+            _orient = _orients.get(0); // start in the first orientation
+            _glyph.setOrient(_orient, true);
+            _glyph.setLocation(_active.loc, true, new Runnable() {
+                public void run () {
+                    tiles.add(_ctrls.layer);
+                }
+            });
+
+            // update the controls, and move them to this location
+            _ctrls.setLocation(_active.loc, false, null);
+            float quadw = GameTiles.TERRAIN_WIDTH/2, quadh = GameTiles.TERRAIN_HEIGHT/2;
+            boolean canRotate = (_orients.size() > 1);
+            if (canRotate && _rotate == null) {
+                _rotate = Atlantis.tiles.getActionTile(GameTiles.ROTATE_ACTION);
+                _rotate.setTranslation((quadw - GameTiles.ACTION_WIDTH)/2,
+                                       (quadh - GameTiles.ACTION_HEIGHT)/2);
+                _ctrls.layer.add(_rotate);
+                // _placep = Atlantis.tiles.getPiecenTile(0); // TODO: pidx
+            } else if (!canRotate && _rotate != null) {
+                _rotate.destroy();
+                _rotate = null;
+            }
+            // TEMP
+            if (_commit == null) {
+                _commit = Atlantis.tiles.getActionTile(GameTiles.OK_ACTION);
+                _commit.setTranslation(quadw + (quadw - GameTiles.ACTION_WIDTH)/2,
+                                       quadh + (quadh - GameTiles.ACTION_HEIGHT)/2);
+                _ctrls.layer.add(_commit);
+            }
+
+            return true;
+        }
+
+        protected Glyphs.Target checkHitTarget (float x, float y) {
+            for (Glyphs.Target target : _targets) {
                 if (target.hitTest(x, y)) {
                     return target;
                 }
@@ -292,81 +292,12 @@ public class Board
 
         protected GameTile _placing;
         protected Placements _plays;
-        protected PlayGlyph _glyph;
+        protected Glyphs.Play _glyph;
         protected Orient _orient;
         protected List<Orient> _orients;
-        protected List<TargetGlyph> _targets = Lists.newArrayList();
-        protected TargetGlyph _active;
-        protected TileGlyph _ctrls;
+        protected List<Glyphs.Target> _targets = Lists.newArrayList();
+        protected Glyphs.Target _active;
+        protected Glyphs.Tile _ctrls;
         protected ImageLayer _rotate, _placep, _commit;
-    }
-
-    protected static class TileGlyph {
-        public final GroupLayer layer;
-
-        public IRectangle bounds () {
-            return _bounds;
-        }
-
-        public void setOrient (Orient orient, boolean animate) {
-            float dur = animate ? 1000 : 0;
-            if (_rotA != null) {
-                _rotA.cancel();
-            }
-            _rotA = Atlantis.anim.tweenRotation(layer).easeInOut().to(orient.rotation()).in(dur);
-        }
-
-        public void setLocation (Location loc, boolean animate, Runnable onComplete) {
-            // TODO: disable hit testing while animating
-            _bounds.setLocation(loc.x * GameTiles.TERRAIN_WIDTH,
-                                loc.y * GameTiles.TERRAIN_HEIGHT);
-            if (_moveA != null) {
-                _moveA.cancel();
-            }
-            float dur = animate ? 1000 : 0;
-            _moveA = Atlantis.anim.tweenXY(layer).easeInOut().
-                to(_bounds.getCenterX(), _bounds.getCenterY()).in(dur);
-            if (onComplete != null) {
-                _moveA.then().action(onComplete);
-            }
-        }
-
-        public boolean hitTest (float x, float y) {
-            return _bounds.contains(x, y);
-        }
-
-        protected TileGlyph () {
-            layer = graphics().createGroupLayer();
-            _bounds = new Rectangle(0, 0, GameTiles.TERRAIN_WIDTH, GameTiles.TERRAIN_HEIGHT);
-            layer.setOrigin(_bounds.width/2, _bounds.height/2);
-        }
-
-        protected Animation _rotA, _moveA;
-        protected float _orient;
-        protected Rectangle _bounds;
-    }
-
-    protected static class TargetGlyph extends TileGlyph {
-        public final Location loc;
-
-        public TargetGlyph (ImageLayer tile, Location loc) {
-            this.loc = loc;
-            layer.add(tile);
-            setLocation(loc, false, null);
-        }
-    }
-
-    // TODO: piecen?
-    protected static class PlayGlyph extends TileGlyph {
-        public PlayGlyph (Placement play) {
-            this(play.tile);
-            setOrient(play.orient, false);
-            setLocation(play.loc, false, null);
-        }
-
-        public PlayGlyph (GameTile tile) {
-            layer.add(Atlantis.tiles.getTerrainTile(tile.terrain.tileIdx));
-            // TODO: add shield glyph if requested
-        }
     }
 }
