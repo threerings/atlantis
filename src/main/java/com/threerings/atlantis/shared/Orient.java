@@ -4,6 +4,8 @@
 
 package com.threerings.atlantis.shared;
 
+import com.threerings.util.FloatMath;
+
 /**
  * The four cardinal directions.
  */
@@ -26,13 +28,18 @@ public enum Orient
     /** Returns the direction the specified number of clockwise (if positive, counterclockwise if
      * negative) turns from this direction. */
     public Orient rotate (int ticks) {
-        while (ticks < 0) ticks += ROTATIONS.length;
-        return ROTATIONS[(index + ticks) % ROTATIONS.length];
+        while (ticks < 0) ticks += ORIENTS.length;
+        return ORIENTS[(index + ticks) % ORIENTS.length];
     }
 
     /** Returns the direction opposite this one. */
     public Orient opposite () {
         return rotate(2);
+    }
+
+    /** Returns the rotation (in radians) to render this orientation. */
+    public float rotation () {
+        return ROTS[index];
     }
 
     Orient (int index, int dx, int dy) {
@@ -41,5 +48,6 @@ public enum Orient
         this.dy = dy;
     }
 
-    private static Orient[] ROTATIONS = { NORTH, EAST, SOUTH, WEST };
+    private static Orient[] ORIENTS = { NORTH, EAST, SOUTH, WEST };
+    private static float[] ROTS = { 0, FloatMath.PI /2, -FloatMath.PI, -FloatMath.PI / 2 };
 }
