@@ -112,7 +112,7 @@
         <path refid="test.classpath"/>
       </classpath>
       <jvmarg value="-Djava.awt.headless=true"/>
-      <arg value="-style"/><arg value="pretty"/>
+      <!--<arg value="-style"/><arg value="pretty"/>-->
       <!--<arg value="-gen"/><arg value="${target.dir}/gwt-gen"/>-->
       <arg value="-war"/>
       <arg value="${target.dir}/webapp"/>
