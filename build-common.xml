@@ -38,6 +38,16 @@
     <copy todir="${webapp.dir}">
       <fileset dir="src/main/webapp" includes="**"/>
     </copy>
+    <!-- prepare a Resources module so that our GWT app can slurp in src/main/resources -->
+    <mkdir dir="${target.dir}/rsrcmod"/>
+    <copy todir="${target.dir}/rsrcmod">
+      <fileset dir="src/main" includes="resources/**"/>
+    </copy>
+    <echo file="${target.dir}/rsrcmod/Resources.gwt.xml">
+      &lt;module&gt;
+        &lt;public path="resources"/&gt;
+      &lt;/module&gt;
+    </echo>
     <!-- we need to resolve this for the GWT classpath to avoid a bunch of warnings -->
     <artifact:dependencies sourcesFileSetId="validation.sources.fileset">
       <dependency groupId="javax.validation" artifactId="validation-api" version="1.0.0.GA"/>
@@ -97,11 +107,12 @@
         <pathelement location="${javax.validation:validation-api:jar}"/>
         <pathelement location="${validation.source.jar}"/>
         <pathelement path="${src.dir}"/>
+        <pathelement path="${target.dir}/rsrcmod"/>
         <pathelement location="${classes.dir}"/>
         <path refid="test.classpath"/>
       </classpath>
       <jvmarg value="-Djava.awt.headless=true"/>
-      <!--<arg value="-style"/><arg value="pretty"/>-->
+      <arg value="-style"/><arg value="pretty"/>
       <!--<arg value="-gen"/><arg value="${target.dir}/gwt-gen"/>-->
       <arg value="-war"/>
       <arg value="${target.dir}/webapp"/>
@@ -132,6 +143,7 @@
         <pathelement location="${javax.validation:validation-api:jar}"/>
         <pathelement location="${validation.source.jar}"/>
         <pathelement path="${src.dir}"/>
+        <pathelement path="${target.dir}/rsrcmod"/>
         <pathelement location="${classes.dir}"/>
         <path refid="test.classpath"/>
       </classpath>

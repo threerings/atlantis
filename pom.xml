@@ -32,7 +32,7 @@
 
     <dependency>
       <groupId>com.threerings</groupId>
-      <artifactId>nexus-core</artifactId>
+      <artifactId>nexus-gwt-io</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
 
@@ -46,6 +46,12 @@
       <groupId>com.samskivert</groupId>
       <artifactId>pythagoras</artifactId>
       <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>allen_sauer</groupId>
+      <artifactId>gwt-log</artifactId>
+      <version>1.0.r613</version>
     </dependency>
 
     <!-- for some reason this is not exported by forplay-core -->

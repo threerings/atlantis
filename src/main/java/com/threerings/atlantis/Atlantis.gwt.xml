@@ -1,0 +1,13 @@
+<module rename-to="atlantis">
+  <inherits name="com.threerings.TriplePlay"/>
+  <inherits name="com.threerings.nexus.GWTIO"/>
+  <inherits name="forplay.logging.Enhanced" />
+  <!-- this bundles in the contents of src/main/resources -->
+  <inherits name="Resources"/>
+
+  <source path="client"/>
+  <source path="shared"/>
+  <source path="html"/>
+
+  <entry-point class="com.threerings.atlantis.html.Atlantis"/>
+</module>

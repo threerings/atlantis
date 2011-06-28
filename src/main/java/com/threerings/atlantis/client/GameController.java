@@ -4,7 +4,6 @@
 
 package com.threerings.atlantis.client;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.threerings.atlantis.shared.GameTile;
@@ -30,7 +29,7 @@ public class GameController
     {
         // TEMP: create the list of remaining tiles
         _tileBag = GameTiles.standard();
-        Collections.shuffle(_tileBag);
+        Atlantis.rands.shuffle(_tileBag);
 
         // TODO: this will come from somewhere better
         _plays = new Placements();

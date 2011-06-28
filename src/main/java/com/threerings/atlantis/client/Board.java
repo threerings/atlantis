@@ -4,6 +4,7 @@
 
 package com.threerings.atlantis.client;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -14,8 +15,6 @@ import static forplay.core.ForPlay.*;
 
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
-
-import com.google.common.collect.Lists;
 
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
@@ -295,7 +294,7 @@ public class Board
         protected Glyphs.Play _glyph;
         protected Orient _orient;
         protected List<Orient> _orients;
-        protected List<Glyphs.Target> _targets = Lists.newArrayList();
+        protected List<Glyphs.Target> _targets = new ArrayList<Glyphs.Target>();
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
         protected ImageLayer _rotate, _placep, _commit;
