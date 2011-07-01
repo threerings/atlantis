@@ -12,6 +12,7 @@ import pythagoras.f.Rectangle;
 import pythagoras.f.IRectangle;
 
 import com.threerings.anim.Animation;
+import com.threerings.util.FloatMath;
 
 import com.threerings.atlantis.shared.Placement;
 import com.threerings.atlantis.shared.Location;
@@ -31,12 +32,28 @@ public class Glyphs
             return _bounds;
         }
 
+        public Orient getOrient () {
+            return _orient;
+        }
+
         public void setOrient (Orient orient, boolean animate) {
             float dur = animate ? 1000 : 0;
-            if (_rotA != null) {
-                _rotA.cancel();
+            float toOrient;
+            Animation.One rotA = Atlantis.anim.tweenRotation(layer).easeInOut().
+                to(toOrient = orient.rotation()).in(dur);
+            // if we're going from east (pi/2) to south (-pi) wrap the other way and go to pi
+            // to avoid needlessly going the long way round
+            if (_orient == Orient.EAST && orient == Orient.SOUTH) {
+                rotA.to(toOrient = FloatMath.PI);
             }
-            _rotA = Atlantis.anim.tweenRotation(layer).easeInOut().to(orient.rotation()).in(dur);
+            // TEMP: if we're not in the middle of another animation, set our from angle to avoid
+            // funny business that occurs when we extract our current angle from the transform
+            // matrix
+            if (_rotA == null || !_rotA.cancel()) {
+                rotA.from(_orient.rotation());
+            }
+            _rotA = rotA;
+            _orient = orient;
         }
 
         public void setLocation (Location loc, boolean animate, Runnable onComplete) {
@@ -65,7 +82,7 @@ public class Glyphs
         }
 
         protected Animation _rotA, _moveA;
-        protected float _orient;
+        protected Orient _orient = Orient.NORTH;
         protected Rectangle _bounds;
     }
 

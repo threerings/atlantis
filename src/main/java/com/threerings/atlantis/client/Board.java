@@ -201,16 +201,15 @@ public class Board
             case 0:
                 // only rotate if we have more than one orientation
                 if (_orients.size() > 1) {
-                    int cidx = _orients.indexOf(_orient);
-                    _orient = _orients.get((cidx + 1) % _orients.size());
-                    _glyph.setOrient(_orient, true);
+                    int cidx = _orients.indexOf(_glyph.getOrient());
+                    _glyph.setOrient(_orients.get((cidx + 1) % _orients.size()), true);
                 }
                 break;
 
             // if they were in the lower-right quadrant, move to confirm/piecen placement
             case 3:
                 if (_commit != null) {
-                    _ctrl.place(new Placement(_placing, _orient, _active.loc));
+                    _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
                 } else if (_placep != null) {
                     System.err.println("Place piecen!");
                 }
@@ -247,8 +246,11 @@ public class Board
 
             // compute the valid orientations for the placing tile at this location
             _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
-            _orient = _orients.get(0); // start in the first orientation
-            _glyph.setOrient(_orient, true);
+            // if whatever orient we happen to be at is not valid...
+            if (!_orients.contains(_glyph.getOrient())) {
+                // ...start in the first orientation
+                _glyph.setOrient(_orients.get(0), true);
+            }
             _glyph.setLocation(_active.loc, true, new Runnable() {
                 public void run () {
                     tiles.add(_ctrls.layer);
@@ -292,7 +294,6 @@ public class Board
         protected GameTile _placing;
         protected Placements _plays;
         protected Glyphs.Play _glyph;
-        protected Orient _orient;
         protected List<Orient> _orients;
         protected List<Glyphs.Target> _targets = new ArrayList<Glyphs.Target>();
         protected Glyphs.Target _active;
