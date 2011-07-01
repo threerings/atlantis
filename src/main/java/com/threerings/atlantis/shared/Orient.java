@@ -49,5 +49,5 @@ public enum Orient
     }
 
     private static Orient[] ORIENTS = { NORTH, EAST, SOUTH, WEST };
-    private static float[] ROTS = { 0, FloatMath.PI /2, -FloatMath.PI, -FloatMath.PI / 2 };
+    private static float[] ROTS = { 0, FloatMath.PI / 2, -FloatMath.PI, -FloatMath.PI / 2 };
 }
