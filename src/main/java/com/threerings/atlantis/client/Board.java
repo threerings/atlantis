@@ -178,12 +178,14 @@ public class Board
             _targets.clear();
             _active = null;
             _placing = null;
+
             if (_glyph != null) {
                 _glyph.layer.destroy();
                 _glyph = null;
             }
+
             if (_ctrls != null) {
-                _ctrls.layer.destroy();
+                _ctrls.layer.destroy(); // destroys all children
                 _ctrls = null;
                 _rotate = _placep = _commit = null;
             }
@@ -192,9 +194,9 @@ public class Board
         protected boolean checkActiveClick (float vx, float vy) {
             if (_active == null || !_active.hitTest(vx, vy)) return false;
 
-            // if we're in the middle of animating, the controls will not yet be added to the
-            // view and we should swallow any clicks on the target tile for now
-            if (_ctrls.layer.parent() == null) return true;
+            // if we're in the middle of animating, the controls will not be visible and we should
+            // swallow any clicks on the target tile for now
+            if (!_ctrls.layer.isVisible()) return true;
 
             switch (quad(_active.bounds(), vx, vy)) {
             // if they were in the upper-left quadrant, (possibly) rotate
@@ -209,6 +211,7 @@ public class Board
             // if they were in the lower-right quadrant, move to confirm/piecen placement
             case 3:
                 if (_commit != null) {
+                    // TODO: confirm placement first
                     _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
                 } else if (_placep != null) {
                     System.err.println("Place piecen!");
@@ -235,14 +238,24 @@ public class Board
                     turnInfo.transform().tx() - tiles.transform().tx(),
                     turnInfo.transform().ty() - tiles.transform().ty());
 
-                // ...create our controls UI
+                // ...create our controls UI and icons
                 _ctrls = new Glyphs.Tile();
-
-            } else {
-                // otherwise remove the controls, we'll put them back when the location
-                // animation has completed
-                tiles.remove(_ctrls.layer);
+                float quadw = GameTiles.TERRAIN_WIDTH/2, quadh = GameTiles.TERRAIN_HEIGHT/2;
+                _ctrls.layer.add(_rotate = Atlantis.tiles.getActionTile(GameTiles.ROTATE_ACTION));
+                _rotate.setTranslation((quadw - GameTiles.ACTION_WIDTH)/2,
+                                       (quadh - GameTiles.ACTION_HEIGHT)/2);
+                _ctrls.layer.add(_commit = Atlantis.tiles.getActionTile(GameTiles.OK_ACTION));
+                _commit.setTranslation(quadw + (quadw - GameTiles.ACTION_WIDTH)/2,
+                                       quadh + (quadh - GameTiles.ACTION_HEIGHT)/2);
+                _ctrls.layer.add(_placep = Atlantis.tiles.getPiecenTile(0)); // TODO: use pidx
+                _placep.setTranslation(quadw + (quadw - GameTiles.PIECEN_WIDTH)/2,
+                                       quadh + (quadh - GameTiles.PIECEN_HEIGHT)/2);
+                _placep.setAlpha(0.5f);
+                tiles.add(_ctrls.layer);
             }
+
+            // hide the controls, we'll show them again when the location animation has completed
+            _ctrls.layer.setVisible(false);
 
             // compute the valid orientations for the placing tile at this location
             _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
@@ -253,31 +266,20 @@ public class Board
             }
             _glyph.setLocation(_active.loc, true, new Runnable() {
                 public void run () {
-                    tiles.add(_ctrls.layer);
+                    _ctrls.layer.setVisible(true);
+                    _placep.setVisible(true);
                 }
             });
 
             // update the controls, and move them to this location
             _ctrls.setLocation(_active.loc, false, null);
-            float quadw = GameTiles.TERRAIN_WIDTH/2, quadh = GameTiles.TERRAIN_HEIGHT/2;
+
             boolean canRotate = (_orients.size() > 1);
-            if (canRotate && _rotate == null) {
-                _rotate = Atlantis.tiles.getActionTile(GameTiles.ROTATE_ACTION);
-                _rotate.setTranslation((quadw - GameTiles.ACTION_WIDTH)/2,
-                                       (quadh - GameTiles.ACTION_HEIGHT)/2);
-                _ctrls.layer.add(_rotate);
-                // _placep = Atlantis.tiles.getPiecenTile(0); // TODO: pidx
-            } else if (!canRotate && _rotate != null) {
-                _rotate.destroy();
-                _rotate = null;
-            }
-            // TEMP
-            if (_commit == null) {
-                _commit = Atlantis.tiles.getActionTile(GameTiles.OK_ACTION);
-                _commit.setTranslation(quadw + (quadw - GameTiles.ACTION_WIDTH)/2,
-                                       quadh + (quadh - GameTiles.ACTION_HEIGHT)/2);
-                _ctrls.layer.add(_commit);
-            }
+            _rotate.setVisible(canRotate);
+
+            boolean havePiecens = true; // TODO: use real data
+            _placep.setVisible(false); // havePiecens);
+            _commit.setVisible(!havePiecens);
 
             return true;
         }
