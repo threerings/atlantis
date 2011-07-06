@@ -11,8 +11,10 @@ import java.util.Set;
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
 import forplay.core.Mouse;
+import forplay.core.Transform;
 import static forplay.core.ForPlay.*;
 
+import pythagoras.f.AffineTransform;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 
@@ -41,10 +43,10 @@ public class Board
      * Loads up our resources and performs other one-time initialization tasks.
      */
     public void init (GameController ctrl) {
+        _origin.set(graphics().width()/2, graphics().height()/2);
         _ctrl = ctrl;
         mouse().setListener(this);
-        tiles.setTranslation((graphics().width() - GameTiles.TERRAIN_WIDTH)/2,
-                             (graphics().height() - GameTiles.TERRAIN_HEIGHT)/2);
+        tiles.setTranslation(_origin.x, _origin.y);
     }
 
     /**
@@ -79,21 +81,28 @@ public class Board
     @Override // from interface Mouse.Listener
     public void onMouseDown (float x, float y, int button) {
         // translate the click into (translated) view coordinates
-        float vx = x - tiles.transform().tx(), vy = y - tiles.transform().ty();
+        Transform tf = tiles.transform();
+        AffineTransform xform = new AffineTransform(
+            tf.m00(), tf.m01(), tf.m10(), tf.m11(), tf.tx(), tf.ty());
+        Point m = new Point(x, y);
+        xform.inverseTransform(m, m);
+        // float vx = x - tiles.transform().tx(), vy = y - tiles.transform().ty();
 
         // if the click isn't consumed by tile placement, let it start a drag
-        if (_placer == null || !_placer.onMouseDown(vx, vy)) {
+        if (_placer == null || !_placer.onMouseDown(m.x, m.y)) {
             _drag = new Point(x, y);
         }
     }
 
+    protected AffineTransform _xform = new AffineTransform();
+
     @Override // from interface Mouse.Listener
     public void onMouseMove (float x, float y) {
-        _current.move(x, y);
+        _current.set(x, y);
         if (_drag != null) {
             tiles.setTranslation(tiles.transform().tx() + (x - _drag.x),
                                  tiles.transform().ty() + (y - _drag.y));
-            _drag.move(x, y);
+            _drag.set(x, y);
         }
         // updateHover(x, y);
     }
@@ -128,6 +137,7 @@ public class Board
     // }
 
     protected GameController _ctrl;
+    protected Point _origin = new Point();
     protected Point _current = new Point(), _drag;
     protected Placer _placer;
 
@@ -210,11 +220,20 @@ public class Board
 
             // if they were in the lower-right quadrant, move to confirm/piecen placement
             case 3:
-                if (_commit != null) {
+                if (_commit.isVisible()) {
                     // TODO: confirm placement first
                     _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
-                } else if (_placep != null) {
-                    System.err.println("Place piecen!");
+                } else /* if (_placep.isVisible()) */ {
+                    // hide the "place piecen" control
+                    _placep.setVisible(false);
+                    // zoom into the to-be-placed tile
+                    float scale = 5f;
+                    Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(scale);
+                    Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
+                        _origin.x - scale * _active.bounds().getCenterX(),
+                        _origin.y - scale * _active.bounds().getCenterY());
+                    // TODO: create piecen placement targets
+                    _commit.setVisible(true);
                 }
                 break;
             }

@@ -8,11 +8,11 @@ import forplay.core.ImageLayer;
 import forplay.core.GroupLayer;
 import static forplay.core.ForPlay.*;
 
-import pythagoras.f.Rectangle;
+import pythagoras.f.FloatMath;
 import pythagoras.f.IRectangle;
+import pythagoras.f.Rectangle;
 
 import com.threerings.anim.Animation;
-import com.threerings.util.FloatMath;
 
 import com.threerings.atlantis.shared.Placement;
 import com.threerings.atlantis.shared.Location;
@@ -58,8 +58,8 @@ public class Glyphs
 
         public void setLocation (Location loc, boolean animate, Runnable onComplete) {
             // TODO: disable hit testing while animating
-            _bounds.setLocation(loc.x * GameTiles.TERRAIN_WIDTH,
-                                loc.y * GameTiles.TERRAIN_HEIGHT);
+            _bounds.setLocation(loc.x * GameTiles.TERRAIN_WIDTH - GameTiles.TERRAIN_WIDTH/2,
+                                loc.y * GameTiles.TERRAIN_HEIGHT - GameTiles.TERRAIN_HEIGHT/2);
             if (_moveA != null) {
                 _moveA.cancel();
             }

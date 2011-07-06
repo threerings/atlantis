@@ -6,9 +6,10 @@ package com.threerings.atlantis.shared;
 
 import java.util.Arrays;
 
-import pythagoras.f.AffineTransform;
+import pythagoras.f.FloatMath;
 import pythagoras.f.Path;
 import pythagoras.f.Point;
+import pythagoras.f.RigidTransform;
 
 import static com.threerings.atlantis.shared.Edge.*;
 
@@ -117,11 +118,11 @@ public class Feature
         }
 
         // now create the three other orientations
-        AffineTransform xform = new AffineTransform();
+        RigidTransform xform = new RigidTransform();
         for (int orient = 1; orient < 4; orient++) {
             // rotate the xform into the next orientation
             xform.translate(Constants.TILE_WIDTH, 0);
-            xform.rotate((float)Math.PI/2);
+            xform.rotate(FloatMath.HALF_PI);
 
             // transform the polygon
             _polys[orient] = _polys[Orient.NORTH.index].clone();

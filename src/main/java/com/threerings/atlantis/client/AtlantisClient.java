@@ -4,6 +4,7 @@
 
 package com.threerings.atlantis.client;
 
+import forplay.core.SurfaceLayer;
 import forplay.core.Game;
 import forplay.core.SurfaceLayer;
 import static forplay.core.ForPlay.*;
@@ -46,6 +47,13 @@ public class AtlantisClient implements Game
         Board board = new Board();
         graphics().rootLayer().add(board.tiles);
         graphics().rootLayer().add(board.turnInfo);
+
+        // TEMP: draw a grid over the board for debugging
+        float width = graphics().width(), height = graphics().height();
+        SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);
+        grid.surface().drawLine(0f, height/2, width, height/2, 1f);
+        grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
+        graphics().rootLayer().add(grid);
 
         GameController ctrl = new GameController(board);
         ctrl.startGame();

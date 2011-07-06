@@ -4,7 +4,7 @@
 
 package com.threerings.atlantis.shared;
 
-import com.threerings.util.FloatMath;
+import pythagoras.f.FloatMath;
 
 /**
  * The four cardinal directions.
@@ -49,5 +49,5 @@ public enum Orient
     }
 
     private static Orient[] ORIENTS = { NORTH, EAST, SOUTH, WEST };
-    private static float[] ROTS = { 0, FloatMath.PI / 2, -FloatMath.PI, -FloatMath.PI / 2 };
+    private static float[] ROTS = { 0, FloatMath.HALF_PI, -FloatMath.PI, -FloatMath.HALF_PI };
 }
