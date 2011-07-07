@@ -71,13 +71,6 @@ public class Board
         _placer = new Placer(plays, tile);
     }
 
-    protected void clearPlacing () {
-        if (_placer != null) {
-            _placer.clear();
-            _placer = null;
-        }
-    }
-
     @Override // from interface Mouse.Listener
     public void onMouseDown (float x, float y, int button) {
         // translate the click into (translated) view coordinates
@@ -94,8 +87,6 @@ public class Board
         }
     }
 
-    protected AffineTransform _xform = new AffineTransform();
-
     @Override // from interface Mouse.Listener
     public void onMouseMove (float x, float y) {
         _current.set(x, y);
@@ -104,7 +95,6 @@ public class Board
                                  tiles.transform().ty() + (y - _drag.y));
             _drag.set(x, y);
         }
-        // updateHover(x, y);
     }
 
     @Override // from interface Mouse.Listener
@@ -117,40 +107,11 @@ public class Board
         // nada
     }
 
-    // protected void updateHover (float mx, float my)
-    // {
-    //     // TODO: we'd like to just apply the layer transform to the mouse coords
-    //     float lx = mx - tiles.transform().tx();
-    //     float ly = my - tiles.transform().ty();
-
-    //     int hx = (int)Math.floor(lx / GameTiles.TERRAIN_WIDTH);
-    //     int hy = (int)Math.floor(ly / GameTiles.TERRAIN_HEIGHT);
-    //     if (hx == _hoverX && hy == _hoverY) return;
-
-    //     _hoverX = hx;
-    //     _hoverY = hy;
-
-    //     Log.info("New hover " + Points.pointToString(hx, hy));
-
-    //     if (_placing != null) {
-    //     }
-    // }
-
-    protected GameController _ctrl;
-    protected Point _origin = new Point();
-    protected Point _current = new Point(), _drag;
-    protected Placer _placer;
-
-    /** The x and y coordinate of the tile over which the mouse is hovering. */
-    protected int _hoverX, _hoverY;
-
-    /** Computes the quadrant occupied by the supplied point (which must be in the supplied
-     * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
-    protected static int quad (IRectangle rect, float x, float y) {
-        int quad = 0;
-        quad += (x - rect.getX() < rect.getWidth()/2) ? 0 : 1;
-        quad += (y - rect.getY() < rect.getHeight()/2) ? 0 : 2;
-        return quad;
+    protected void clearPlacing () {
+        if (_placer != null) {
+            _placer.clear();
+            _placer = null;
+        }
     }
 
     /** Handles the interaction of placing a new tile on the board. */
@@ -333,5 +294,19 @@ public class Board
         protected Glyphs.Tile _ctrls;
         protected ImageLayer _rotate, _placep, _commit;
         protected Point _savedTrans;
+    }
+
+    protected GameController _ctrl;
+    protected Point _origin = new Point();
+    protected Point _current = new Point(), _drag;
+    protected Placer _placer;
+
+    /** Computes the quadrant occupied by the supplied point (which must be in the supplied
+     * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
+    protected static int quad (IRectangle rect, float x, float y) {
+        int quad = 0;
+        quad += (x - rect.getX() < rect.getWidth()/2) ? 0 : 1;
+        quad += (y - rect.getY() < rect.getHeight()/2) ? 0 : 2;
+        return quad;
     }
 }
