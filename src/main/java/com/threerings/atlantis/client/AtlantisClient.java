@@ -36,11 +36,11 @@ public class AtlantisClient implements Game
             }
         });
 
-        Atlantis.tiles.init();
+        Atlantis.media.init();
 
         // create a background layer that will tile a pattern
         _bground = graphics().createSurfaceLayer(graphics().width(), graphics().height());
-        _bground.surface().setFillPattern(graphics().createPattern(Atlantis.tiles.getTableImage()));
+        _bground.surface().setFillPattern(graphics().createPattern(Atlantis.media.getTableImage()));
         graphics().rootLayer().add(_bground);
 
         // TEMP: create a game controller and board and throw them up

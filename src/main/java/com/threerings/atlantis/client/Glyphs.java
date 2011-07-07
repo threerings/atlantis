@@ -58,8 +58,8 @@ public class Glyphs
 
         public void setLocation (Location loc, boolean animate, Runnable onComplete) {
             // TODO: disable hit testing while animating
-            _bounds.setLocation(loc.x * GameTiles.TERRAIN_WIDTH - GameTiles.TERRAIN_WIDTH/2,
-                                loc.y * GameTiles.TERRAIN_HEIGHT - GameTiles.TERRAIN_HEIGHT/2);
+            _bounds.setLocation(loc.x * Media.TERRAIN_WIDTH - Media.TERRAIN_WIDTH/2,
+                                loc.y * Media.TERRAIN_HEIGHT - Media.TERRAIN_HEIGHT/2);
             if (_moveA != null) {
                 _moveA.cancel();
             }
@@ -77,7 +77,7 @@ public class Glyphs
 
         protected Tile () {
             layer = graphics().createGroupLayer();
-            _bounds = new Rectangle(0, 0, GameTiles.TERRAIN_WIDTH, GameTiles.TERRAIN_HEIGHT);
+            _bounds = new Rectangle(0, 0, Media.TERRAIN_WIDTH, Media.TERRAIN_HEIGHT);
             layer.setOrigin(_bounds.width/2, _bounds.height/2);
         }
 
@@ -107,7 +107,7 @@ public class Glyphs
         }
 
         public Play (GameTile tile) {
-            layer.add(Atlantis.tiles.getTerrainTile(tile.terrain.tileIdx));
+            layer.add(Atlantis.media.getTerrainTile(tile.terrain.tileIdx));
             // TODO: add shield glyph if requested
         }
     }

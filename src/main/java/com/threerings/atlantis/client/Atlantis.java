@@ -14,8 +14,8 @@ import com.threerings.util.Randoms;
  */
 public class Atlantis
 {
-    /** Provides our tile images. */
-    public static final GameTiles tiles = new GameTiles();
+    /** Provides images and other media. */
+    public static final Media media = new Media();
 
     /** Performs fancy animations. */
     public static Animator anim = Animator.create();

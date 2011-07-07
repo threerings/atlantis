@@ -11,9 +11,9 @@ import forplay.core.Image;
 import forplay.core.ImageLayer;
 
 /**
- * Provides easy access to Atlantis tiles.
+ * Provides images and other media.
  */
-public class GameTiles extends Tiles
+public class Media extends Tiles
 {
     public static final int TERRAIN_WIDTH = 64, TERRAIN_HEIGHT = 64, TERRAIN_COUNT = 19;
     public static final int PIECEN_WIDTH  = 16, PIECEN_HEIGHT  = 16, PIECEN_COUNT  = 6;

@@ -114,6 +114,25 @@ public class Board
         }
     }
 
+    protected void zoomInOn (Glyphs.Target target) {
+        // save our current translation
+        _savedTrans = new Point(tiles.transform().tx(), tiles.transform().ty());
+
+        float scale = 5f;
+        Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(scale);
+        Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
+            _origin.x - scale * target.bounds().getCenterX(),
+            _origin.y - scale * target.bounds().getCenterY());
+    }
+
+    protected void restoreZoom () {
+        if (_savedTrans != null) {
+            Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(1f);
+            Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(_savedTrans.x, _savedTrans.y);
+            _savedTrans = null;
+        }
+    }
+
     /** Handles the interaction of placing a new tile on the board. */
     protected class Placer {
         public Placer (Placements plays, GameTile placing) {
@@ -132,7 +151,7 @@ public class Board
 
             // display targets for all legal moves
             for (Location ploc : canPlay) {
-                Glyphs.Target target = new Glyphs.Target(Atlantis.tiles.getTargetTile(), ploc);
+                Glyphs.Target target = new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
                 tiles.add(target.layer);
                 _targets.add(target);
             }
@@ -186,24 +205,13 @@ public class Board
                     _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
 
                     // zoom back out and scroll to our original translation
-                    if (_savedTrans != null) {
-                        Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(1f);
-                        Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
-                            _savedTrans.x, _savedTrans.y);
-                        _savedTrans = null;
-                    }
+                    restoreZoom();
 
                 } else /* if (_placep.visible()) */ {
                     // hide the "place piecen" control
                     _placep.setVisible(false);
-                    // store our current translation
-                    _savedTrans = new Point(tiles.transform().tx(), tiles.transform().ty());
                     // zoom into the to-be-placed tile
-                    float scale = 5f;
-                    Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(scale);
-                    Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
-                        _origin.x - scale * _active.bounds().getCenterX(),
-                        _origin.y - scale * _active.bounds().getCenterY());
+                    zoomInOn(_active);
 
                     // TODO: create piecen placement targets
                     _commit.setVisible(true);
@@ -232,16 +240,16 @@ public class Board
 
                 // ...create our controls UI and icons
                 _ctrls = new Glyphs.Tile();
-                float quadw = GameTiles.TERRAIN_WIDTH/2, quadh = GameTiles.TERRAIN_HEIGHT/2;
-                _ctrls.layer.add(_rotate = Atlantis.tiles.getActionTile(GameTiles.ROTATE_ACTION));
-                _rotate.setTranslation((quadw - GameTiles.ACTION_WIDTH)/2,
-                                       (quadh - GameTiles.ACTION_HEIGHT)/2);
-                _ctrls.layer.add(_commit = Atlantis.tiles.getActionTile(GameTiles.OK_ACTION));
-                _commit.setTranslation(quadw + (quadw - GameTiles.ACTION_WIDTH)/2,
-                                       quadh + (quadh - GameTiles.ACTION_HEIGHT)/2);
-                _ctrls.layer.add(_placep = Atlantis.tiles.getPiecenTile(0)); // TODO: use pidx
-                _placep.setTranslation(quadw + (quadw - GameTiles.PIECEN_WIDTH)/2,
-                                       quadh + (quadh - GameTiles.PIECEN_HEIGHT)/2);
+                float quadw = Media.TERRAIN_WIDTH/2, quadh = Media.TERRAIN_HEIGHT/2;
+                _ctrls.layer.add(_rotate = Atlantis.media.getActionTile(Media.ROTATE_ACTION));
+                _rotate.setTranslation((quadw - Media.ACTION_WIDTH)/2,
+                                       (quadh - Media.ACTION_HEIGHT)/2);
+                _ctrls.layer.add(_commit = Atlantis.media.getActionTile(Media.OK_ACTION));
+                _commit.setTranslation(quadw + (quadw - Media.ACTION_WIDTH)/2,
+                                       quadh + (quadh - Media.ACTION_HEIGHT)/2);
+                _ctrls.layer.add(_placep = Atlantis.media.getPiecenTile(0)); // TODO: use pidx
+                _placep.setTranslation(quadw + (quadw - Media.PIECEN_WIDTH)/2,
+                                       quadh + (quadh - Media.PIECEN_HEIGHT)/2);
                 _placep.setAlpha(0.5f);
                 tiles.add(_ctrls.layer);
             }
@@ -293,13 +301,13 @@ public class Board
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
         protected ImageLayer _rotate, _placep, _commit;
-        protected Point _savedTrans;
     }
 
     protected GameController _ctrl;
     protected Point _origin = new Point();
     protected Point _current = new Point(), _drag;
     protected Placer _placer;
+    protected Point _savedTrans;
 
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
      * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
