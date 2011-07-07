@@ -7,6 +7,7 @@ package com.threerings.atlantis.shared;
 import java.util.Arrays;
 
 import pythagoras.f.FloatMath;
+import pythagoras.f.IPoint;
 import pythagoras.f.Path;
 import pythagoras.f.Point;
 import pythagoras.f.RigidTransform;
@@ -19,26 +20,22 @@ import static com.threerings.atlantis.shared.Edge.*;
 public class Feature
 {
     /** Creates a city features with the specified metrics. */
-    public static Feature city (int edgeMask, int piecenX, int piecenY, int... shape)
-    {
+    public static Feature city (int edgeMask, int piecenX, int piecenY, int... shape) {
         return new Feature(Type.CITY, edgeMask, piecenX, piecenY, shape);
     }
 
     /** Creates a grass features with the specified metrics. */
-    public static Feature grass (int edgeMask, int piecenX, int piecenY, int... shape)
-    {
+    public static Feature grass (int edgeMask, int piecenX, int piecenY, int... shape) {
         return new Feature(Type.GRASS, edgeMask, piecenX, piecenY, shape);
     }
 
     /** Creates a road features with the specified metrics. */
-    public static Feature road (int edgeMask, int piecenX, int piecenY, int... shape)
-    {
+    public static Feature road (int edgeMask, int piecenX, int piecenY, int... shape) {
         return new Feature(Type.ROAD, edgeMask, piecenX, piecenY, shape);
     }
 
     /** Creates a cloister features with the specified metrics. */
-    public static Feature cloister (int edgeMask, int piecenX, int piecenY, int... shape)
-    {
+    public static Feature cloister (int edgeMask, int piecenX, int piecenY, int... shape) {
         return new Feature(Type.CLOISTER, edgeMask, piecenX, piecenY, shape);
     }
 
@@ -51,20 +48,21 @@ public class Feature
     /** The edge mask associated with this feature. */
     public final int edgeMask;
 
+    /** The (tile-relative) position at which to render a piecen. */
+    public final IPoint piecenSpot;
+
     /**
      * Returns true if the feature contains the supplied mouse coordinates (which should be
      * relative to the tile origin) given the supplied orientation information.
      */
-    public boolean contains (int mouseX, int mouseY, Orient orient)
-    {
+    public boolean contains (int mouseX, int mouseY, Orient orient) {
         return _polys[orient.index].contains(mouseX, mouseY);
     }
 
     /**
      * Creates a new feature with the supplied metadata.
      */
-    protected Feature (Type type, int edgeMask, int piecenX, int piecenY, int[] shape)
-    {
+    protected Feature (Type type, int edgeMask, int piecenX, int piecenY, int[] shape) {
         this.type = type;
         this.edgeMask = edgeMask;
 
@@ -83,7 +81,7 @@ public class Feature
         // if (type == -1) {
         //     px += 2; py += 2;
         // }
-        _piecenSpots[Orient.NORTH.index] = new Point(px, py);
+        piecenSpot = new Point(px, py);
 
         // create our natural feature polygon
         if (type == Type.ROAD) {
@@ -127,10 +125,6 @@ public class Feature
             // transform the polygon
             _polys[orient] = _polys[Orient.NORTH.index].clone();
             _polys[orient].transform(xform);
-
-            // transform the piecen spot
-            _piecenSpots[orient] = new Point();
-            xform.transform(_piecenSpots[Orient.NORTH.index], _piecenSpots[orient]);
         }
     }
 
@@ -233,10 +227,6 @@ public class Feature
         poly.closePath();
         return poly;
     }
-
-    /** The location at which a piecen on this feature would be drawn (for each of the four tile
-     * orientations. */
-    protected final Point[] _piecenSpots = new Point[4];
 
     /** The polygons used to render and hit test this feature (one for each orientation). */
     protected final Path[] _polys = new Path[4];
