@@ -159,7 +159,7 @@ public class Board
             _placing = placing;
             _plays = plays;
             _glyph = new Glyphs.Play(placing);
-            _glyph.setLocation(new Location(0, 0), false, null);
+            _glyph.setLocation(new Location(1, 1), false, null);
             turnInfo.add(_glyph.layer);
 
             // compute the legal placement positions for this tile
@@ -206,7 +206,7 @@ public class Board
 
             // if we're in the middle of animating, the controls will not be visible and we should
             // swallow any clicks on the target tile for now
-            if (!_ctrls.layer.isVisible()) return true;
+            if (!_ctrls.layer.visible()) return true;
 
             switch (quad(_active.bounds(), vx, vy)) {
             // if they were in the upper-left quadrant, (possibly) rotate
@@ -220,18 +220,30 @@ public class Board
 
             // if they were in the lower-right quadrant, move to confirm/piecen placement
             case 3:
-                if (_commit.isVisible()) {
+                if (_commit.visible()) {
                     // TODO: confirm placement first
                     _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
-                } else /* if (_placep.isVisible()) */ {
+
+                    // zoom back out and scroll to our original translation
+                    if (_savedTrans != null) {
+                        Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(1f);
+                        Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
+                            _savedTrans.x, _savedTrans.y);
+                        _savedTrans = null;
+                    }
+
+                } else /* if (_placep.visible()) */ {
                     // hide the "place piecen" control
                     _placep.setVisible(false);
+                    // store our current translation
+                    _savedTrans = new Point(tiles.transform().tx(), tiles.transform().ty());
                     // zoom into the to-be-placed tile
                     float scale = 5f;
                     Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(scale);
                     Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
                         _origin.x - scale * _active.bounds().getCenterX(),
                         _origin.y - scale * _active.bounds().getCenterY());
+
                     // TODO: create piecen placement targets
                     _commit.setVisible(true);
                 }
@@ -320,5 +332,6 @@ public class Board
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
         protected ImageLayer _rotate, _placep, _commit;
+        protected Point _savedTrans;
     }
 }
