@@ -10,15 +10,25 @@ import forplay.core.ForPlay;
 import forplay.core.Image;
 import forplay.core.ImageLayer;
 
+import pythagoras.f.Dimension;
+import pythagoras.f.IDimension;
+
 /**
  * Provides images and other media.
  */
 public class Media extends Tiles
 {
     public static final int TERRAIN_WIDTH = 64, TERRAIN_HEIGHT = 64, TERRAIN_COUNT = 19;
+    public static final IDimension TERRAIN_SIZE = new Dimension(TERRAIN_WIDTH, TERRAIN_HEIGHT);
+
     public static final int PIECEN_WIDTH  = 16, PIECEN_HEIGHT  = 16, PIECEN_COUNT  = 6;
+    public static final IDimension PIECEN_SIZE = new Dimension(PIECEN_WIDTH, PIECEN_HEIGHT);
+
     public static final int SHIELD_WIDTH  = 17, SHIELD_HEIGHT  = 17;
+    public static final IDimension SHIELD_SIZE = new Dimension(SHIELD_WIDTH, SHIELD_HEIGHT);
+
     public static final int ACTION_WIDTH  = 16, ACTION_HEIGHT  = 16;
+    public static final IDimension ACTION_SIZE = new Dimension(ACTION_WIDTH, ACTION_HEIGHT);
     public static final int OK_ACTION = 0, CANCEL_ACTION = 1, ROTATE_ACTION = 2;
 
     public void init ()

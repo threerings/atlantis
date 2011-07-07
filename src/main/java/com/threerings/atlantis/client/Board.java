@@ -8,16 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import forplay.core.Asserts;
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
+import forplay.core.Layer;
 import forplay.core.Mouse;
-import forplay.core.Transform;
 import static forplay.core.ForPlay.*;
 
 import pythagoras.f.AffineTransform;
+import pythagoras.f.IDimension;
+import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
+import pythagoras.f.Points;
+import pythagoras.f.Rectangle;
+import pythagoras.f.Transforms;
 
+import com.threerings.atlantis.shared.Feature;
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
@@ -73,18 +80,16 @@ public class Board
 
     @Override // from interface Mouse.Listener
     public void onMouseDown (float x, float y, int button) {
-        // translate the click into (translated) view coordinates
-        Transform tf = tiles.transform();
-        AffineTransform xform = new AffineTransform(
-            tf.m00(), tf.m01(), tf.m10(), tf.m11(), tf.tx(), tf.ty());
-        Point m = new Point(x, y);
-        xform.inverseTransform(m, m);
-        // float vx = x - tiles.transform().tx(), vy = y - tiles.transform().ty();
-
-        // if the click isn't consumed by tile placement, let it start a drag
-        if (_placer == null || !_placer.onMouseDown(m.x, m.y)) {
-            _drag = new Point(x, y);
+        Point p = new Point(x, y);
+        // see if any of our reactors consume this click
+        for (Reactor r : _reactors) {
+            if (r.hitTest(p)) {
+                r.onClick();
+                return;
+            }
         }
+        // otherwise, let the click start a drag
+        _drag = p;
     }
 
     @Override // from interface Mouse.Listener
@@ -112,6 +117,9 @@ public class Board
             _placer.clear();
             _placer = null;
         }
+
+        // clear out our reactors
+        _reactors.clear();
     }
 
     protected void zoomInOn (Glyphs.Target target) {
@@ -120,9 +128,9 @@ public class Board
 
         float scale = 5f;
         Atlantis.anim.tweenScale(tiles).in(1000f).easeInOut().to(scale);
+        float x = target.loc.x * Media.TERRAIN_WIDTH, y = target.loc.y * Media.TERRAIN_HEIGHT;
         Atlantis.anim.tweenXY(tiles).in(1000f).easeInOut().to(
-            _origin.x - scale * target.bounds().getCenterX(),
-            _origin.y - scale * target.bounds().getCenterY());
+            _origin.x - scale * x, _origin.y - scale * y);
     }
 
     protected void restoreZoom () {
@@ -151,14 +159,20 @@ public class Board
 
             // display targets for all legal moves
             for (Location ploc : canPlay) {
-                Glyphs.Target target = new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
+                final Glyphs.Target target =
+                    new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
                 tiles.add(target.layer);
                 _targets.add(target);
-            }
-        }
 
-        public boolean onMouseDown (float vx, float vy) {
-            return checkActiveClick(vx, vy) || checkTargetClick(vx, vy);
+                _reactors.add(new LayerReactor(target.layer, new Rectangle(Media.TERRAIN_SIZE)) {
+                    public void onClick () {
+                        activateTarget(target);
+                    }
+                    public String toString () {
+                        return "target:" + target.loc;
+                    }
+                });
+            }
         }
 
         public void clear () {
@@ -179,53 +193,26 @@ public class Board
                 _ctrls = null;
                 _rotate = _placep = _commit = null;
             }
-        }
 
-        protected boolean checkActiveClick (float vx, float vy) {
-            if (_active == null || !_active.hitTest(vx, vy)) return false;
-
-            // if we're in the middle of animating, the controls will not be visible and we should
-            // swallow any clicks on the target tile for now
-            if (!_ctrls.layer.visible()) return true;
-
-            switch (quad(_active.bounds(), vx, vy)) {
-            // if they were in the upper-left quadrant, (possibly) rotate
-            case 0:
-                // only rotate if we have more than one orientation
-                if (_orients.size() > 1) {
-                    int cidx = _orients.indexOf(_glyph.getOrient());
-                    _glyph.setOrient(_orients.get((cidx + 1) % _orients.size()), true);
-                }
-                break;
-
-            // if they were in the lower-right quadrant, move to confirm/piecen placement
-            case 3:
-                if (_commit.visible()) {
-                    // TODO: confirm placement first
-                    _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
-
-                    // zoom back out and scroll to our original translation
-                    restoreZoom();
-
-                } else /* if (_placep.visible()) */ {
-                    // hide the "place piecen" control
-                    _placep.setVisible(false);
-                    // zoom into the to-be-placed tile
-                    zoomInOn(_active);
-
-                    // TODO: create piecen placement targets
-                    _commit.setVisible(true);
-                }
-                break;
+            if (_piecens != null) {
+                _piecens.destroy(); // destroys all children
+                _piecens = null;
             }
-            return true;
         }
 
-        protected boolean checkTargetClick (float vx, float vy) {
-            // check whether they've clicked a non-active target tile (and activate it)
-            Glyphs.Target clicked;
-            if ((clicked = checkHitTarget(vx, vy)) == null) return false;
-            _active = clicked;
+        protected void activateTarget (Glyphs.Target target) {
+            // when a target becomes active, we hide it because the placing tile will be moved into
+            // the place previously occupied by the target
+            if (_active != null) {
+                _active.layer.setVisible(true);
+            }
+            _active = target;
+            _active.layer.setVisible(false);
+
+            int mypidx = 0; // TODO
+
+            // if we were zoomed in and they clicked somewhere else, zoom back out
+            restoreZoom();
 
             // if this is the first placement, we need to...
             if (_ctrls == null) {
@@ -247,15 +234,78 @@ public class Board
                 _ctrls.layer.add(_commit = Atlantis.media.getActionTile(Media.OK_ACTION));
                 _commit.setTranslation(quadw + (quadw - Media.ACTION_WIDTH)/2,
                                        quadh + (quadh - Media.ACTION_HEIGHT)/2);
-                _ctrls.layer.add(_placep = Atlantis.media.getPiecenTile(0)); // TODO: use pidx
+                _ctrls.layer.add(_placep = Atlantis.media.getPiecenTile(mypidx));
                 _placep.setTranslation(quadw + (quadw - Media.PIECEN_WIDTH)/2,
                                        quadh + (quadh - Media.PIECEN_HEIGHT)/2);
                 _placep.setAlpha(0.5f);
                 tiles.add(_ctrls.layer);
+
+                // create our piecen targets as well
+                _piecens = graphics().createGroupLayer();
+                Rectangle pbounds = new Rectangle(Media.PIECEN_SIZE);
+                for (Feature f : _placing.features()) {
+                    ImageLayer pimg = Atlantis.media.getPiecenTile(mypidx);
+                    pimg.setOrigin(Media.PIECEN_WIDTH/2, Media.PIECEN_HEIGHT/2);
+                    pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+                    _piecens.add(pimg);
+
+                    _reactors.add(new LayerReactor(pimg, pbounds) {
+                        @Override public boolean hitTest (IPoint p) {
+                            return _piecens.visible() && super.hitTest(p);
+                        }
+                        public void onClick () {
+                            System.out.println("TODO: piecen click");
+                        }
+                    });
+                }
+                _glyph.layer.add(_piecens);
+
+                // create our controls reactors
+                IRectangle abounds = new Rectangle(Media.ACTION_SIZE);
+                _reactors.add(new LayerReactor(_rotate, abounds) {
+                    public void onClick () {
+                        int cidx = _orients.indexOf(_glyph.getOrient());
+                        _glyph.setOrient(_orients.get((cidx + 1) % _orients.size()), true);
+                    }
+                    public String toString () {
+                        return "rotate";
+                    }
+                });
+
+                _reactors.add(new LayerReactor(_commit, abounds) {
+                    public void onClick () {
+                        // TODO: confirm placement first
+                        _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
+                        // zoom back out and scroll to our original translation
+                        restoreZoom();
+                    }
+                    public String toString () {
+                        return "commit";
+                    }
+                });
+
+                _reactors.add(new LayerReactor(_placep, pbounds) {
+                    public void onClick () {
+                        // hide the "place piecen" control
+                        _placep.setVisible(false);
+                        // zoom into the to-be-placed tile
+                        zoomInOn(_active);
+                        // make the piecen buttons visible
+                        _piecens.setVisible(true);
+                        // TODO: enable/disable based on legal placements
+
+                        // TODO: don't display commit yet
+                        _commit.setVisible(true);
+                    }
+                    public String toString () {
+                        return "place_piecen";
+                    }
+                });
             }
 
             // hide the controls, we'll show them again when the location animation has completed
             _ctrls.layer.setVisible(false);
+            _piecens.setVisible(false);
 
             // compute the valid orientations for the placing tile at this location
             _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
@@ -280,17 +330,6 @@ public class Board
             boolean havePiecens = true; // TODO: use real data
             _placep.setVisible(false); // havePiecens);
             _commit.setVisible(!havePiecens);
-
-            return true;
-        }
-
-        protected Glyphs.Target checkHitTarget (float x, float y) {
-            for (Glyphs.Target target : _targets) {
-                if (target.hitTest(x, y)) {
-                    return target;
-                }
-            }
-            return null;
         }
 
         protected GameTile _placing;
@@ -300,7 +339,46 @@ public class Board
         protected List<Glyphs.Target> _targets = new ArrayList<Glyphs.Target>();
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
+        protected GroupLayer _piecens;
         protected ImageLayer _rotate, _placep, _commit;
+    }
+
+    /** A shape on the view that reacts to clicks. */
+    protected abstract class Reactor {
+        public Reactor (IRectangle bounds) {
+            _bounds = bounds;
+        }
+
+        public boolean hitTest (IPoint p) {
+            return _bounds.contains(p);
+        }
+
+        public abstract void onClick ();
+
+        protected final IRectangle _bounds;
+    };
+
+    protected abstract class LayerReactor extends Reactor {
+        public LayerReactor (Layer layer, IRectangle bounds) {
+            super(bounds);
+            _layer = layer;
+        }
+
+        public boolean hitTest (IPoint p) {
+            // if the layer isn't in the scene graph, the code is broken
+            Asserts.check(_layer.parent() != null);
+
+            // require that the layer be visible, and account for rotation of the layer in question
+            // before hit testing
+            if (!_layer.visible()) return false;
+
+            // compute the transform from screen coordinates to this layer's coordinates and then
+            // check that the point falls in the (layer transform relative) bounds
+            Point tp = inverseTransform(_layer, p, new Point());
+            return super.hitTest(tp);
+        }
+
+        protected Layer _layer;
     }
 
     protected GameController _ctrl;
@@ -308,6 +386,7 @@ public class Board
     protected Point _current = new Point(), _drag;
     protected Placer _placer;
     protected Point _savedTrans;
+    protected List<Reactor> _reactors = new ArrayList<Reactor>();
 
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
      * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
@@ -317,4 +396,16 @@ public class Board
         quad += (y - rect.getY() < rect.getHeight()/2) ? 0 : 2;
         return quad;
     }
+
+    protected static Point inverseTransform (Layer layer, IPoint point, Point into) {
+        Layer parent = layer.parent();
+        IPoint cur = (parent == null) ? point : inverseTransform(parent, point, into);
+        forplay.core.Transform lt = layer.transform();
+        _scratch.setTransform(lt.m00(), lt.m01(), lt.m10(), lt.m11(), lt.tx(), lt.ty());
+        into = _scratch.inverseTransform(cur, into);
+        into.x += layer.originX();
+        into.y += layer.originY();
+        return into;
+    }
+    protected static AffineTransform _scratch = new AffineTransform();
 }

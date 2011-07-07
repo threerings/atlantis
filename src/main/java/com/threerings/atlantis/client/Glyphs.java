@@ -28,9 +28,9 @@ public class Glyphs
     public static class Tile {
         public final GroupLayer layer;
 
-        public IRectangle bounds () {
-            return _bounds;
-        }
+        /** The bounds of this tile, in the layer's coordinate system (i.e. origin is reflected in
+         * x, y but not translation. */
+        public final IRectangle bounds;
 
         public Orient getOrient () {
             return _orient;
@@ -58,32 +58,26 @@ public class Glyphs
 
         public void setLocation (Location loc, boolean animate, Runnable onComplete) {
             // TODO: disable hit testing while animating
-            _bounds.setLocation(loc.x * Media.TERRAIN_WIDTH - Media.TERRAIN_WIDTH/2,
-                                loc.y * Media.TERRAIN_HEIGHT - Media.TERRAIN_HEIGHT/2);
             if (_moveA != null) {
                 _moveA.cancel();
             }
             float dur = animate ? 1000 : 0;
-            _moveA = Atlantis.anim.tweenXY(layer).easeInOut().
-                to(_bounds.getCenterX(), _bounds.getCenterY()).in(dur);
+            float x = loc.x * Media.TERRAIN_WIDTH, y = loc.y * Media.TERRAIN_HEIGHT;
+            _moveA = Atlantis.anim.tweenXY(layer).easeInOut().to(x, y).in(dur);
             if (onComplete != null) {
                 _moveA.then().action(onComplete);
             }
         }
 
-        public boolean hitTest (float x, float y) {
-            return _bounds.contains(x, y);
-        }
-
         protected Tile () {
             layer = graphics().createGroupLayer();
-            _bounds = new Rectangle(0, 0, Media.TERRAIN_WIDTH, Media.TERRAIN_HEIGHT);
-            layer.setOrigin(_bounds.width/2, _bounds.height/2);
+            float w = Media.TERRAIN_WIDTH, h = Media.TERRAIN_HEIGHT;
+            layer.setOrigin(w/2, h/2);
+            bounds = new Rectangle(-w/2, -h/2, w, h);
         }
 
         protected Animation _rotA, _moveA;
         protected Orient _orient = Orient.NORTH;
-        protected Rectangle _bounds;
     }
 
     /** Displays a potential-move click-target. */
