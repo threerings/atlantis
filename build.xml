@@ -3,5 +3,5 @@
   <property name="java.classname" value="com.threerings.atlantis.java.Atlantis"/>
   <property name="gwt.module" value="com.threerings.atlantis.Atlantis"/>
   <property name="html.index" value="index.html"/>
-  <import file="build-common.xml"/>
+  <import file="etc/build-common.xml"/>
 </project>
