@@ -76,10 +76,10 @@ public class Board
         clearPlacing();
         Glyphs.Play glyph = new Glyphs.Play(play);
         tiles.add(glyph.layer);
-        _plays.add(glyph);
+        _pglyphs.add(glyph);
 
         if (FEATURE_DEBUG) {
-            for (Glyphs.Play pg : _plays) {
+            for (Glyphs.Play pg : _pglyphs) {
                 pg.updateFeatureDebug();
             }
         }
@@ -407,8 +407,7 @@ public class Board
     protected Placer _placer;
     protected Point _savedTrans;
     protected List<Reactor> _reactors = new ArrayList<Reactor>();
-
-    protected List<Glyphs.Play> _plays = new ArrayList<Glyphs.Play>();
+    protected List<Glyphs.Play> _pglyphs = new ArrayList<Glyphs.Play>();
 
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
      * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
