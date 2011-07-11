@@ -17,6 +17,9 @@ public class Atlantis
     /** Provides images and other media. */
     public static final Media media = new Media();
 
+    /** Routes user input to appropriate entities. */
+    public static final Input input = new Input();
+
     /** Performs fancy animations. */
     public static Animator anim = Animator.create();
 

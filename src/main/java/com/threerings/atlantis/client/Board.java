@@ -8,21 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import forplay.core.Asserts;
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
-import forplay.core.Layer;
-import forplay.core.Mouse;
+import forplay.core.Pointer;
 import static forplay.core.ForPlay.*;
 
-import pythagoras.f.AffineTransform;
-import pythagoras.f.IDimension;
 import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
-import pythagoras.f.Points;
 import pythagoras.f.Rectangle;
-import pythagoras.f.Transforms;
 
 import com.threerings.atlantis.shared.Feature;
 import com.threerings.atlantis.shared.GameTile;
@@ -39,7 +33,7 @@ import static com.threerings.atlantis.client.AtlantisClient.*;
  * Manages the layer that displays the game board.
  */
 public class Board
-    implements Mouse.Listener
+    implements Pointer.Listener
 {
     /** The layer that contains the tiles. */
     public final GroupLayer tiles = graphics().createGroupLayer();
@@ -56,8 +50,8 @@ public class Board
     public void init (GameController ctrl) {
         _origin.set(graphics().width()/2, graphics().height()/2);
         _ctrl = ctrl;
-        mouse().setListener(this);
         tiles.setTranslation(_origin.x, _origin.y);
+        Atlantis.input.setDefaultListener(this);
     }
 
     /**
@@ -90,23 +84,13 @@ public class Board
         _placer = new Placer(plays, tile);
     }
 
-    @Override // from interface Mouse.Listener
-    public void onMouseDown (float x, float y, int button) {
-        Point p = new Point(x, y);
-        // see if any of our reactors consume this click
-        for (Reactor r : _reactors) {
-            if (r.hitTest(p)) {
-                r.onClick();
-                return;
-            }
-        }
-        // otherwise, let the click start a drag
-        _drag = p;
+    @Override // from Pointer.Listener
+    public void onPointerStart (float x, float y) {
+        _drag = new Point(x, y);
     }
 
-    @Override // from interface Mouse.Listener
-    public void onMouseMove (float x, float y) {
-        _current.set(x, y);
+    @Override // from Pointer.Listener
+    public void onPointerDrag (float x, float y) {
         if (_drag != null) {
             tiles.setTranslation(tiles.transform().tx() + (x - _drag.x),
                                  tiles.transform().ty() + (y - _drag.y));
@@ -114,14 +98,9 @@ public class Board
         }
     }
 
-    @Override // from interface Mouse.Listener
-    public void onMouseUp (float x, float y, int button) {
+    @Override // from Pointer.Listener
+    public void onPointerEnd (float x, float y) {
         _drag = null;
-    }
-
-    @Override // from interface Mouse.Listener
-    public void onMouseWheelScroll (float velocity) {
-        // nada
     }
 
     protected void clearPlacing () {
@@ -129,9 +108,6 @@ public class Board
             _placer.clear();
             _placer = null;
         }
-
-        // clear out our reactors
-        _reactors.clear();
     }
 
     protected void zoomInOn (Glyphs.Target target) {
@@ -170,18 +146,16 @@ public class Board
             }
 
             // display targets for all legal moves
+            Rectangle tbounds = new Rectangle(Media.TERRAIN_SIZE);
             for (Location ploc : canPlay) {
                 final Glyphs.Target target =
                     new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
                 tiles.add(target.layer);
                 _targets.add(target);
 
-                _reactors.add(new LayerReactor(target.layer, new Rectangle(Media.TERRAIN_SIZE)) {
-                    public void onClick () {
+                Atlantis.input.register(target.layer, tbounds, new Input.Action() {
+                    public void onTrigger () {
                         activateTarget(target);
-                    }
-                    public String toString () {
-                        return "target:" + target.loc;
                     }
                 });
             }
@@ -259,11 +233,11 @@ public class Board
                     _piecens.add(pimg);
 
                     final Piecen p = new Piecen(Piecen.Color.values()[mypidx], _active.loc, fidx);
-                    _reactors.add(new LayerReactor(pimg, pbounds) {
+                    Atlantis.input.register(new Input.LayerReactor(pimg, pbounds) {
                         @Override public boolean hitTest (IPoint p) {
                             return _piecens.visible() && super.hitTest(p);
                         }
-                        public void onClick () {
+                        public void onTrigger () {
                             commitPlacement(p);
                         }
                     });
@@ -272,27 +246,21 @@ public class Board
 
                 // create our controls reactors
                 IRectangle abounds = new Rectangle(Media.ACTION_SIZE);
-                _reactors.add(new LayerReactor(_rotate, abounds) {
-                    public void onClick () {
+                Atlantis.input.register(_rotate, abounds, new Input.Action() {
+                    public void onTrigger () {
                         int cidx = _orients.indexOf(_glyph.getOrient());
                         _glyph.setOrient(_orients.get((cidx + 1) % _orients.size()), true);
                     }
-                    public String toString () {
-                        return "rotate";
-                    }
                 });
 
-                _reactors.add(new LayerReactor(_commit, abounds) {
-                    public void onClick () {
+                Atlantis.input.register(_commit, abounds, new Input.Action() {
+                    public void onTrigger () {
                         commitPlacement(null); // place with no piecen
                     }
-                    public String toString () {
-                        return "commit";
-                    }
                 });
 
-                _reactors.add(new LayerReactor(_placep, pbounds) {
-                    public void onClick () {
+                Atlantis.input.register(_placep, pbounds, new Input.Action() {
+                    public void onTrigger () {
                         // hide the "place piecen" control
                         _placep.setVisible(false);
                         // zoom into the to-be-placed tile
@@ -310,9 +278,6 @@ public class Board
 
                         // TODO: don't display commit yet
                         _commit.setVisible(true);
-                    }
-                    public String toString () {
-                        return "place_piecen";
                     }
                 });
             }
@@ -363,50 +328,10 @@ public class Board
         protected ImageLayer _rotate, _placep, _commit;
     }
 
-    /** A shape on the view that reacts to clicks. */
-    protected abstract class Reactor {
-        public Reactor (IRectangle bounds) {
-            _bounds = bounds;
-        }
-
-        public boolean hitTest (IPoint p) {
-            return _bounds.contains(p);
-        }
-
-        public abstract void onClick ();
-
-        protected final IRectangle _bounds;
-    };
-
-    protected abstract class LayerReactor extends Reactor {
-        public LayerReactor (Layer layer, IRectangle bounds) {
-            super(bounds);
-            _layer = layer;
-        }
-
-        public boolean hitTest (IPoint p) {
-            // if the layer isn't in the scene graph, the code is broken
-            Asserts.check(_layer.parent() != null);
-
-            // require that the layer be visible, and account for rotation of the layer in question
-            // before hit testing
-            if (!_layer.visible()) return false;
-
-            // compute the transform from screen coordinates to this layer's coordinates and then
-            // check that the point falls in the (layer transform relative) bounds
-            Point tp = inverseTransform(_layer, p, new Point());
-            return super.hitTest(tp);
-        }
-
-        protected Layer _layer;
-    }
-
     protected GameController _ctrl;
-    protected Point _origin = new Point();
-    protected Point _current = new Point(), _drag;
+    protected Point _origin = new Point(), _drag;
     protected Placer _placer;
     protected Point _savedTrans;
-    protected List<Reactor> _reactors = new ArrayList<Reactor>();
     protected List<Glyphs.Play> _pglyphs = new ArrayList<Glyphs.Play>();
 
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
@@ -417,16 +342,4 @@ public class Board
         quad += (y - rect.getY() < rect.getHeight()/2) ? 0 : 2;
         return quad;
     }
-
-    protected static Point inverseTransform (Layer layer, IPoint point, Point into) {
-        Layer parent = layer.parent();
-        IPoint cur = (parent == null) ? point : inverseTransform(parent, point, into);
-        forplay.core.Transform lt = layer.transform();
-        _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
-        into = _scratch.inverseTransform(cur, into);
-        into.x += layer.originX();
-        into.y += layer.originY();
-        return into;
-    }
-    protected static AffineTransform _scratch = new AffineTransform();
 }
