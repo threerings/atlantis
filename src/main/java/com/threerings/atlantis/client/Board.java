@@ -33,7 +33,6 @@ import static com.threerings.atlantis.client.AtlantisClient.*;
  * Manages the layer that displays the game board.
  */
 public class Board
-    implements Pointer.Listener
 {
     /** The layer that contains the tiles. */
     public final GroupLayer tiles = graphics().createGroupLayer();
@@ -48,10 +47,30 @@ public class Board
      * Loads up our resources and performs other one-time initialization tasks.
      */
     public void init (GameController ctrl) {
-        _origin.set(graphics().width()/2, graphics().height()/2);
         _ctrl = ctrl;
+
+        // wire up a dragger that is triggered for presses that don't touch anything else
+        Rectangle sbounds = new Rectangle(0, 0, graphics().width(), graphics().height());
+        Atlantis.input.register(sbounds, new Pointer.Listener() {
+            @Override public void onPointerStart (float x, float y) {
+                _drag = new Point(x, y);
+            }
+            @Override public void onPointerDrag (float x, float y) {
+                if (_drag != null) {
+                    tiles.setTranslation(tiles.transform().tx() + (x - _drag.x),
+                                         tiles.transform().ty() + (y - _drag.y));
+                    _drag.set(x, y);
+                }
+            }
+            @Override public void onPointerEnd (float x, float y) {
+                _drag = null;
+            }
+            protected Point _drag;
+        });
+
+        // translate (0,0) to the center of the screen
+        _origin = sbounds.getCenter();
         tiles.setTranslation(_origin.x, _origin.y);
-        Atlantis.input.setDefaultListener(this);
     }
 
     /**
@@ -82,25 +101,6 @@ public class Board
     public void setPlacing (Placements plays, GameTile tile) {
         clearPlacing();
         _placer = new Placer(plays, tile);
-    }
-
-    @Override // from Pointer.Listener
-    public void onPointerStart (float x, float y) {
-        _drag = new Point(x, y);
-    }
-
-    @Override // from Pointer.Listener
-    public void onPointerDrag (float x, float y) {
-        if (_drag != null) {
-            tiles.setTranslation(tiles.transform().tx() + (x - _drag.x),
-                                 tiles.transform().ty() + (y - _drag.y));
-            _drag.set(x, y);
-        }
-    }
-
-    @Override // from Pointer.Listener
-    public void onPointerEnd (float x, float y) {
-        _drag = null;
     }
 
     protected void clearPlacing () {
@@ -329,7 +329,7 @@ public class Board
     }
 
     protected GameController _ctrl;
-    protected Point _origin = new Point(), _drag;
+    protected Point _origin;
     protected Placer _placer;
     protected Point _savedTrans;
     protected List<Glyphs.Play> _pglyphs = new ArrayList<Glyphs.Play>();

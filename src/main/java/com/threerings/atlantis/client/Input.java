@@ -83,32 +83,50 @@ public class Input
                         return;
                     }
                 }
-                _started = true;
-                _deflist.onPointerStart(x, y);
+
+                // if no reactors consume the click, potentially start a BPL
+                for (int ii = _listeners.size()-1; ii >= 0; ii--) {
+                    BPL bpl = _listeners.get(ii);
+                    if (bpl.bounds.contains(x, y)) {
+                        _activeBPL = bpl;
+                        _activeBPL.listener.onPointerStart(x, y);
+                        break;
+                    }
+                }
             }
 
             @Override public void onPointerDrag (float x, float y) {
-                if (_started) {
-                    _deflist.onPointerDrag(x, y);
+                if (_activeBPL != null) {
+                    _activeBPL.listener.onPointerDrag(x, y);
                 }
             }
 
             @Override public void onPointerEnd (float x, float y) {
-                if (_started) {
-                    _deflist.onPointerEnd(x, y);
-                    _started = false;
+                if (_activeBPL != null) {
+                    _activeBPL.listener.onPointerEnd(x, y);
+                    _activeBPL = null;
                 }
             }
 
             protected boolean _started;
+            protected BPL _activeBPL;
         });
     }
 
     /**
-     * Configures a listener to be notified of user input that does not trigger a reactor.
+     * Configures a listener to be notified of pointer activity that does not trigger a reactor. On
+     * pointer start, such listeners will be scanned from most-recently-registered to
+     * least-recently-registered and checked for bounds intersections. Subsequent pointer drag and
+     * end events will be dispatched to the listener that matched the pointer start.
      */
-    public void setDefaultListener (Pointer.Listener listener) {
-        _deflist = listener;
+    public Registration register (IRectangle bounds, Pointer.Listener listener) {
+        final BPL bpl = new BPL(bounds, listener);
+        _listeners.add(bpl);
+        return new Registration() {
+            public void cancel () {
+                _listeners.remove(bpl);
+            }
+        };
     }
 
     /**
@@ -143,15 +161,20 @@ public class Input
         };
     }
 
+    protected static class BPL {
+        public final IRectangle bounds;
+        public Pointer.Listener listener;
+        public BPL (IRectangle bounds, Pointer.Listener listener) {
+            this.bounds = bounds;
+            this.listener = listener;
+        }
+    }
+
     /** A list of all registered reactors. */
     protected List<Reactor> _reactors = new ArrayList<Reactor>();
 
-    // use a NOOP listener while no other listener is registered, to simplify the logic
-    protected Pointer.Listener _deflist = new Pointer.Listener() {
-        @Override public void onPointerStart (float x, float y) {}
-        @Override public void onPointerDrag (float x, float y) {}
-        @Override public void onPointerEnd (float x, float y) {}
-    };
+    /** A list of all registered bounded pointer listeners. */
+    protected List<BPL> _listeners = new ArrayList<BPL>();
 
     protected static Point inverseTransform (Layer layer, IPoint point, Point into) {
         Layer parent = layer.parent();
