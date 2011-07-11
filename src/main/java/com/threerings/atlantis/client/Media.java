@@ -59,27 +59,35 @@ public class Media extends Tiles
     }
 
     /**
-     * Creates a piecen tile for the specified index.
+     * Creates a piecen tile for the specified index. The origin of the tile will be configured to
+     * the center of the image.
      */
     public ImageLayer getPiecenTile (int tileIdx)
     {
-        return createTile(_piecens, PIECEN_WIDTH, PIECEN_HEIGHT, tileIdx);
+        ImageLayer img = createTile(_piecens, PIECEN_WIDTH, PIECEN_HEIGHT, tileIdx);
+        img.setOrigin(PIECEN_WIDTH/2f, PIECEN_HEIGHT/2f);
+        return img;
     }
 
     /**
-     * Creates a shield tile.
+     * Creates a shield tile. The origin of the tile will be configured to the center of the image.
      */
     public ImageLayer getShieldTile ()
     {
-        return createTile(_shield, SHIELD_WIDTH, SHIELD_HEIGHT, 0); // only one tile for now
+        ImageLayer img = createTile(_shield, SHIELD_WIDTH, SHIELD_HEIGHT, 0);
+        img.setOrigin(SHIELD_WIDTH/2f, SHIELD_HEIGHT/2f);
+        return img;
     }
 
     /**
-     * Creates a action tile for the specified index.
+     * Creates an action tile for the specified index. The origin of the tile will be configured to
+     * the center of the image.
      */
     public ImageLayer getActionTile (int tileIdx)
     {
-        return createTile(_actions, ACTION_WIDTH, ACTION_HEIGHT, tileIdx);
+        ImageLayer img = createTile(_actions, ACTION_WIDTH, ACTION_HEIGHT, tileIdx);
+        img.setOrigin(ACTION_WIDTH/2f, ACTION_HEIGHT/2f);
+        return img;
     }
 
     /**

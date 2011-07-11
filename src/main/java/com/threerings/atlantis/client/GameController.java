@@ -9,6 +9,7 @@ import java.util.List;
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.GameTiles;
 import com.threerings.atlantis.shared.Location;
+import com.threerings.atlantis.shared.Logic;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Placement;
 import com.threerings.atlantis.shared.Placements;
@@ -39,12 +40,13 @@ public class GameController
 
         // TEMP: for now just allow tiles to be placed one after another
         _tileBag.remove(GameTiles.STARTER);
-        place(new Placement(GameTiles.STARTER, Orient.NORTH, new Location(0, 0)));
+        place(new Placement(GameTiles.STARTER, Orient.NORTH, new Location(0, 0), null));
     }
 
     public void place (Placement placement)
     {
         _plays.add(placement);
+        Logic.propagateClaims(_plays, placement);
         _board.addPlacement(placement);
         // TEMP: for now just allow tiles to be placed one after another
         _board.setPlacing(_plays, _tileBag.remove(0));

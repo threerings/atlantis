@@ -59,6 +59,19 @@ public class Feature
         return _polys[orient.index].contains(mouseX, mouseY);
     }
 
+    @Override public int hashCode () {
+        return type.hashCode() ^ edgeMask;
+    }
+
+    @Override public boolean equals (Object other) {
+        Feature ofeature = (Feature)other;
+        return ofeature.type == type && ofeature.edgeMask == edgeMask;
+    }
+
+    @Override public String toString () {
+        return type + "(" + Edge.maskToString(edgeMask) + ")";
+    }
+
     /**
      * Creates a new feature with the supplied metadata.
      */

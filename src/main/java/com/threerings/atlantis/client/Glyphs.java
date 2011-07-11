@@ -14,10 +14,11 @@ import pythagoras.f.Rectangle;
 
 import com.threerings.anim.Animation;
 
-import com.threerings.atlantis.shared.Placement;
+import com.threerings.atlantis.shared.Feature;
+import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Orient;
-import com.threerings.atlantis.shared.GameTile;
+import com.threerings.atlantis.shared.Placement;
 
 /**
  * Various glyphs that we render on the board.
@@ -93,16 +94,47 @@ public class Glyphs
 
     /** Displays a played (or pending) tile. */
     public static class Play extends Tile {
-        // TODO: piecen?
         public Play (Placement play) {
             this(play.tile);
+            _play = play;
             setOrient(play.orient, false);
             setLocation(play.loc, false, null);
+            if (play.piecen != null) {
+                Feature f = play.tile.terrain.features[play.piecen.featureIdx];
+                ImageLayer pimg = Atlantis.media.getPiecenTile(play.piecen.owner.ordinal());
+                pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+                layer.add(pimg);
+            }
         }
 
         public Play (GameTile tile) {
             layer.add(Atlantis.media.getTerrainTile(tile.terrain.tileIdx));
-            // TODO: add shield glyph if requested
+            if (tile.hasShield) {
+                ImageLayer shield = Atlantis.media.getShieldTile();
+                shield.setTranslation(Media.TERRAIN_WIDTH/8f+2, Media.TERRAIN_WIDTH/8f+2);
+                layer.add(shield);
+            }
         }
+
+        public void updateFeatureDebug () {
+            if (_debug == null) {
+                _debug = graphics().createGroupLayer();
+                layer.add(_debug);
+            } else {
+                _debug.clear();
+            }
+            for (Feature f : _play.tile.terrain.features) {
+                int group = _play.getClaimGroup(f);
+                if (group > 0) {
+                    ImageLayer img = Atlantis.media.getPiecenTile(group % Media.PIECEN_COUNT);
+                    img.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+                    img.setAlpha(0.5f);
+                    _debug.add(img);
+                }
+            }
+        }
+
+        protected Placement _play;
+        protected GroupLayer _debug;
     }
 }

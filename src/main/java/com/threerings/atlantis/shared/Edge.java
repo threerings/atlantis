@@ -58,8 +58,10 @@ public enum Edge
     public static class Adjacency {
         /** The mask for the edge in question. */
         public final int edge;
+
         /** The direction in which the opposite edge lies. */
         public final Orient dir;
+
         /** The mask for the opposite edge. */
         public final int opposite;
 
@@ -67,6 +69,10 @@ public enum Edge
             this.edge = edge;
             this.dir = dir;
             this.opposite = opposite;
+        }
+
+        @Override public String toString () {
+            return dir.toString();
         }
     }
 
@@ -87,32 +93,44 @@ public enum Edge
     };
 
     /**
-     * Translates the feature edge mask into the orientation specified. For a forward translation,
-     * provide a positive valued orientation constant. For a backward translation, provide a
-     * negative valued orientation constant.
-     *
-     * @return the translated feature mask.
+     * Returns the supplied edge mask, rotated by the specified number of ticks. For a clockwise
+     * rotation, provide a positive number of ticks. For a counter-clockwise rotation, provide a
+     * negative number of ticks.
      */
-    public static int translateMask (int featureMask, Orient orient)
+    public static int translateMask (int edgeMask, int ticks)
     {
         int[] map = FEATURE_ORIENT_MAP[0];
-        if ((featureMask & (NNE_F|ESE_F|SSW_F|WNW_F)) != 0) {
+        if ((edgeMask & (NNE_F|ESE_F|SSW_F|WNW_F)) != 0) {
             map = FEATURE_ORIENT_MAP[1];
-        } else if ((featureMask & (ENE_F|SSE_F|WSW_F|NNW_F)) != 0) {
+        } else if ((edgeMask & (ENE_F|SSE_F|WSW_F|NNW_F)) != 0) {
             map = FEATURE_ORIENT_MAP[2];
         }
-        return xlateMask(map, featureMask, orient);
+        return xlateMask(map, edgeMask, ticks);
+    }
+
+    /**
+     * Returns a human-readable representation of the supplied edge mask.
+     */
+    public static String maskToString (int edgeMask) {
+        StringBuilder buf = new StringBuilder();
+        for (int ii = 0; ii < EDGE_NAMES.length; ii++) {
+            if ((edgeMask & (1 << ii)) != 0) {
+                if (buf.length() > 0) buf.append("|");
+                buf.append(EDGE_NAMES[ii]);
+            }
+        }
+        return buf.toString();
     }
 
     /** {@link #translateMask} helper function. */
-    protected static int xlateMask (int[] map, int featureMask, Orient orient)
+    protected static int xlateMask (int[] map, int edgeMask, int ticks)
     {
         for (int ii = 0; ii < map.length; ii++) {
-            if (map[ii] == featureMask) {
-                return map[(ii + 4 + orient.index) % 4];
+            if (map[ii] == edgeMask) {
+                return map[(ii + 4 + ticks) % 4];
             }
         }
-        return featureMask;
+        return edgeMask;
     }
 
     /** Mapping table used to rotate feature facements. */
@@ -121,5 +139,10 @@ public enum Edge
         { NORTH_F, EAST_F, SOUTH_F, WEST_F },
         { NNE_F,   ESE_F,  SSW_F,   WNW_F },
         { ENE_F,   SSE_F,  WSW_F,   NNW_F },
+    };
+
+    /** String names for the edge bit masks, in bit position order. */
+    protected static final String[] EDGE_NAMES = {
+        "NORTH", "EAST", "SOUTH", "WEST", "NNE", "ENE", "ESE", "SSE", "SSW", "WSW", "WNW", "NNW",
     };
 }

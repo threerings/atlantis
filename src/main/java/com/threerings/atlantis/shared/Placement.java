@@ -4,6 +4,9 @@
 
 package com.threerings.atlantis.shared;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Describes the placement of a tile.
  */
@@ -12,28 +15,24 @@ public class Placement
     /** The metadata for the tile that was placed. */
     public final GameTile tile;
 
-    /** The terrain tile's orientation. */
+    /** The terra[in tile's orientation. */
     public final Orient orient;
 
     /** The terrain tile's x and y coordinates. */
     public final Location loc;
 
-    /** An array of claim group values that correspond to the features of this tile. If a piecen
-     * has claimed a feature on this tile or that connects to this tile, it will be represented
-     * here by a non-zero claim group in the array slot that corresponds to the claimed feature. */
-    public final int[] claims;
-
-    /** The piecen on this tile, or null if no piecen has been placed. */
-    public Piecen piecen;
+    /** The piecen on this tile, or null if no piecen is placed. */
+    public final Piecen piecen;
 
     /**
      * Creates a placement with the supplied configuration.
      */
-    public Placement (GameTile tile, Orient orient, Location loc) {
+    public Placement (GameTile tile, Orient orient, Location loc, Piecen piecen) {
         this.tile = tile;
         this.orient = orient;
         this.loc = loc;
-        this.claims = new int[tile.features().length];
+        this.piecen = piecen;
+        _claims = new HashMap<Feature,Integer>();
     }
 
     /**
@@ -47,58 +46,38 @@ public class Placement
      * Returns the count of unclaimed features on our placed tile.
      */
     public int getUnclaimedCount () {
-        int count = 0;
-        for (int claim : claims) {
-            if (claim == 0) {
-                count++;
-            }
-        }
-        return count;
+        return tile.terrain.features.length - _claims.size();
     }
 
     /**
-     * Looks for a feature in the placed tile that matches the supplied feature edge mask and
-     * returns the index of that feature in this tile's {@link #claims} array.
-     *
-     * @return the index of the matching feature or -1 if no feature matched.
+     * Returns the feature at the specified index on this tile.
      */
-    public int getFeatureIndex (int edgeMask) {
+    public Feature getFeature (int featureIdx) {
+        return tile.terrain.features[featureIdx];
+    }
+
+    /**
+     * Returns the index of the specified feature in this tile.
+     * @throws IllegalArgumentException if the feature is not part of this tile.
+     */
+    public int getFeatureIndex (Feature f) {
+        for (int ii = 0, ll = tile.terrain.features.length; ii < ll; ii++) {
+            if (f == tile.terrain.features[ii]) return ii;
+        }
+        throw new IllegalArgumentException("Feature " + f + " not part of " + tile.terrain);
+    }
+
+    /**
+     * Returns the feature that matches the supplied edge mask or null if no feature matches.
+     * @param edgeMask the desired edge mask, in canonical orientation.
+     */
+    public Feature findFeature (int edgeMask) {
         // translate the feature mask into our orientation
-        edgeMask = Edge.translateMask(edgeMask, orient); // TODO: -orient.index?
-
-        // look for a feature with a matching edge mask
-        Feature[] features = tile.features();
-        for (int ii = 0; ii < features.length; ii ++) {
-            if ((features[ii].edgeMask & edgeMask) != 0) {
-                return ii;
-            }
+        edgeMask = Edge.translateMask(edgeMask, -orient.index);
+        for (Feature f : tile.terrain.features) {
+            if ((f.edgeMask & edgeMask) != 0) return f;
         }
-
-        // no match
-        return -1;
-    }
-
-    /**
-     * Returns the index of the feature that contains the supplied mouse coordinates (which will
-     * have been translated relative to the tile's origin).
-     *
-     * @return the index of the feature that contains the mouse coordinates. Some feature should
-     * always contain the mouse.
-     */
-    public int getFeatureIndex (int mouseX, int mouseY) {
-        // we search our features in reverse order because road features overlap grass features
-        // geometrically and are known to be specified after the grass features
-        Feature[] features = tile.features();
-        for (int ii = features.length-1; ii >= 0; ii--) {
-            if (features[ii].contains(mouseX, mouseY, orient)) {
-                return ii;
-            }
-        }
-
-        //  something is hosed; fake it
-        Log.warning("Didn't find matching feature for mouse coordinates!?",
-                    "tile", this, "mx", mouseX, "my", mouseY);
-        return 0;
+        return null;
     }
 
     /**
@@ -109,77 +88,31 @@ public class Placement
      * zero if no feature matched the supplied mask.
      */
     public int getFeatureGroup (int edgeMask) {
-        int fidx = getFeatureIndex(edgeMask);
-        return fidx < 0 ? 0 : claims[fidx];
+        Feature f = findFeature(edgeMask);
+        return (f == null) ? 0 : getClaimGroup(f);
     }
 
     /**
-     * Sets the claim group for the feature with the specified index. This also updates the claim
-     * group for any piecen that was placed on that feature as well.
-     *
-     * @param featureIndex the index of the feature to update.
-     * @param claimGroup the claim group to associate with the feature.
+     * Returns the claim group assigned to the specified feature, or zero if no claim group has
+     * been assigned to said feature.
      */
-    public void setClaimGroup (int featureIndex, int claimGroup) {
+    public int getClaimGroup (Feature f) {
+        Integer group = _claims.get(f);
+        return (group == null) ? 0 : group;
+    }
+
+    /**
+     * Sets the claim group for the specified feature. This also updates the claim group for any
+     * piecen that was placed on that feature as well.
+     */
+    public void setClaimGroup (Feature f, int claimGroup) {
         // update the claim group slot for this feature
-        claims[featureIndex] = claimGroup;
+        Integer ogroup = _claims.put(f, claimGroup);
 
-        // if we have a piecen placed on the feature identified by this
-        // feature index, we need to update its claim group as well
-        if (piecen != null && piecen.featureIndex == featureIndex) {
+        // if we have a piecen placed on the feature, we need to update its claim group as well
+        if (piecen != null && piecen.featureIdx == getFeatureIndex(f)) {
             piecen.claimGroup = claimGroup;
         }
-    }
-
-    /**
-     * Places the specified piecen on this tile. The {@link Piecen#featureIndex} field is assumed
-     * to be initialized to the feature index of this tile on which the piecen is to be placed.
-     *
-     * <p> Note that this will call {@link Logic#setClaimGroup} to propagate the claiming of this
-     * feature to all neighboring tiles if a non-null tiles array is supplied to the function.
-     *
-     * @param piecen the piecen to place on this tile (with an appropriately configured feature
-     * index).
-     * @param places the existing placements on the board, which we will use to propagate our new
-     * claim group to all features connected to this newly claimed feature, or null if propagation
-     * of the claim group is not desired at this time.
-     */
-    public void setPiecen (Piecen piecen, Placements places) {
-        int claimGroup = 0;
-
-        // if we're adding a piecen to a feature that's already claimed, we want to inherit the
-        // claim number (this could happen when we show up in an in progress game)
-        if (claims[piecen.featureIndex] != 0) {
-            Log.warning("Requested to add a piecen to a feature that has already been claimed",
-                        "tile", this, "piecen", piecen);
-            claimGroup = claims[piecen.featureIndex];
-
-        } else {
-            // otherwise we generate a new claim group
-            claimGroup = Logic.nextClaimGroup();
-            Log.debug("Creating claim group", "cgroup", claimGroup, "tile", this,
-                      "fidx", piecen.featureIndex);
-        }
-
-        // keep a reference to this piecen and configure its position
-        this.piecen = piecen;
-        piecen.loc = loc;
-
-        // assign a brand spanking new claim group to the feature and the piecen and propagate it
-        // to neighboring features
-        if (places != null) {
-            Logic.setClaimGroup(places, this, piecen.featureIndex, claimGroup);
-            // update our piecen with the claim group as well
-            piecen.claimGroup = claimGroup;
-        }
-    }
-
-    /**
-     * Clears out any piecen reference that was previously set (does not clear out its associated
-     * claim group, however).
-     */
-    public void clearPiecen () {
-        piecen = null;
     }
 
     @Override
@@ -190,7 +123,10 @@ public class Placement
 
     @Override
     public String toString () {
-        return Log.format("tile", tile, "orient", orient, "loc", loc, "claims", claims,
-                          "piecen", piecen);
+        return Log.format("tile", tile, "orient", orient, "loc", loc,
+                          "claims", _claims, "piecen", piecen);
     }
+
+    /** A mapping from feature to claim group, for claimed features. */
+    protected final Map<Feature,Integer> _claims;
 }

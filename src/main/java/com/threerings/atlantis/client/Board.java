@@ -30,6 +30,7 @@ import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
 import com.threerings.atlantis.shared.Logic;
 import com.threerings.atlantis.shared.Orient;
+import com.threerings.atlantis.shared.Piecen;
 import com.threerings.atlantis.shared.Placement;
 import com.threerings.atlantis.shared.Placements;
 import static com.threerings.atlantis.client.AtlantisClient.*;
@@ -45,6 +46,9 @@ public class Board
 
     /** The layer that contains the current turn info. */
     public final GroupLayer turnInfo = graphics().createGroupLayer();
+
+    /** Whether or not feature debugging info should be rendered. */
+    public final boolean FEATURE_DEBUG = false;
 
     /**
      * Loads up our resources and performs other one-time initialization tasks.
@@ -70,7 +74,15 @@ public class Board
 
     public void addPlacement (Placement play) {
         clearPlacing();
-        tiles.add(new Glyphs.Play(play).layer);
+        Glyphs.Play glyph = new Glyphs.Play(play);
+        tiles.add(glyph.layer);
+        _plays.add(glyph);
+
+        if (FEATURE_DEBUG) {
+            for (Glyphs.Play pg : _plays) {
+                pg.updateFeatureDebug();
+            }
+        }
     }
 
     public void setPlacing (Placements plays, GameTile tile) {
@@ -229,32 +241,30 @@ public class Board
                 _ctrls = new Glyphs.Tile();
                 float quadw = Media.TERRAIN_WIDTH/2, quadh = Media.TERRAIN_HEIGHT/2;
                 _ctrls.layer.add(_rotate = Atlantis.media.getActionTile(Media.ROTATE_ACTION));
-                _rotate.setTranslation((quadw - Media.ACTION_WIDTH)/2,
-                                       (quadh - Media.ACTION_HEIGHT)/2);
+                _rotate.setTranslation(quadw/2, quadh/2);
                 _ctrls.layer.add(_commit = Atlantis.media.getActionTile(Media.OK_ACTION));
-                _commit.setTranslation(quadw + (quadw - Media.ACTION_WIDTH)/2,
-                                       quadh + (quadh - Media.ACTION_HEIGHT)/2);
+                _commit.setTranslation(3*quadw/2, 3*quadh/2);
                 _ctrls.layer.add(_placep = Atlantis.media.getPiecenTile(mypidx));
-                _placep.setTranslation(quadw + (quadw - Media.PIECEN_WIDTH)/2,
-                                       quadh + (quadh - Media.PIECEN_HEIGHT)/2);
+                _placep.setTranslation(3*quadw/2, 3*quadh/2);
                 _placep.setAlpha(0.5f);
                 tiles.add(_ctrls.layer);
 
                 // create our piecen targets as well
                 _piecens = graphics().createGroupLayer();
                 Rectangle pbounds = new Rectangle(Media.PIECEN_SIZE);
-                for (Feature f : _placing.features()) {
+                for (int fidx = 0; fidx < _placing.terrain.features.length; fidx++) {
+                    Feature f = _placing.terrain.features[fidx];
                     ImageLayer pimg = Atlantis.media.getPiecenTile(mypidx);
-                    pimg.setOrigin(Media.PIECEN_WIDTH/2, Media.PIECEN_HEIGHT/2);
                     pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
                     _piecens.add(pimg);
 
+                    final Piecen p = new Piecen(Piecen.Color.values()[mypidx], _active.loc, fidx);
                     _reactors.add(new LayerReactor(pimg, pbounds) {
                         @Override public boolean hitTest (IPoint p) {
                             return _piecens.visible() && super.hitTest(p);
                         }
                         public void onClick () {
-                            System.out.println("TODO: piecen click");
+                            commitPlacement(p);
                         }
                     });
                 }
@@ -274,10 +284,7 @@ public class Board
 
                 _reactors.add(new LayerReactor(_commit, abounds) {
                     public void onClick () {
-                        // TODO: confirm placement first
-                        _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc));
-                        // zoom back out and scroll to our original translation
-                        restoreZoom();
+                        commitPlacement(null); // place with no piecen
                     }
                     public String toString () {
                         return "commit";
@@ -292,7 +299,14 @@ public class Board
                         zoomInOn(_active);
                         // make the piecen buttons visible
                         _piecens.setVisible(true);
-                        // TODO: enable/disable based on legal placements
+                        // enable/disable piecens based on legal placements
+                        int idx = 0;
+                        for (Feature f : _placing.terrain.features) {
+                            int claim = Logic.computeClaim(
+                                _plays, _placing, _glyph.getOrient(), _active.loc, f);
+                            _piecens.get(idx).setVisible(claim == 0);
+                            idx++;
+                        }
 
                         // TODO: don't display commit yet
                         _commit.setVisible(true);
@@ -330,6 +344,12 @@ public class Board
             boolean havePiecens = true; // TODO: use real data
             _placep.setVisible(false); // havePiecens);
             _commit.setVisible(!havePiecens);
+        }
+
+        protected void commitPlacement (Piecen piecen) {
+            _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc, piecen));
+            // zoom back out and scroll to our original translation
+            restoreZoom();
         }
 
         protected GameTile _placing;
@@ -388,6 +408,8 @@ public class Board
     protected Point _savedTrans;
     protected List<Reactor> _reactors = new ArrayList<Reactor>();
 
+    protected List<Glyphs.Play> _plays = new ArrayList<Glyphs.Play>();
+
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
      * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
     protected static int quad (IRectangle rect, float x, float y) {
@@ -401,7 +423,7 @@ public class Board
         Layer parent = layer.parent();
         IPoint cur = (parent == null) ? point : inverseTransform(parent, point, into);
         forplay.core.Transform lt = layer.transform();
-        _scratch.setTransform(lt.m00(), lt.m01(), lt.m10(), lt.m11(), lt.tx(), lt.ty());
+        _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
         into = _scratch.inverseTransform(cur, into);
         into.x += layer.originX();
         into.y += layer.originY();

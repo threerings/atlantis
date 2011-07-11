@@ -17,7 +17,7 @@ public class LogicTest
 {
     @Test public void testComputeLegalPlays () {
         Placements plays = new Placements();
-        plays.add(new Placement(GameTiles.STARTER, Orient.NORTH, new Location(0, 0)));
+        plays.add(new Placement(GameTiles.STARTER, Orient.NORTH, new Location(0, 0), null));
 
         // test a few placements against the starter tile
         checkPlay(plays, Terrain.CITY_TWO, 0,1, 0,-1);

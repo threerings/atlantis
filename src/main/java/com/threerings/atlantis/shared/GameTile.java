@@ -22,13 +22,6 @@ public class GameTile
         this.hasShield = hasShield;
     }
 
-    /**
-     * Returns the features on this game tile.
-     */
-    public Feature[] features () {
-        return terrain.features;
-    }
-
     @Override
     public String toString () {
         return terrain + " (" + (hasShield ? "" : "no") + "shield)";
