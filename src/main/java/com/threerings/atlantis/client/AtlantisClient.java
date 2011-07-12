@@ -48,6 +48,10 @@ public class AtlantisClient implements Game
         graphics().rootLayer().add(board.tiles);
         graphics().rootLayer().add(board.turnInfo);
 
+        Scoreboard scores = new Scoreboard();
+        scores.init(new String[] { "Elvis", "Madonna", "Mahatma Gandhi" });
+        graphics().rootLayer().add(scores.layer);
+
         // TEMP: draw a grid over the board for debugging
         float width = graphics().width(), height = graphics().height();
         SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);

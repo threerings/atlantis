@@ -135,7 +135,7 @@ public class Board
             _placing = placing;
             _plays = plays;
             _glyph = new Glyphs.Play(placing);
-            _glyph.setLocation(new Location(1, 1), false, null);
+            _glyph.setLocation(new Location(10, 1), false, null);
             turnInfo.add(_glyph.layer);
 
             // compute the legal placement positions for this tile
