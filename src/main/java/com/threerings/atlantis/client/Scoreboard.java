@@ -93,9 +93,6 @@ public class Scoreboard
         _nextLabel.layer.setVisible(tile != null);
         tile.layer.setTranslation(WIDTH/2, _nextTileY + Media.TERRAIN_HEIGHT/2);
         layer.add(tile.layer);
-        System.out.println("Positioned next tile at " +
-                           tile.layer.transform().tx() + "," +
-                           tile.layer.transform().ty());
         // the layer will be removed for us when the tile is played
     }
 

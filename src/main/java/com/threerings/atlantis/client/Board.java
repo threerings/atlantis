@@ -37,6 +37,11 @@ public class Board
     /** The layer that contains the tiles. */
     public final GroupLayer tiles = graphics().createGroupLayer();
 
+    /** A layer used when flying a tile from the score display into position on the board. We keep
+     * this layer translated the same as the tiles layer so that we can reuse the tile movement
+     * logic, but this layer renders above the score layer rather than below (like tiles). */
+    public final GroupLayer flight = graphics().createGroupLayer();
+
     /** Whether or not feature debugging info should be rendered. */
     public final boolean FEATURE_DEBUG = false;
 
@@ -54,8 +59,10 @@ public class Board
             }
             @Override public void onPointerDrag (float x, float y) {
                 if (_drag != null) {
-                    tiles.setTranslation(tiles.transform().tx() + (x - _drag.x),
-                                         tiles.transform().ty() + (y - _drag.y));
+                    float ntx = tiles.transform().tx() + (x - _drag.x);
+                    float nty = tiles.transform().ty() + (y - _drag.y);
+                    tiles.setTranslation(ntx, nty);
+                    flight.setTranslation(ntx, nty);
                     _drag.set(x, y);
                 }
             }
@@ -68,6 +75,7 @@ public class Board
         // translate (0,0) to the center of the screen
         _origin = sbounds.getCenter();
         tiles.setTranslation(_origin.x, _origin.y);
+        flight.setTranslation(_origin.x, _origin.y);
     }
 
     /**
@@ -201,7 +209,7 @@ public class Board
                 // (scrolling) tiles layer
                 GroupLayer scores = _glyph.layer.parent();
                 scores.remove(_glyph.layer);
-                tiles.add(_glyph.layer);
+                flight.add(_glyph.layer);
                 // we also need to update its position so that it can be animated into place
                 _glyph.layer.transform().translate(
                     scores.transform().tx() - tiles.transform().tx(),
@@ -291,6 +299,14 @@ public class Board
             }
             _glyph.setLocation(_active.loc, true, new Runnable() {
                 public void run () {
+                    // if this was our first move, we need to hop from the flight layer to the
+                    // tiles layer when we arrive
+                    if (_glyph.layer.parent() == flight) {
+                        flight.remove(_glyph.layer);
+                        // add it first so that it's "below" the controls
+                        tiles.add(0, _glyph.layer);
+                    }
+                    // make our controls visible
                     _ctrls.layer.setVisible(true);
                     _placep.setVisible(true);
                 }
