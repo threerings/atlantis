@@ -18,8 +18,7 @@ public class GameTiles
     /**
      * Creates and returns the standard selection of game tiles.
      */
-    public static List<GameTile> standard ()
-    {
+    public static List<GameTile> standard () {
         List<GameTile> tiles = new ArrayList<GameTile>();
         add(tiles, Terrain.CITY_FOUR, true, 1);
 
@@ -55,8 +54,8 @@ public class GameTiles
         return tiles;
     }
 
-    protected static void add (List<GameTile> tiles, Terrain terrain, boolean hasShield, int count)
-    {
+    protected static void add (List<GameTile> tiles, Terrain terrain, boolean hasShield,
+                               int count) {
         for (int ii = 0; ii < count; ii++) {
             tiles.add(new GameTile(terrain, hasShield));
         }

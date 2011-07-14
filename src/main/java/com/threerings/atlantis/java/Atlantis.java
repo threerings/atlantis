@@ -14,8 +14,7 @@ import com.threerings.atlantis.client.AtlantisClient;
  */
 public class Atlantis
 {
-    public static void main (String[] args)
-    {
+    public static void main (String[] args) {
         JavaPlatform platform = JavaPlatform.register();
         platform.assetManager().setPathPrefix("src/main/resources");
         ForPlay.run(new AtlantisClient());

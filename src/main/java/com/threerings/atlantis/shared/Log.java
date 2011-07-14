@@ -13,8 +13,7 @@ public class Log
     /**
      * Wires the logging front-end to the logging back-end. See {@link #setImpl}.
      */
-    public interface Impl
-    {
+    public interface Impl {
         void debug (String message, Throwable t);
         void info (String message, Throwable t);
         void warning (String message, Throwable t);
@@ -24,8 +23,7 @@ public class Log
      * Configures the logging back-end. This must be called before any code that makes use of the
      * logging services.
      */
-    public static void setImpl (Impl impl)
-    {
+    public static void setImpl (Impl impl) {
         _impl = impl;
     }
 
@@ -36,8 +34,7 @@ public class Log
      * @param args a series of zero or more key/value pairs followed by an optional {@link
      * Throwable} cause.
      */
-    public static void debug (String message, Object... args)
-    {
+    public static void debug (String message, Object... args) {
         log(DEBUG_TARGET, message, args);
     }
 
@@ -48,8 +45,7 @@ public class Log
      * @param args a series of zero or more key/value pairs followed by an optional {@link
      * Throwable} cause.
      */
-    public static void info (String message, Object... args)
-    {
+    public static void info (String message, Object... args) {
         log(INFO_TARGET, message, args);
     }
 
@@ -60,16 +56,14 @@ public class Log
      * @param args a series of zero or more key/value pairs followed by an optional {@link
      * Throwable} cause.
      */
-    public static void warning (String message, Object... args)
-    {
+    public static void warning (String message, Object... args) {
         log(WARNING_TARGET, message, args);
     }
 
     /**
      * Formats and returns the supplied key/value arguments as {@code [key=value, key=value, ...]}.
      */
-    public static String format (Object... args)
-    {
+    public static String format (Object... args) {
         return format(new StringBuilder("["), args).append("]").toString();
     }
 
@@ -78,8 +72,7 @@ public class Log
      * key=value, key=value, ...}.
      * @return the supplied string builder.
      */
-    public static StringBuilder format (StringBuilder into, Object... args)
-    {
+    public static StringBuilder format (StringBuilder into, Object... args) {
         for (int ii = 0, ll = args.length/2; ii < ll; ii++) {
             if (ii > 0) {
                 into.append(", ");
@@ -89,8 +82,7 @@ public class Log
         return into;
     }
 
-    protected static void log (Target target, String message, Object... args)
-    {
+    protected static void log (Target target, String message, Object... args) {
         StringBuilder sb = new StringBuilder();
         sb.append(message);
         if (args.length > 1) {

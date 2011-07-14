@@ -15,8 +15,7 @@ import com.threerings.atlantis.client.AtlantisClient;
  */
 public class Atlantis extends HtmlGame
 {
-    @Override public void start()
-    {
+    @Override public void start() {
         HtmlPlatform platform = HtmlPlatform.register();
         platform.assetManager().setPathPrefix("atlantis/");
         ForPlay.run(new AtlantisClient());

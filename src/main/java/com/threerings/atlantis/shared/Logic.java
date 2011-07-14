@@ -21,8 +21,7 @@ public class Logic
      * Computes and returns the set of board positions where the supplied tile can be legally
      * played, given the supplied preexisting plays.
      */
-    public static Set<Location> computeLegalPlays (Placements plays, GameTile tile)
-    {
+    public static Set<Location> computeLegalPlays (Placements plays, GameTile tile) {
         Set<Location> locs = new HashSet<Location>();
 
         // compute the neighbors of all existing tiles
@@ -60,8 +59,7 @@ public class Logic
      * Computes the legal orientations in which the specified tile can be placed at the supplied
      * location.
      */
-    public static List<Orient> computeLegalOrients (Placements plays, GameTile tile, Location loc)
-    {
+    public static List<Orient> computeLegalOrients (Placements plays, GameTile tile, Location loc) {
         List<Orient> orients = new ArrayList<Orient>();
 
         // fetch the neighbors of this tile
@@ -154,8 +152,7 @@ public class Logic
     /**
      * Returns true if the two supplied placements match up (represent a legal board position).
      */
-    protected static boolean tilesMatch (Placement play1, Placement play2)
-    {
+    protected static boolean tilesMatch (Placement play1, Placement play2) {
         // based on the relative positions of the two placements, determine the "natural" edges to
         // be compared (east/west or north/south)
         Orient orient1 = play1.loc.directionTo(play2.loc), orient2 = orient1.opposite();
@@ -226,8 +223,7 @@ public class Logic
     }
 
     /** Used to keep track of actual features on placed tiles. */
-    protected static final class TileFeature
-    {
+    protected static final class TileFeature {
         /** The placement that contains the feature. */
         public final Placement play;
 

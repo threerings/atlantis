@@ -150,8 +150,7 @@ public class Feature
      *
      * @return a polygon representing the road segment (with origin at 0, 0).
      */
-    protected static Path roadSegmentToPolygon (int x1, int y1, int x2, int y2)
-    {
+    protected static Path roadSegmentToPolygon (int x1, int y1, int x2, int y2) {
         // first convert the coordinates into screen coordinates
         x1 = (x1 * Constants.TILE_WIDTH) / 4;
         y1 = (y1 * Constants.TILE_HEIGHT) / 4;
@@ -206,8 +205,7 @@ public class Feature
      *
      * @return a polygon representing the road segment (with origin at 0, 0).
      */
-    protected static Path roadSegmentToPolygon (int x1, int y1, int x2, int y2, int x3, int y3)
-    {
+    protected static Path roadSegmentToPolygon (int x1, int y1, int x2, int y2, int x3, int y3) {
         // first convert the coordinates into screen coordinates
         x1 = (x1 * Constants.TILE_WIDTH) / 4;
         y1 = (y1 * Constants.TILE_HEIGHT) / 4;

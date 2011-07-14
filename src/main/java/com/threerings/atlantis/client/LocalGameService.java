@@ -27,8 +27,7 @@ import com.threerings.atlantis.shared.Placement;
  */
 public class LocalGameService extends DService<GameService> implements GameService
 {
-    public static GameObject createLocalGame (String[] players)
-    {
+    public static GameObject createLocalGame (String[] players) {
         LocalGameService svc = new LocalGameService();
         GameObject gobj = new GameObject(players, svc);
         DistribUtil.init(gobj, 1, new EventSink() {
@@ -47,8 +46,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
     }
 
     // from interface GameService
-    public void playerReady (int playerIdx)
-    {
+    public void playerReady (int playerIdx) {
         if (_gobj.state.get() != GameObject.State.PRE_GAME) {
             throw new IllegalStateException(
                 "Player reported ready and we're not in pregame [pidx=" + playerIdx + "]");
@@ -63,8 +61,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
     }
 
     // from interface GameService
-    public void play (int playerIdx, Placement play)
-    {
+    public void play (int playerIdx, Placement play) {
         if (playerIdx != _gobj.turnHolder.get()) {
             throw new IllegalStateException(
                 "Refusing play from non-turnholder [thidx=" + _gobj.turnHolder.get() +
@@ -88,8 +85,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
         return this;
     }
 
-    protected void init (GameObject gobj)
-    {
+    protected void init (GameObject gobj) {
         _gobj = gobj;
     }
 

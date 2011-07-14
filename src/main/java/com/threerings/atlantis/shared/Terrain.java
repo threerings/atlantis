@@ -159,8 +159,7 @@ public enum Terrain
         return _edges[orient.index];
     }
 
-    Terrain (int tileIdx, Edge north, Edge east, Edge south, Edge west, Feature... features)
-    {
+    Terrain (int tileIdx, Edge north, Edge east, Edge south, Edge west, Feature... features) {
         this.tileIdx = tileIdx;
         this.features = features;
         _edges = new Edge[] { north, east, south, west };

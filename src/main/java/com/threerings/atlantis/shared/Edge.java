@@ -97,8 +97,7 @@ public enum Edge
      * rotation, provide a positive number of ticks. For a counter-clockwise rotation, provide a
      * negative number of ticks.
      */
-    public static int translateMask (int edgeMask, int ticks)
-    {
+    public static int translateMask (int edgeMask, int ticks) {
         int[] map = FEATURE_ORIENT_MAP[0];
         if ((edgeMask & (NNE_F|ESE_F|SSW_F|WNW_F)) != 0) {
             map = FEATURE_ORIENT_MAP[1];
@@ -123,8 +122,7 @@ public enum Edge
     }
 
     /** {@link #translateMask} helper function. */
-    protected static int xlateMask (int[] map, int edgeMask, int ticks)
-    {
+    protected static int xlateMask (int[] map, int edgeMask, int ticks) {
         for (int ii = 0; ii < map.length; ii++) {
             if (map[ii] == edgeMask) {
                 return map[(ii + 4 + ticks) % 4];

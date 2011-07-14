@@ -31,8 +31,7 @@ public class Media extends Tiles
     public static final IDimension ACTION_SIZE = new Dimension(ACTION_WIDTH, ACTION_HEIGHT);
     public static final int OK_ACTION = 0, CANCEL_ACTION = 1, ROTATE_ACTION = 2;
 
-    public void init ()
-    {
+    public void init () {
         _terrain = ForPlay.assetManager().getImage("images/tiles.png");
         _target = ForPlay.assetManager().getImage("images/target.png");
         _piecens = ForPlay.assetManager().getImage("images/piecens.png");
@@ -45,16 +44,14 @@ public class Media extends Tiles
     /**
      * Creates a terrain tile for the specified index.
      */
-    public ImageLayer getTerrainTile (int tileIdx)
-    {
+    public ImageLayer getTerrainTile (int tileIdx) {
         return createTile(_terrain, TERRAIN_WIDTH, TERRAIN_HEIGHT, tileIdx);
     }
 
     /**
      * Creates a target tile (the tile shown for legal play positions).
      */
-    public ImageLayer getTargetTile ()
-    {
+    public ImageLayer getTargetTile () {
         return createTile(_target, TERRAIN_WIDTH, TERRAIN_HEIGHT, 0); // only one tile for now
     }
 
@@ -62,8 +59,7 @@ public class Media extends Tiles
      * Creates a piecen tile for the specified index. The origin of the tile will be configured to
      * the center of the image.
      */
-    public ImageLayer getPiecenTile (int tileIdx)
-    {
+    public ImageLayer getPiecenTile (int tileIdx) {
         ImageLayer img = createTile(_piecens, PIECEN_WIDTH, PIECEN_HEIGHT, tileIdx);
         img.setOrigin(PIECEN_WIDTH/2f, PIECEN_HEIGHT/2f);
         return img;
@@ -72,8 +68,7 @@ public class Media extends Tiles
     /**
      * Creates a shield tile. The origin of the tile will be configured to the center of the image.
      */
-    public ImageLayer getShieldTile ()
-    {
+    public ImageLayer getShieldTile () {
         ImageLayer img = createTile(_shield, SHIELD_WIDTH, SHIELD_HEIGHT, 0);
         img.setOrigin(SHIELD_WIDTH/2f, SHIELD_HEIGHT/2f);
         return img;
@@ -83,8 +78,7 @@ public class Media extends Tiles
      * Creates an action tile for the specified index. The origin of the tile will be configured to
      * the center of the image.
      */
-    public ImageLayer getActionTile (int tileIdx)
-    {
+    public ImageLayer getActionTile (int tileIdx) {
         ImageLayer img = createTile(_actions, ACTION_WIDTH, ACTION_HEIGHT, tileIdx);
         img.setOrigin(ACTION_WIDTH/2f, ACTION_HEIGHT/2f);
         return img;
@@ -93,8 +87,7 @@ public class Media extends Tiles
     /**
      * Returns the (tileable) table background image.
      */
-    public Image getTableImage ()
-    {
+    public Image getTableImage () {
         return _table;
     }
 

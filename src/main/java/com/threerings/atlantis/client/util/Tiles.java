@@ -30,8 +30,7 @@ public class Tiles
      * 4, 5, 6, 7
      * </pre>
      */
-    public ImageLayer createTile (Image source, int tileWidth, int tileHeight, int tileIdx)
-    {
+    public ImageLayer createTile (Image source, int tileWidth, int tileHeight, int tileIdx) {
         ImageLayer layer = ForPlay.graphics().createImageLayer();
         initTileLayer(layer, source, tileWidth, tileHeight, tileIdx);
         return layer;
@@ -41,9 +40,8 @@ public class Tiles
      * Creates a tile from the supplied source image, which may not yet have completed loading. See
      * {@link #createTile(Image,int,int,int)} for details.
      */
-    public ImageLayer createTileDeferred (
-        final Image source, final int tileWidth, final int tileHeight, final int tileIdx)
-    {
+    public ImageLayer createTileDeferred (final Image source, final int tileWidth,
+                                          final int tileHeight, final int tileIdx) {
         final ImageLayer layer = ForPlay.graphics().createImageLayer();
         source.addCallback(new ResourceCallback<Image>() {
             public void done (Image rimage) {
@@ -56,9 +54,8 @@ public class Tiles
         return layer;
     }
 
-    protected void initTileLayer (
-        ImageLayer layer, Image source, int tileWidth, int tileHeight, int tileIdx)
-    {
+    protected void initTileLayer (ImageLayer layer, Image source, int tileWidth, int tileHeight,
+                                  int tileIdx) {
         layer.setImage(source);
         layer.setWidth(tileWidth);
         layer.setHeight(tileHeight);
@@ -67,8 +64,7 @@ public class Tiles
         layer.setSourceRect(col * tileWidth, row * tileWidth, tileWidth, tileHeight);
     }
 
-    protected void reportError (String errmsg, Throwable cause)
-    {
+    protected void reportError (String errmsg, Throwable cause) {
         ForPlay.log().warn(errmsg, cause);
     }
 }

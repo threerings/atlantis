@@ -19,8 +19,7 @@ import com.threerings.atlantis.shared.Log;
 public class AtlantisClient implements Game
 {
     // from interface Game
-    public void init ()
-    {
+    public void init () {
         graphics().setSize(1024, 768);
 
         Log.setImpl(new Log.Impl() {
@@ -47,21 +46,18 @@ public class AtlantisClient implements Game
     }
 
     // from interface Game
-    public void update (float delta)
-    {
+    public void update (float delta) {
         _elapsed += delta;
     }
 
     // from interface Game
-    public void paint (float alpha)
-    {
+    public void paint (float alpha) {
         float current = _elapsed + alpha * updateRate();
         Atlantis.anim.update(current);
     }
 
     // from interface Game
-    public int updateRate ()
-    {
+    public int updateRate () {
         return 30;
     }
 
