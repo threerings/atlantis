@@ -5,7 +5,11 @@
 package com.threerings.atlantis.client;
 
 import java.util.List;
+import java.util.Set;
 
+import com.threerings.nexus.distrib.DValue;
+
+import com.threerings.atlantis.shared.GameObject;
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.GameTiles;
 import com.threerings.atlantis.shared.Location;
@@ -20,47 +24,61 @@ import com.threerings.atlantis.shared.Placements;
  */
 public class GameController
 {
-    public GameController (Board board, Scoreboard scores)
-    {
-        _board = board;
-        _board.init(this);
-        _scores = scores;
+    public GameController (GameObject gobj, Set<Integer> playerIdxs) {
+        _gobj = gobj;
+        _board = new Board();
+        _board.init(this, gobj);
+        _board.scores.init(gobj.players);
+
+        // listen for game state changes
+        _gobj.state.addListener(new DValue.Listener<GameObject.State>() {
+            public void valueChanged (GameObject.State value, GameObject.State oldValue) {
+                switch (value) {
+                case IN_PLAY:
+                    gameDidStart();
+                    break;
+                case GAME_OVER:
+                    gameDidEnd();
+                    break;
+                }
+            }
+        });
+
+        // do something appropriate if the game is already in play
+        switch (_gobj.state.get()) {
+        case PRE_GAME:
+            // TODO: display "waiting for players" UI?
+            break;
+        case IN_PLAY:
+            gameDidStart();
+            break;
+        case GAME_OVER:
+            gameDidStart(); // triggers the initial board display
+            gameDidEnd(); // triggers the display of game over bits
+            break;
+        }
+
+        // let the server know that all the players we control are ready to go!
+        for (Integer pidx : playerIdxs) {
+            _gobj.gameSvc.get().playerReady(pidx);
+        }
     }
 
-    public void startGame ()
-    {
-        // TEMP: create the list of remaining tiles
-        _tileBag = GameTiles.standard();
-        Atlantis.rands.shuffle(_tileBag);
+    public void place (Placement play) {
+        // send our play up to the server; it will verify the play and we'll see a new play added
+        // to the game object which will trigger the proper bits
+        _gobj.gameSvc.get().play(_gobj.turnHolder.get(), play);
+    }
 
-        // TODO: this will come from somewhere better
-        _plays = new Placements();
-
+    protected void gameDidStart () {
         // prepare the board
-        _board.reset(_plays);
-
-        // TEMP: for now just allow tiles to be placed one after another
-        _tileBag.remove(GameTiles.STARTER);
-        place(new Placement(GameTiles.STARTER, Orient.NORTH, new Location(0, 0), null));
+        _board.reset(_gobj.placements());
     }
 
-    public void place (Placement placement)
-    {
-        _plays.add(placement);
-        Logic.propagateClaims(_plays, placement);
-        _board.addPlacement(placement);
-
-        // TEMP: for now just allow tiles to be placed one after another
-        GameTile tile = _tileBag.remove(0);
-        Glyphs.Play pglyph = new Glyphs.Play(tile);
-        _board.setPlacing(_plays, tile, pglyph);
-
-        _scores.setTurnInfo(0, _tileBag.size());
-        _scores.setNextTile(pglyph);
+    protected void gameDidEnd () {
+        // nada at the moment
     }
 
+    protected GameObject _gobj;
     protected Board _board;
-    protected Scoreboard _scores;
-    protected Placements _plays;
-    protected List<GameTile> _tileBag;
 }

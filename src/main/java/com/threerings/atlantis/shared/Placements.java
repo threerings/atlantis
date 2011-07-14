@@ -14,11 +14,17 @@ import java.util.HashMap;
  */
 public class Placements implements Iterable<Placement>
 {
+    /** Creates a placements instance with the supplied list of plays. */
+    public Placements (Iterable<Placement> plays) {
+        for (Placement play : plays) {
+            _map.put(play.loc, play);
+        }
+    }
+
     /**
      * Adds a placement to this mapping.
      */
-    public void add (Placement placement)
-    {
+    public void add (Placement placement) {
         _map.put(placement.loc, placement);
     }
 
@@ -26,16 +32,14 @@ public class Placements implements Iterable<Placement>
      * Returns the placement at the specified coordinates, or null if no placement has been made at
      * said coordinates.
      */
-    public Placement get (Location loc)
-    {
+    public Placement get (Location loc) {
         return _map.get(loc);
     }
 
     @Override // from interface Iterable<Placment>
-    public Iterator<Placement> iterator ()
-    {
+    public Iterator<Placement> iterator () {
         return _map.values().iterator();
     }
 
-    protected Map<Location, Placement> _map = new HashMap<Location, Placement>();
+    protected final Map<Location, Placement> _map = new HashMap<Location, Placement>();
 }

@@ -11,6 +11,7 @@ import java.util.Set;
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
 import forplay.core.Pointer;
+import forplay.core.SurfaceLayer;
 import static forplay.core.ForPlay.*;
 
 import pythagoras.f.IPoint;
@@ -18,8 +19,12 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 import pythagoras.f.Rectangle;
 
+import com.threerings.nexus.distrib.DSet;
+import com.threerings.nexus.distrib.DValue;
+
 import com.threerings.atlantis.shared.Feature;
 import com.threerings.atlantis.shared.GameTile;
+import com.threerings.atlantis.shared.GameObject;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
 import com.threerings.atlantis.shared.Logic;
@@ -34,6 +39,9 @@ import static com.threerings.atlantis.client.AtlantisClient.*;
  */
 public class Board
 {
+    /** Displays current scores, etc. */
+    public final Scoreboard scores = new Scoreboard();
+
     /** The layer that contains the tiles. */
     public final GroupLayer tiles = graphics().createGroupLayer();
 
@@ -45,11 +53,62 @@ public class Board
     /** Whether or not feature debugging info should be rendered. */
     public final boolean FEATURE_DEBUG = false;
 
+    public Board () {
+        // create a background layer that will tile a pattern
+        float width = graphics().width(), height = graphics().height();
+        SurfaceLayer bground = graphics().createSurfaceLayer((int)width, (int)height);
+        bground.surface().setFillPattern(graphics().createPattern(Atlantis.media.getTableImage()));
+        bground.surface().fillRect(0, 0, width, height);
+
+        // set the z-order of our layers appropriately
+        bground.setZOrder(-1);
+        tiles.setZOrder(0);
+        scores.layer.setZOrder(+1);
+        flight.setZOrder(+2);
+
+        // add everything to the root layer
+        graphics().rootLayer().add(bground);
+        graphics().rootLayer().add(tiles);
+        graphics().rootLayer().add(scores.layer);
+        graphics().rootLayer().add(flight);
+
+        // TEMP: draw a grid over the board for debugging
+        SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);
+        grid.surface().drawLine(0f, height/2, width, height/2, 1f);
+        grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
+        grid.setZOrder(+3);
+        graphics().rootLayer().add(grid);
+    }
+
     /**
      * Loads up our resources and performs other one-time initialization tasks.
      */
-    public void init (GameController ctrl) {
+    public void init (GameController ctrl, GameObject gobj) {
         _ctrl = ctrl;
+        _gobj = gobj;
+
+        // when we see a play added, add it to the display
+        _gobj.plays.addListener(new DSet.AddedListener<Placement>() {
+            public void elementAdded (Placement play) {
+                Logic.propagateClaims(_gobj.placements(), play);
+                // TODO: if we didn't place this play, we need to animate it going from the
+                // scoreboard to the correct position on the board
+                addPlacement(play);
+            }
+        });
+
+        // when the turn-holder changes, update all of the other bits
+        _gobj.turnHolder.addListener(new DValue.Listener<Integer>() {
+            public void valueChanged (Integer turnHolder, Integer oldTurnHolder) {
+                GameTile placing = _gobj.placing.get();
+                Glyphs.Play pglyph = new Glyphs.Play(placing);
+                setPlacing(_gobj.placements(), placing, pglyph);
+                scores.setNextTile(pglyph);
+                scores.setTurnInfo(_gobj.turnHolder.get(), _gobj.tilesRemaining.get());
+                // TODO: enable or disable interactivity based on whether this client controls the
+                // turn holder
+            }
+        });
 
         // wire up a dragger that is triggered for presses that don't touch anything else
         Rectangle sbounds = new Rectangle(0, 0, graphics().width(), graphics().height());
@@ -199,7 +258,7 @@ public class Board
             _active = target;
             _active.layer.setVisible(false);
 
-            int mypidx = 0; // TODO
+            int mypidx = _gobj.turnHolder.get();
 
             // if we were zoomed in and they clicked somewhere else, zoom back out
             restoreZoom();
@@ -343,6 +402,7 @@ public class Board
     }
 
     protected GameController _ctrl;
+    protected GameObject _gobj;
     protected Point _origin;
     protected Placer _placer;
     protected Point _savedTrans;
