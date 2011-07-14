@@ -20,10 +20,11 @@ import com.threerings.atlantis.shared.Placements;
  */
 public class GameController
 {
-    public GameController (Board board)
+    public GameController (Board board, Scoreboard scores)
     {
         _board = board;
         _board.init(this);
+        _scores = scores;
     }
 
     public void startGame ()
@@ -48,11 +49,18 @@ public class GameController
         _plays.add(placement);
         Logic.propagateClaims(_plays, placement);
         _board.addPlacement(placement);
+
         // TEMP: for now just allow tiles to be placed one after another
-        _board.setPlacing(_plays, _tileBag.remove(0));
+        GameTile tile = _tileBag.remove(0);
+        Glyphs.Play pglyph = new Glyphs.Play(tile);
+        _board.setPlacing(_plays, tile, pglyph);
+
+        _scores.setTurnInfo(0, _tileBag.size());
+        _scores.setNextTile(pglyph);
     }
 
     protected Board _board;
+    protected Scoreboard _scores;
     protected Placements _plays;
     protected List<GameTile> _tileBag;
 }

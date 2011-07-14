@@ -46,7 +46,6 @@ public class AtlantisClient implements Game
         // TEMP: create a game controller and board and throw them up
         Board board = new Board();
         graphics().rootLayer().add(board.tiles);
-        graphics().rootLayer().add(board.turnInfo);
 
         Scoreboard scores = new Scoreboard();
         scores.init(new String[] { "Elvis", "Madonna", "Mahatma Gandhi" });
@@ -59,7 +58,7 @@ public class AtlantisClient implements Game
         grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
         graphics().rootLayer().add(grid);
 
-        GameController ctrl = new GameController(board);
+        GameController ctrl = new GameController(board, scores);
         ctrl.startGame();
     }
 

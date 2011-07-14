@@ -37,9 +37,6 @@ public class Board
     /** The layer that contains the tiles. */
     public final GroupLayer tiles = graphics().createGroupLayer();
 
-    /** The layer that contains the current turn info. */
-    public final GroupLayer turnInfo = graphics().createGroupLayer();
-
     /** Whether or not feature debugging info should be rendered. */
     public final boolean FEATURE_DEBUG = false;
 
@@ -98,9 +95,9 @@ public class Board
         }
     }
 
-    public void setPlacing (Placements plays, GameTile tile) {
+    public void setPlacing (Placements plays, GameTile tile, Glyphs.Play glyph) {
         clearPlacing();
-        _placer = new Placer(plays, tile);
+        _placer = new Placer(plays, tile, glyph);
     }
 
     protected void clearPlacing () {
@@ -131,12 +128,10 @@ public class Board
 
     /** Handles the interaction of placing a new tile on the board. */
     protected class Placer {
-        public Placer (Placements plays, GameTile placing) {
+        public Placer (Placements plays, GameTile placing, Glyphs.Play glyph) {
             _placing = placing;
             _plays = plays;
-            _glyph = new Glyphs.Play(placing);
-            _glyph.setLocation(new Location(10, 1), false, null);
-            turnInfo.add(_glyph.layer);
+            _glyph = glyph;
 
             // compute the legal placement positions for this tile
             Set<Location> canPlay = Logic.computeLegalPlays(plays, placing);
@@ -204,12 +199,13 @@ public class Board
             if (_ctrls == null) {
                 // ...move our placing glyph from the (non-scrolling) turn info layer, to the
                 // (scrolling) tiles layer
-                turnInfo.remove(_glyph.layer);
+                GroupLayer scores = _glyph.layer.parent();
+                scores.remove(_glyph.layer);
                 tiles.add(_glyph.layer);
                 // we also need to update its position so that it can be animated into place
                 _glyph.layer.transform().translate(
-                    turnInfo.transform().tx() - tiles.transform().tx(),
-                    turnInfo.transform().ty() - tiles.transform().ty());
+                    scores.transform().tx() - tiles.transform().tx(),
+                    scores.transform().ty() - tiles.transform().ty());
 
                 // ...create our controls UI and icons
                 _ctrls = new Glyphs.Tile();
