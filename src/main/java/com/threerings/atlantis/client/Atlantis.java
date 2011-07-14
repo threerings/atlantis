@@ -14,6 +14,11 @@ import com.threerings.util.Randoms;
  */
 public class Atlantis
 {
+    // z-orders for our various primary layers
+    public static final int BACKGROUND_Z = -5;
+    public static final int TILES_Z = 0;
+    public static final int SCORES_Z = 5;
+
     /** Provides images and other media. */
     public static final Media media = new Media();
 

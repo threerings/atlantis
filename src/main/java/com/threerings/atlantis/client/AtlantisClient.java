@@ -41,18 +41,20 @@ public class AtlantisClient implements Game
         // create a background layer that will tile a pattern
         _bground = graphics().createSurfaceLayer(graphics().width(), graphics().height());
         _bground.surface().setFillPattern(graphics().createPattern(Atlantis.media.getTableImage()));
+        _bground.setZOrder(Atlantis.BACKGROUND_Z);
         graphics().rootLayer().add(_bground);
 
         // TEMP: create a game controller and board and throw them up
         Board board = new Board();
         graphics().rootLayer().add(board.tiles);
+        // this layer has to go "above" the scores layer
+        board.flight.setZOrder(Atlantis.SCORES_Z+1);
+        graphics().rootLayer().add(board.flight);
 
         Scoreboard scores = new Scoreboard();
         scores.init(new String[] { "Elvis", "Madonna", "Mahatma Gandhi" });
+        scores.layer.setZOrder(Atlantis.SCORES_Z);
         graphics().rootLayer().add(scores.layer);
-
-        // this layer has to go "above" the scores layer
-        graphics().rootLayer().add(board.flight);
 
         // TEMP: draw a grid over the board for debugging
         float width = graphics().width(), height = graphics().height();

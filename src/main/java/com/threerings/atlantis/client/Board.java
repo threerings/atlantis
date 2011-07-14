@@ -153,6 +153,7 @@ public class Board
             for (Location ploc : canPlay) {
                 final Glyphs.Target target =
                     new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
+                target.layer.setZOrder(-1); // targets render below tiles
                 tiles.add(target.layer);
                 _targets.add(target);
 
@@ -210,6 +211,7 @@ public class Board
                 GroupLayer scores = _glyph.layer.parent();
                 scores.remove(_glyph.layer);
                 flight.add(_glyph.layer);
+                _glyph.layer.setZOrder(+1); // placing goes above other tiles
                 // we also need to update its position so that it can be animated into place
                 _glyph.layer.transform().translate(
                     scores.transform().tx() - tiles.transform().tx(),
@@ -217,6 +219,7 @@ public class Board
 
                 // ...create our controls UI and icons
                 _ctrls = new Glyphs.Tile();
+                _ctrls.layer.setZOrder(+2); // ctrls go above tiles/placing
                 float quadw = Media.TERRAIN_WIDTH/2, quadh = Media.TERRAIN_HEIGHT/2;
                 _ctrls.layer.add(_rotate = Atlantis.media.getActionTile(Media.ROTATE_ACTION));
                 _rotate.setTranslation(quadw/2, quadh/2);
@@ -303,8 +306,7 @@ public class Board
                     // tiles layer when we arrive
                     if (_glyph.layer.parent() == flight) {
                         flight.remove(_glyph.layer);
-                        // add it first so that it's "below" the controls
-                        tiles.add(0, _glyph.layer);
+                        tiles.add(_glyph.layer);
                     }
                     // make our controls visible
                     _ctrls.layer.setVisible(true);
