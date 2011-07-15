@@ -29,7 +29,7 @@ public class Media extends Tiles
 
     public static final int ACTION_WIDTH  = 16, ACTION_HEIGHT  = 16;
     public static final IDimension ACTION_SIZE = new Dimension(ACTION_WIDTH, ACTION_HEIGHT);
-    public static final int OK_ACTION = 0, CANCEL_ACTION = 1, ROTATE_ACTION = 2;
+    public static final int NOPIECEN_ACTION = 0, CANCEL_ACTION = 1, ROTATE_ACTION = 2;
 
     public void init () {
         _terrain = ForPlay.assetManager().getImage("images/tiles.png");

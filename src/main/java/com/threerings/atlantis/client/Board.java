@@ -267,7 +267,7 @@ public class Board
             if (_ctrls != null) {
                 _ctrls.layer.destroy(); // destroys all children
                 _ctrls = null;
-                _rotate = _placep = _commit = null;
+                _rotate = _placep = _nopiecen = _cancel = null;
             }
 
             if (_piecens != null) {
@@ -309,8 +309,8 @@ public class Board
                 float twidth = Media.TERRAIN_WIDTH, theight = Media.TERRAIN_HEIGHT;
                 float awidth = Media.ACTION_WIDTH, aheight = Media.ACTION_HEIGHT;
                 _ctrls.layer.add(_rotate = Atlantis.media.getActionTile(Media.ROTATE_ACTION));
-                _ctrls.layer.add(_commit = Atlantis.media.getActionTile(Media.OK_ACTION));
-                _commit.setTranslation(twidth, theight);
+                _ctrls.layer.add(_nopiecen = Atlantis.media.getActionTile(Media.NOPIECEN_ACTION));
+                _nopiecen.setTranslation(twidth, theight);
                 _ctrls.layer.add(_cancel = Atlantis.media.getActionTile(Media.CANCEL_ACTION));
                 _cancel.setTranslation(0, theight);
                 _ctrls.layer.add(_placep = Atlantis.media.getPiecenTile(mypidx));
@@ -348,7 +348,7 @@ public class Board
                     }
                 });
 
-                Atlantis.input.register(_commit, abounds, new Input.Action() {
+                Atlantis.input.register(_nopiecen, abounds, new Input.Action() {
                     public void onTrigger () {
                         commitPlacement(null); // place with no piecen
                     }
@@ -364,7 +364,7 @@ public class Board
                 Atlantis.input.register(_placep, pbounds, new Input.Action() {
                     public void onTrigger () {
                         zoomInOn(_active);    // zoom into the to-be-placed tile
-                        showCommitControls(); // put the controls in "commit this placement" mode
+                        showCommitControls(); // put the controls in "commit placement" mode
                     }
                 });
             }
@@ -404,7 +404,7 @@ public class Board
             _rotate.setVisible(_orients.size() > 1);
             boolean havePiecens = _gobj.piecensAvailable(_gobj.turnHolder.get()) > 0;
             _placep.setVisible(havePiecens);
-            _commit.setVisible(!havePiecens);
+            _nopiecen.setVisible(!havePiecens);
         }
 
         protected void showCommitControls () {
@@ -412,8 +412,8 @@ public class Board
             _piecens.setVisible(true);
             // hide the "place piecen" control
             _placep.setVisible(false);
-            // make the commit and cancel buttons visible
-            _commit.setVisible(true);
+            // make the nopiecen and cancel buttons visible
+            _nopiecen.setVisible(true);
             _cancel.setVisible(true);
             // enable/disable piecens based on legal placements
             int idx = 0;
@@ -438,7 +438,7 @@ public class Board
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
         protected GroupLayer _piecens;
-        protected ImageLayer _rotate, _placep, _commit, _cancel;
+        protected ImageLayer _rotate, _placep, _nopiecen, _cancel;
     }
 
     protected GameController _ctrl;
