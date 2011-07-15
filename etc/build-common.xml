@@ -100,7 +100,7 @@
   <!-- Various targets for running the game -->
   <target name="run-html" depends="compile-html" description="Serves HTML game on localhost.">
     <artifact:dependencies pathId="jetty-ant.classpath">
-      <remoteRepository url="http://oss.sonatype.org/content/groups/jetty/"/>
+      <remoteRepository id="jetty-repo" url="http://oss.sonatype.org/content/groups/jetty/"/>
       <Dependency groupId="org.mortbay.jetty" artifactId="jetty-ant"
                   version="7.4.2.v20110526" scope="runtime" />
     </artifact:dependencies>
