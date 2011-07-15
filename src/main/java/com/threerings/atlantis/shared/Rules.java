@@ -24,42 +24,42 @@ public class Rules
      */
     public static List<GameTile> standardTiles () {
         List<GameTile> tiles = Lists.newArrayList();
-        add(tiles, Terrain.CITY_FOUR, true, 1);
+        add(1, tiles, Terrain.CITY_FOUR, true);
 
-        add(tiles, Terrain.CITY_THREE, false, 3);
-        add(tiles, Terrain.CITY_THREE, true, 1);
-        add(tiles, Terrain.CITY_THREE_ROAD, false, 1);
-        add(tiles, Terrain.CITY_THREE_ROAD, true, 2);
+        add(3, tiles, Terrain.CITY_THREE, false);
+        add(1, tiles, Terrain.CITY_THREE, true);
+        add(1, tiles, Terrain.CITY_THREE_ROAD, false);
+        add(2, tiles, Terrain.CITY_THREE_ROAD, true);
 
-        add(tiles, Terrain.CITY_TWO, false, 3);
-        add(tiles, Terrain.CITY_TWO, true, 2);
-        add(tiles, Terrain.CITY_TWO_ROAD, false, 3);
-        add(tiles, Terrain.CITY_TWO_ROAD, true, 2);
-        add(tiles, Terrain.CITY_TWO_ACROSS, false, 1);
-        add(tiles, Terrain.CITY_TWO_ACROSS, true, 2);
+        add(3, tiles, Terrain.CITY_TWO, false);
+        add(2, tiles, Terrain.CITY_TWO, true);
+        add(3, tiles, Terrain.CITY_TWO_ROAD, false);
+        add(2, tiles, Terrain.CITY_TWO_ROAD, true);
+        add(1, tiles, Terrain.CITY_TWO_ACROSS, false);
+        add(2, tiles, Terrain.CITY_TWO_ACROSS, true);
 
-        add(tiles, Terrain.TWO_CITY_TWO, false, 2);
-        add(tiles, Terrain.TWO_CITY_TWO_ACROSS, false, 3);
+        add(2, tiles, Terrain.TWO_CITY_TWO, false);
+        add(3, tiles, Terrain.TWO_CITY_TWO_ACROSS, false);
 
-        add(tiles, Terrain.CITY_ONE, false, 5);
-        add(tiles, Terrain.CITY_ONE_ROAD_RIGHT, false, 3);
-        add(tiles, Terrain.CITY_ONE_ROAD_LEFT, false, 3);
-        add(tiles, Terrain.CITY_ONE_ROAD_TEE, false, 3);
-        add(tiles, Terrain.CITY_ONE_ROAD_STRAIGHT, false, 3);
+        add(5, tiles, Terrain.CITY_ONE, false);
+        add(3, tiles, Terrain.CITY_ONE_ROAD_RIGHT, false);
+        add(3, tiles, Terrain.CITY_ONE_ROAD_LEFT, false);
+        add(3, tiles, Terrain.CITY_ONE_ROAD_TEE, false);
+        add(3, tiles, Terrain.CITY_ONE_ROAD_STRAIGHT, false);
 
-        add(tiles, Terrain.CLOISTER_PLAIN, false, 4);
-        add(tiles, Terrain.CLOISTER_ROAD, false, 2);
+        add(4, tiles, Terrain.CLOISTER_PLAIN, false);
+        add(2, tiles, Terrain.CLOISTER_ROAD, false);
 
-        add(tiles, Terrain.FOUR_WAY_ROAD, false, 1);
-        add(tiles, Terrain.THREE_WAY_ROAD, false, 4);
-        add(tiles, Terrain.STRAIGHT_ROAD, false, 8);
-        add(tiles, Terrain.CURVED_ROAD, false, 9);
+        add(1, tiles, Terrain.FOUR_WAY_ROAD, false);
+        add(4, tiles, Terrain.THREE_WAY_ROAD, false);
+        add(8, tiles, Terrain.STRAIGHT_ROAD, false);
+        add(9, tiles, Terrain.CURVED_ROAD, false);
 
         return tiles;
     }
 
-    protected static void add (List<GameTile> tiles, Terrain terrain, boolean hasShield,
-                               int count) {
+    protected static void add (int count, List<GameTile> tiles,
+                               Terrain terrain, boolean hasShield) {
         for (int ii = 0; ii < count; ii++) {
             tiles.add(new GameTile(terrain, hasShield));
         }
