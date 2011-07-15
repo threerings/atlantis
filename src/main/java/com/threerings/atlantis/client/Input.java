@@ -58,13 +58,54 @@ public class Input
 
         @Override public boolean hitTest (IPoint p) {
             if (!_layer.visible()) return false;
-            // compute the transform from screen coordinates to this layer's coordinates and then
-            // check that the point falls in the (layer transform relative) bounds
-            return _bounds.contains(inverseTransform(_layer, p, new Point()));
+            // convert the screen coordinates into layer-relative coordinates and check that the
+            // point falls within the (layer-transform-relative) bounds
+            return _bounds.contains(screenToLayer(_layer, p, new Point()));
         }
 
         protected Layer _layer;
         protected IRectangle _bounds;
+    }
+
+    /**
+     * Converts the supplied point from coordinates relative to the specified layer to screen
+     * coordinates. The results are stored into {@code into}, which is returned for convenience.
+     */
+    public static Point layerToScreen (Layer layer, IPoint point, Point into) {
+        return layerToParent(layer, null, point, into);
+    }
+
+    /**
+     * Converts the supplied point from coordinates relative to the specified child layer to
+     * coordinates relative to the specified parent layer. The results are stored into {@code
+     * into}, which is returned for convenience.
+     */
+    public static Point layerToParent (Layer layer, Layer parent, IPoint point, Point into) {
+        into.set(point);
+        while (layer != parent) {
+            into.x -= layer.originX();
+            into.y -= layer.originY();
+            forplay.core.Transform lt = layer.transform();
+            _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
+            _scratch.transform(into, into);
+            layer = layer.parent();
+        }
+        return into;
+    }
+
+    /**
+     * Converts the supplied point from screen coordinates to coordinates relative to the specified
+     * layer. The results are stored into {@code into}, which is returned for convenience.
+     */
+    public static Point screenToLayer (Layer layer, IPoint point, Point into) {
+        Layer parent = layer.parent();
+        IPoint cur = (parent == null) ? point : screenToLayer(parent, point, into);
+        forplay.core.Transform lt = layer.transform();
+        _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
+        into = _scratch.inverseTransform(cur, into);
+        into.x += layer.originX();
+        into.y += layer.originY();
+        return into;
     }
 
     public Input () {
@@ -177,17 +218,6 @@ public class Input
     /** A list of all registered bounded pointer listeners. */
     protected List<BPL> _listeners = Lists.newArrayList();
 
-    protected static Point inverseTransform (Layer layer, IPoint point, Point into) {
-        Layer parent = layer.parent();
-        IPoint cur = (parent == null) ? point : inverseTransform(parent, point, into);
-        forplay.core.Transform lt = layer.transform();
-        _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
-        into = _scratch.inverseTransform(cur, into);
-        into.x += layer.originX();
-        into.y += layer.originY();
-        return into;
-    }
-
-    /** A scratch transform, used by {@link #inverseTransform}. */
+    /** A scratch transform, used by {@link #screenToLayer} and {@link #layerToScreen}. */
     protected static AffineTransform _scratch = new AffineTransform();
 }
