@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
 import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.DistribUtil;
 import com.threerings.nexus.distrib.EventSink;
@@ -89,9 +91,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
             // note the score increase for all participants
             for (int pidx : score.scorers) {
-                Integer oscore = _gobj.scores.get(pidx);
-                if (oscore == null) oscore = 0;
-                _gobj.scores.put(pidx, oscore + score.score);
+                _gobj.scores.put(pidx, _gobj.getScore(pidx) + score.score);
             }
 
             // reclaim the piecens from the completed feature
@@ -129,7 +129,9 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
         // place the starting tile on the board
         _tileBag.remove(Rules.STARTER);
-        _gobj.plays.add(new Placement(Rules.STARTER, Orient.NORTH, new Location(0, 0)));
+        Placement play = new Placement(Rules.STARTER, Orient.NORTH, new Location(0, 0));
+        _gobj.plays.add(play);
+        _logic.addPlacement(play);
 
         // note that the game is in play and choose the first turn-holder
         _gobj.state.update(GameObject.State.IN_PLAY);
@@ -137,9 +139,29 @@ public class LocalGameService extends DService<GameService> implements GameServi
     }
 
     protected void startTurn (int turnHolder) {
-        _gobj.placing.update(_tileBag.remove(0));
-        _gobj.tilesRemaining.update(_tileBag.size());
-        _gobj.turnHolder.update(turnHolder);
+        List<GameTile> skipped = Lists.newArrayList();
+        GameTile tile = _tileBag.remove(0);
+        while (_logic.computeLegalPlays(tile).isEmpty()) {
+            Log.info("Skipping unplayable tile", "tile", tile);
+            skipped.add(tile);
+            tile = null;
+            if (_tileBag.isEmpty()) break;
+            tile = _tileBag.remove(0);
+        }
+
+        if (tile == null) {
+            // crap, we found no playable tiles, end the game early with a message
+            Log.info("Ending game early due to lack of playable tiles", "skipped", skipped);
+            // TODO: send message
+            _gobj.turnHolder.update(-1);
+            _gobj.state.update(GameObject.State.GAME_OVER);
+
+        } else {
+            _tileBag.addAll(skipped); // throw the skipped tiles back in the bag
+            _gobj.placing.update(tile);
+            _gobj.tilesRemaining.update(_tileBag.size());
+            _gobj.turnHolder.update(turnHolder);
+        }
     }
 
     protected static void checkState (boolean condition, String message, Object... args) {

@@ -21,6 +21,8 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 import pythagoras.f.Rectangle;
 
+import com.threerings.nexus.distrib.DMap;
+import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
 import com.threerings.atlantis.shared.Feature;
@@ -33,6 +35,7 @@ import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Piecen;
 import com.threerings.atlantis.shared.Placement;
 import static com.threerings.atlantis.client.AtlantisClient.*;
+import com.threerings.atlantis.shared.Rules;
 
 /**
  * Manages the layer that displays the game board.
@@ -100,6 +103,25 @@ public class Board
             }
         });
 
+        // listen for piecen count and score changes
+        _gobj.piecens.addListener(new DSet.Listener<Piecen>() {
+            public void elementAdded (Piecen piecen) {
+                // TODO: improve?
+                int pcount = Rules.STARTING_PIECENS - _gobj.piecensInPlay(piecen.ownerIdx);
+                scores.setPiecenCount(piecen.ownerIdx, pcount);
+            }
+            public void elementRemoved (Piecen piecen) {
+                // TODO: improve?
+                int pcount = Rules.STARTING_PIECENS - _gobj.piecensInPlay(piecen.ownerIdx);
+                scores.setPiecenCount(piecen.ownerIdx, pcount);
+            }
+        });
+        _gobj.scores.addListener(new DMap.PutListener<Integer,Integer>() {
+            public void entryPut (Integer pidx, Integer score, Integer oscore) {
+                scores.setScore(pidx, score);
+            }
+        });
+
         // wire up a dragger that is triggered for presses that don't touch anything else
         Rectangle sbounds = new Rectangle(0, 0, graphics().width(), graphics().height());
         Atlantis.input.register(sbounds, new Pointer.Listener() {
@@ -139,6 +161,12 @@ public class Board
         }
         for (Piecen p : _gobj.piecens) {
             addPiecen(p);
+        }
+
+        for (int ii = 0; ii < _gobj.players.length; ii++) {
+            int pcount = Rules.STARTING_PIECENS - _gobj.piecensInPlay(ii);
+            scores.setPiecenCount(ii, pcount);
+            scores.setScore(ii, _gobj.getScore(ii));
         }
     }
 

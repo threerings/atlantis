@@ -27,8 +27,10 @@ public class Scoreboard
 
         TextFormat titleFormat = new TextFormat().withFont(
             graphics().createFont("Helvetica", Font.Style.BOLD, 24));
-        TextFormat nameFormat = new TextFormat().withFont(
-            graphics().createFont("Helvetica", Font.Style.PLAIN, 16));
+        Font nameFont = graphics().createFont("Helvetica", Font.Style.PLAIN, 16);
+        TextFormat nameFormat = new TextFormat().withFont(nameFont);
+        TextFormat numberFormat = new TextFormat().withFont(nameFont).
+            withAlignment(TextFormat.Alignment.RIGHT);
 
         // title on top
         TextGlyph title = TextGlyph.forText("Atlantis", titleFormat);
@@ -43,19 +45,39 @@ public class Scoreboard
         layer.add(_turnHolder);
         _turnHolder.setVisible(false);
 
-        // player names and piecen icons
+        // player names and other metadata
         _playersY = ypos;
+        _piecens = new TextGlyph[players.length];
+        _scores = new TextGlyph[players.length];
         int pidx = 0;
         for (String player : players) {
+            TextGlyph score = (_scores[pidx] = TextGlyph.forTemplate("0000", numberFormat));
+            TextGlyph piecens = (_piecens[pidx] = TextGlyph.forTemplate("0", numberFormat));
             ImageLayer piecen = Atlantis.media.getPiecenTile(pidx++);
-            piecen.setTranslation(MARGIN + Media.PIECEN_WIDTH/2, ypos + PLAYER_HEIGHT/2);
-            layer.add(piecen);
 
-            TextGlyph name = TextGlyph.forText(player, nameFormat);
-            name.layer.setTranslation(MARGIN + Media.PIECEN_WIDTH + 2, ypos + 2);
+            // manual layout is awesome!
+            int hgap = 4, vgap = 4, nameWidth = WIDTH - 2*MARGIN - Media.PIECEN_WIDTH -
+                score.layer.canvas().width() - piecens.layer.canvas().width() - 3*hgap;
+
+            TextGlyph name = TextGlyph.forWidth(nameWidth, nameFormat);
+            name.setText(player);
+
+            float xpos = MARGIN;
+            name.layer.setTranslation(xpos, ypos + vgap/2);
+            xpos += nameWidth + hgap;
+            // bump the piecen up by two to align it to the baseline of the font, hack!
+            piecen.setTranslation(xpos + Media.PIECEN_WIDTH/2, ypos + PLAYER_HEIGHT/2 - 2);
+            xpos += Media.PIECEN_WIDTH + hgap;
+            piecens.layer.setTranslation(xpos, ypos + vgap/2);
+            xpos += piecens.layer.canvas().width() + hgap;
+            score.layer.setTranslation(xpos, ypos + vgap/2);
+
             layer.add(name.layer);
+            layer.add(piecen);
+            layer.add(piecens.layer);
+            layer.add(score.layer);
 
-            ypos += Media.PIECEN_HEIGHT + 4;
+            ypos += Media.PIECEN_HEIGHT + vgap;
         }
 
         // add remaining tiles count
@@ -83,6 +105,14 @@ public class Scoreboard
         layer.add(0, bg);
     }
 
+    public void setPiecenCount (int playerIdx, int piecens) {
+        _piecens[playerIdx].setText(""+piecens);
+    }
+
+    public void setScore (int playerIdx, int score) {
+        _scores[playerIdx].setText(""+score);
+    }
+
     public void setTurnInfo (int turnHolderIdx, int remaining) {
         _turnHolder.setTranslation(0, _playersY + turnHolderIdx * PLAYER_HEIGHT);
         _turnHolder.setVisible(turnHolderIdx >= 0);
@@ -99,6 +129,8 @@ public class Scoreboard
     protected CanvasLayer _turnHolder;
     protected float _playersY, _nextTileY;
     protected TextGlyph _remaining, _nextLabel;
+    protected TextGlyph[] _piecens;
+    protected TextGlyph[] _scores;
 
     protected static final int WIDTH = 180;
     protected static final int MARGIN = 16;

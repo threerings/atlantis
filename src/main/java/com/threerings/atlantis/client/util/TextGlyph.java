@@ -29,6 +29,19 @@ public class TextGlyph
     }
 
     /**
+     * Creates a glyph that will render text using the supplied format.
+     *
+     * @param width the maximum width to allow for the text. The layer created by this glyph will
+     * be the specified width and of height that accommodates a single line of text.
+     */
+    public static TextGlyph forWidth (int width, TextFormat format) {
+        TextGlyph glyph = new TextGlyph(format);
+        TextLayout layout = graphics().layoutText("JYyj", format); // hack to get line height
+        glyph.createLayer(width, (int)Math.ceil(layout.height()));
+        return glyph;
+    }
+
+    /**
      * Creates a glyph containing the supplied text.
      */
     public static TextGlyph forText (String text, TextFormat format) {
@@ -50,13 +63,17 @@ public class TextGlyph
         } else {
             layer.canvas().clear();
         }
-        layer.canvas().drawText(layout, 0, 0);
+        float x = _format.align.getX(layout.width(), layer.canvas().width());
+        layer.canvas().drawText(layout, x, 0);
         return this;
     }
 
     protected void createLayer (TextLayout layout) {
-        layer = graphics().createCanvasLayer(
-            (int)Math.ceil(layout.width()), (int)Math.ceil(layout.height()));
+        createLayer((int)Math.ceil(layout.width()), (int)Math.ceil(layout.height()));
+    }
+
+    protected void createLayer (int width, int height) {
+        layer = graphics().createCanvasLayer(width, height);
     }
 
     protected TextGlyph (TextFormat format) {

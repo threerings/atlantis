@@ -73,6 +73,12 @@ public class GameObject extends NexusObject
         return null;
     }
 
+    /** Returns the specified player's current score. */
+    public int getScore (int playerIdx) {
+        Integer score = scores.get(playerIdx);
+        return (score == null) ? 0 : score;
+    }
+
     @Override
     protected DAttribute getAttribute (int index) {
         switch (index) {

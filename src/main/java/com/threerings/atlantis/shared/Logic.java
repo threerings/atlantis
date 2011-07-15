@@ -323,7 +323,7 @@ public class Logic
             if (cf == null) continue;
 
             // make sure the piecen is on the cloister
-            if (_piecenGroups.get(p) != getClaim(nplay).getClaimGroup(cf)) continue;
+            if (_piecenGroups.get(p.loc) != getClaim(nplay).getClaimGroup(cf)) continue;
 
             // finally, score the cloister, which will always have only one scorer, one involved
             // piecen, and a non-zero score (simple!)
