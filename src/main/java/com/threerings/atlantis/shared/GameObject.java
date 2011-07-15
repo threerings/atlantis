@@ -63,6 +63,16 @@ public class GameObject extends NexusObject
         return count;
     }
 
+    /** Returns the piecen at the specified location, or null. */
+    public Piecen piecenAt (Location loc) {
+        for (Piecen p : piecens) {
+            if (p.loc.equals(loc)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     @Override
     protected DAttribute getAttribute (int index) {
         switch (index) {

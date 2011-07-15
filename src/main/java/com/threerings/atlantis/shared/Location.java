@@ -4,6 +4,7 @@
 
 package com.threerings.atlantis.shared;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,6 +43,20 @@ public class Location
             neighbor(Orient.SOUTH),
             neighbor(Orient.WEST),
         });
+    }
+
+    /**
+     * Returns all the locations in this location's 3x3 neighborhood (itself, and its neighbors in
+     * the cardinal and intercardinal directions).
+     */
+    public List<Location> neighborhood () {
+        List<Location> ns = new ArrayList<Location>(9);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                ns.add(new Location(x+dx, y+dy));
+            }
+        }
+        return ns;
     }
 
     /**

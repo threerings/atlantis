@@ -5,6 +5,7 @@
 package com.threerings.atlantis.shared;
 
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -82,10 +83,28 @@ public class Logic
         protected final Map<Feature,Integer> _claims = new HashMap<Feature,Integer>();
     }
 
+    /** Used to report score information following a tile placement. */
+    public static class FeatureScore {
+        public final Feature feature;
+        public final boolean complete;
+        public final Set<Integer> scorers;
+        public final int score;
+        public final List<Piecen> piecens;
+
+        public FeatureScore (Feature feature, Set<Integer> scorers, int score,
+                             List<Piecen> piecens) {
+            this.feature = feature;
+            this.complete = (score > 0);
+            this.scorers = scorers;
+            this.score = Math.abs(score);
+            this.piecens = piecens;
+        }
+    }
+
     /**
      * Creates a new logic instance with the existing game state.
      */
-    public Logic (GameObject gobj) {
+    public Logic (final GameObject gobj) {
         // note our existing game state
         for (Placement play : gobj.plays) {
             addPlacement(play);
@@ -93,18 +112,6 @@ public class Logic
         for (Piecen p : gobj.piecens) {
             addPiecen(p);
         }
-
-        // listen for additional game state changes
-        gobj.plays.addListener(new DSet.AddedListener<Placement>() {
-            public void elementAdded (Placement play) {
-                addPlacement(play);
-            }
-        });
-        gobj.piecens.addListener(new DSet.AddedListener<Piecen>() {
-            public void elementAdded (Piecen piecen) {
-                addPiecen(piecen);
-            }
-        });
     }
 
     /**
@@ -130,7 +137,8 @@ public class Logic
 
     /**
      * Notes the specified piecement placement, assigns it a claim group and propagates its claim
-     * information to connected tiles.
+     * information to connected tiles. The tile placement associated with this piecen must have
+     * already been added via {@link #addPlacement}.
      */
     public void addPiecen (Piecen piecen) {
         _piecens.put(piecen.loc, piecen);
@@ -146,6 +154,14 @@ public class Logic
             // one of these calls will result in this piecen's claim group being mapped
             getClaim(feat.play).setClaimGroup(feat.feature, claimGroup);
         }
+    }
+
+    /**
+     * Clears the metadata from the specified piecen (due to it being reclaimed).
+     */
+    public void clearPiecen (Piecen piecen) {
+        _piecens.remove(piecen.loc);
+        _piecenGroups.remove(piecen.loc);
     }
 
     /**
@@ -263,6 +279,63 @@ public class Logic
     }
 
     /**
+     * Computes the scores for all features involved in the supplied placement.
+     */
+    public List<FeatureScore> computeScores (Placement play) {
+        List<FeatureScore> scores = new ArrayList<FeatureScore>();
+        Claim claim = getClaim(play);
+
+        // check all of the features on this tile for potential scores
+        for (Feature f : play.tile.terrain.features) {
+            // ignore features that aren't completed in this way (e.g. GRASS)
+            if (!COMPLETABLES.contains(f.type)) continue;
+
+            // see who should score this feature
+            int group = claim.getClaimGroup(f);
+            Set<Integer> scorers = getScorers(group);
+            // if we have no scorers, the feature is unclaimed; skip it
+            if (scorers.isEmpty()) continue;
+
+            // if we made it this far, we may have something to report
+            int score = computeFeatureScore(play, f);
+            if (score != 0) {
+                scores.add(new FeatureScore(f, scorers, score, getPiecens(group)));
+            }
+        }
+
+        // we may have also completed a cloister, so we check that as well
+        for (Location nloc : play.loc.neighborhood()) {
+            Placement nplay = _plays.get(nloc);
+            if (nplay == null) continue;
+
+            // check whether this tile has a piecen upon't
+            Piecen p = _piecens.get(nloc);
+            if (p == null) continue;
+
+            // check whether this tile contains a cloister feature
+            Feature cf = null;
+            for (Feature f : nplay.tile.terrain.features) {
+                if (f.type == Feature.Type.CLOISTER) {
+                    cf = f;
+                    break;
+                }
+            }
+            if (cf == null) continue;
+
+            // make sure the piecen is on the cloister
+            if (_piecenGroups.get(p) != getClaim(nplay).getClaimGroup(cf)) continue;
+
+            // finally, score the cloister, which will always have only one scorer, one involved
+            // piecen, and a non-zero score (simple!)
+            scores.add(new FeatureScore(cf, Collections.singleton(p.ownerIdx),
+                                        computeFeatureScore(nplay, cf),
+                                        Collections.singletonList(p)));
+        }
+
+        return scores;
+    }
+
+    /**
      * Returns true if the two supplied placements match up (represent a legal board position).
      */
     protected boolean tilesMatch (Placement play1, Placement play2) {
@@ -332,6 +405,97 @@ public class Logic
         }
 
         return complete;
+    }
+
+    /**
+     * Computes the score for the specified feature of the specified placement. The feature is
+     * assumed to be controlled by one or more players.
+     * @return 0 if the feature has no intrinsic score (i.e. is GRASS), a positive score if the
+     * feature is complete and a negative score if it is incomplete.
+     */
+    protected int computeFeatureScore (Placement play, Feature f) {
+        int score = 0;
+        boolean complete;
+
+        switch (f.type) {
+        default:
+        case GRASS: return 0; // grass is scored later
+
+        case CLOISTER: {
+            // cloisters score one for every tile in the 3x3 neighborhood
+            for (Location nloc : play.loc.neighborhood()) {
+                if (_plays.containsKey(nloc)) score++;
+            }
+            complete = (score == 9);
+            break;
+        }
+
+        case ROAD:
+        case CITY:
+            // score roads and cities by loading up the group and counting the number of tiles in it
+            List<TileFeature> flist = new ArrayList<TileFeature>();
+            complete = enumerateGroup(play, f, flist);
+
+            // filter out multiple features on the same tile, scoring only counts tiles
+            Map<Location, TileFeature> fmap = new HashMap<Location, TileFeature>();
+            for (TileFeature feat : flist) {
+                fmap.put(feat.play.loc, feat);
+            }
+            score = fmap.size();
+
+            // when scoring city features, we add a bonus "tile" for every tile with a shield
+            if (f.type == Feature.Type.CITY) {
+                for (TileFeature feat : fmap.values()) {
+                    if (feat.play.tile.hasShield) score++;
+                }
+            }
+
+            // TODO: relegate the following to a Rules instance
+
+            // complete city features of size greater than two score double
+            if (f.type == Feature.Type.CITY && complete && score > 2) {
+                score *= 2;
+            }
+        }
+
+        // incomplete features are communicated via a negative score
+        return complete ? score : -score;
+    }
+
+    /** Returns a set containing the index of every player that should earn points for the
+     * specified claim group. The player with the most piecens on a claim group gets points for the
+     * group. In the case of ties, all tying players score. */
+    protected Set<Integer> getScorers (int claimGroup) {
+        Map<Integer, Integer> piecens = new HashMap<Integer,Integer>();
+
+        // count the piecens in this group by player
+        int max = 0;
+        for (Piecen p : getPiecens(claimGroup)) {
+            Integer ocount = piecens.get(p.ownerIdx);
+            if (ocount == null) ocount = 0;
+            piecens.put(p.ownerIdx, ocount+1);
+            max = Math.max(max, ocount+1);
+        }
+
+        // now delete anyone who's score is less than the max
+        for (Iterator<Integer> iter = piecens.values().iterator(); iter.hasNext(); ) {
+            if (iter.next() < max) iter.remove();
+        }
+
+        return piecens.keySet();
+    }
+
+    /**
+     * Returns a list of all piecens with the specified claim group.
+     */
+    protected List<Piecen> getPiecens (int claimGroup) {
+        List<Piecen> ps = new ArrayList<Piecen>();
+        for (Piecen p : _piecens.values()) {
+            if (_piecenGroups.get(p.loc) == claimGroup) {
+                ps.add(p);
+            }
+        }
+        return ps;
     }
 
     /** Used to generate claim group values. */

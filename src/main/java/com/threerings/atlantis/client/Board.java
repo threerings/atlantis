@@ -21,7 +21,6 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 import pythagoras.f.Rectangle;
 
-import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
 import com.threerings.atlantis.shared.Feature;
@@ -88,23 +87,6 @@ public class Board
         _ctrl = ctrl;
         _gobj = gobj;
 
-        // when we see a play or piecen added, add it to the display
-        _gobj.plays.addListener(new DSet.AddedListener<Placement>() {
-            public void elementAdded (Placement play) {
-                // TODO: if we didn't place this play, we need to animate it going from the
-                // scoreboard to the correct position on the board
-                addPlacement(play);
-            }
-        });
-        _gobj.piecens.addListener(new DSet.Listener<Piecen>() {
-            public void elementAdded (Piecen piecen) {
-                addPiecen(piecen);
-            }
-            public void elementRemoved (Piecen piecen) {
-                clearPiecen(piecen);
-            }
-        });
-
         // when the turn-holder changes, update all of the other bits
         _gobj.turnHolder.addListener(new DValue.Listener<Integer>() {
             public void valueChanged (Integer turnHolder, Integer oldTurnHolder) {
@@ -161,7 +143,10 @@ public class Board
     }
 
     public void addPlacement (Placement play) {
+        // TODO: if this client didn't originate this play, we need to animate it going from the
+        // scoreboard to the correct position on the board
         clearPlacing();
+
         Glyphs.Play glyph = new Glyphs.Play(play);
         tiles.add(glyph.layer);
         _pglyphs.put(play.loc, glyph);

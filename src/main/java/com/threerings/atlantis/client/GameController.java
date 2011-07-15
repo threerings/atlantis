@@ -7,6 +7,7 @@ package com.threerings.atlantis.client;
 import java.util.List;
 import java.util.Set;
 
+import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
 import com.threerings.atlantis.shared.GameObject;
@@ -45,6 +46,24 @@ public class GameController
                     gameDidEnd();
                     break;
                 }
+            }
+        });
+
+        // listen for plays and keep the logic and board up to date
+        _gobj.plays.addListener(new DSet.AddedListener<Placement>() {
+            public void elementAdded (Placement play) {
+                logic.addPlacement(play);
+                _board.addPlacement(play);
+            }
+        });
+        gobj.piecens.addListener(new DSet.Listener<Piecen>() {
+            public void elementAdded (Piecen piecen) {
+                logic.addPiecen(piecen);
+                _board.addPiecen(piecen);
+            }
+            public void elementRemoved (Piecen piecen) {
+                logic.clearPiecen(piecen);
+                _board.clearPiecen(piecen);
             }
         });
 

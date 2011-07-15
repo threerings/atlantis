@@ -73,18 +73,40 @@ public class LocalGameService extends DService<GameService> implements GameServi
                        "pidx", playerIdx, "play", play);
         }
 
-        // add this play to the game state
+        // TODO: validate that this is a legal play
+
+        // add this play to the game state and our local logic
         _gobj.plays.add(play);
+        _logic.addPlacement(play);
         if (piecen != null) {
             _gobj.piecens.add(piecen);
+            _logic.addPiecen(piecen);
         }
 
-        // TODO: if the play completes a feature, score it and return the piecens involved
+        // if the play completes any features, score them and remove the involved piecens
+        for (Logic.FeatureScore score : _logic.computeScores(play)) {
+            if (!score.complete) continue; // don't score incomplete features until endgame
+
+            // note the score increase for all participants
+            for (int pidx : score.scorers) {
+                Integer oscore = _gobj.scores.get(pidx);
+                if (oscore == null) oscore = 0;
+                _gobj.scores.put(pidx, oscore + score.score);
+            }
+
+            // reclaim the piecens from the completed feature
+            for (Piecen p : score.piecens) {
+                // TODO: send an event indicating that this piecen scored 'score' points so that
+                // the board can animate a score floating above the reclaimed piecen
+                _gobj.piecens.remove(p);
+            }
+        }
 
         // if we're out of tiles, end the game, otherwise start the next turn
         if (_tileBag.isEmpty()) {
             _gobj.turnHolder.update(-1);
             _gobj.state.update(GameObject.State.GAME_OVER);
+            // TODO: score all remaining incomplete features, plus grass
         } else {
             startTurn((_gobj.turnHolder.get() + 1) % _gobj.players.length);
         }
