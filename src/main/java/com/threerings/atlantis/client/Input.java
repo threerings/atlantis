@@ -74,7 +74,7 @@ public class Input
                 Point p = new Point(x, y);
                 // take a snapshot of the reactors list at the start of the click to avoid
                 // concurrent modification if reactors are added or removed during processing
-                for (Reactor r : Lists.newArrayList(_reactors)) {
+                for (Reactor r : Lists.newArrayList(Lists.reverse(_reactors))) {
                     if (r.hasExpired()) {
                         _reactors.remove(r);
                     } else if (r.hitTest(p)) {
@@ -147,7 +147,9 @@ public class Input
     }
 
     /**
-     * Registers a reactor.
+     * Registers a reactor. More recently registered reactors will be checked before older
+     * reactors, and will thus be preferred in the case of overlap. Presently there's no other way
+     * to control overlap behavior.
      *
      * @return a handle that can be used to clear this registration.
      */
