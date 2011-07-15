@@ -63,6 +63,11 @@ public class GameObject extends NexusObject
         return count;
     }
 
+    /** Returns the number of piecens available for play by the specified player. */
+    public int piecensAvailable (int playerIdx) {
+        return Rules.STARTING_PIECENS - piecensInPlay(playerIdx);
+    }
+
     /** Returns the piecen at the specified location, or null. */
     public Piecen piecenAt (Location loc) {
         for (Piecen p : piecens) {

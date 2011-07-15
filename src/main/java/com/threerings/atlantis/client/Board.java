@@ -26,8 +26,8 @@ import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
 import com.threerings.atlantis.shared.Feature;
-import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.GameObject;
+import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Log;
 import com.threerings.atlantis.shared.Logic;
@@ -35,7 +35,6 @@ import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Piecen;
 import com.threerings.atlantis.shared.Placement;
 import static com.threerings.atlantis.client.AtlantisClient.*;
-import com.threerings.atlantis.shared.Rules;
 
 /**
  * Manages the layer that displays the game board.
@@ -106,14 +105,10 @@ public class Board
         // listen for piecen count and score changes
         _gobj.piecens.addListener(new DSet.Listener<Piecen>() {
             public void elementAdded (Piecen piecen) {
-                // TODO: improve?
-                int pcount = Rules.STARTING_PIECENS - _gobj.piecensInPlay(piecen.ownerIdx);
-                scores.setPiecenCount(piecen.ownerIdx, pcount);
+                scores.setPiecenCount(piecen.ownerIdx, _gobj.piecensAvailable(piecen.ownerIdx));
             }
             public void elementRemoved (Piecen piecen) {
-                // TODO: improve?
-                int pcount = Rules.STARTING_PIECENS - _gobj.piecensInPlay(piecen.ownerIdx);
-                scores.setPiecenCount(piecen.ownerIdx, pcount);
+                scores.setPiecenCount(piecen.ownerIdx, _gobj.piecensAvailable(piecen.ownerIdx));
             }
         });
         _gobj.scores.addListener(new DMap.PutListener<Integer,Integer>() {
@@ -164,8 +159,7 @@ public class Board
         }
 
         for (int ii = 0; ii < _gobj.players.length; ii++) {
-            int pcount = Rules.STARTING_PIECENS - _gobj.piecensInPlay(ii);
-            scores.setPiecenCount(ii, pcount);
+            scores.setPiecenCount(ii, _gobj.piecensAvailable(ii));
             scores.setScore(ii, _gobj.getScore(ii));
         }
     }
@@ -304,13 +298,15 @@ public class Board
                 // ...create our controls UI and icons
                 _ctrls = new Glyphs.Tile();
                 _ctrls.layer.setZOrder(+2); // ctrls go above tiles/placing
-                float quadw = Media.TERRAIN_WIDTH/2, quadh = Media.TERRAIN_HEIGHT/2;
+                float twidth = Media.TERRAIN_WIDTH, theight = Media.TERRAIN_HEIGHT;
+                float awidth = Media.ACTION_WIDTH, aheight = Media.ACTION_HEIGHT;
                 _ctrls.layer.add(_rotate = Atlantis.media.getActionTile(Media.ROTATE_ACTION));
-                _rotate.setTranslation(quadw/2, quadh/2);
                 _ctrls.layer.add(_commit = Atlantis.media.getActionTile(Media.OK_ACTION));
-                _commit.setTranslation(3*quadw/2, 3*quadh/2);
+                _commit.setTranslation(twidth, theight);
+                _ctrls.layer.add(_cancel = Atlantis.media.getActionTile(Media.CANCEL_ACTION));
+                _cancel.setTranslation(0, theight);
                 _ctrls.layer.add(_placep = Atlantis.media.getPiecenTile(mypidx));
-                _placep.setTranslation(3*quadw/2, 3*quadh/2);
+                _placep.setTranslation(twidth, theight);
                 _placep.setAlpha(0.5f);
                 tiles.add(_ctrls.layer);
 
@@ -350,32 +346,25 @@ public class Board
                     }
                 });
 
+                Atlantis.input.register(_cancel, abounds, new Input.Action() {
+                    public void onTrigger () {
+                        restoreZoom();          // zoom back out
+                        showConsiderControls(); // and return to "consider" controls
+                    }
+                });
+
                 Atlantis.input.register(_placep, pbounds, new Input.Action() {
                     public void onTrigger () {
-                        // hide the "place piecen" control
-                        _placep.setVisible(false);
-                        // zoom into the to-be-placed tile
-                        zoomInOn(_active);
-                        // make the piecen buttons visible
-                        _piecens.setVisible(true);
-                        // enable/disable piecens based on legal placements
-                        int idx = 0;
-                        for (Feature f : _placing.terrain.features) {
-                            int claim = _ctrl.logic.computeClaim(
-                                _placing, _glyph.getOrient(), _active.loc, f);
-                            _piecens.get(idx).setVisible(claim == 0);
-                            idx++;
-                        }
-
-                        // TODO: don't display commit yet
-                        _commit.setVisible(true);
+                        zoomInOn(_active);    // zoom into the to-be-placed tile
+                        showCommitControls(); // put the controls in "commit this placement" mode
                     }
                 });
             }
 
-            // hide the controls, we'll show them again when the location animation has completed
+            // move the controls to this location, and hide them; we'll show them again when the
+            // location animation has completed
             _ctrls.layer.setVisible(false);
-            _piecens.setVisible(false);
+            _ctrls.setLocation(_active.loc, false, null);
 
             // compute the valid orientations for the placing tile at this location
             _orients = _ctrl.logic.computeLegalOrients(_placing, _active.loc);
@@ -394,19 +383,38 @@ public class Board
                     }
                     // make our controls visible
                     _ctrls.layer.setVisible(true);
-                    _placep.setVisible(true);
                 }
             });
 
-            // update the controls, and move them to this location
-            _ctrls.setLocation(_active.loc, false, null);
+            // put the controls in "consider this placement" mode
+            showConsiderControls();
+        }
 
-            boolean canRotate = (_orients.size() > 1);
-            _rotate.setVisible(canRotate);
-
-            boolean havePiecens = true; // TODO: use real data
-            _placep.setVisible(false); // havePiecens);
+        protected void showConsiderControls () {
+            _piecens.setVisible(false);
+            _cancel.setVisible(false);
+            _rotate.setVisible(_orients.size() > 1);
+            boolean havePiecens = _gobj.piecensAvailable(_gobj.turnHolder.get()) > 0;
+            _placep.setVisible(havePiecens);
             _commit.setVisible(!havePiecens);
+        }
+
+        protected void showCommitControls () {
+            // make the piecen buttons visible
+            _piecens.setVisible(true);
+            // hide the "place piecen" control
+            _placep.setVisible(false);
+            // make the commit and cancel buttons visible
+            _commit.setVisible(true);
+            _cancel.setVisible(true);
+            // enable/disable piecens based on legal placements
+            int idx = 0;
+            for (Feature f : _placing.terrain.features) {
+                int claim = _ctrl.logic.computeClaim(
+                    _placing, _glyph.getOrient(), _active.loc, f);
+                _piecens.get(idx).setVisible(claim == 0);
+                idx++;
+            }
         }
 
         protected void commitPlacement (Piecen piecen) {
@@ -422,7 +430,7 @@ public class Board
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
         protected GroupLayer _piecens;
-        protected ImageLayer _rotate, _placep, _commit;
+        protected ImageLayer _rotate, _placep, _commit, _cancel;
     }
 
     protected GameController _ctrl;
@@ -431,13 +439,4 @@ public class Board
     protected Placer _placer;
     protected Point _savedTrans;
     protected Map<Location, Glyphs.Play> _pglyphs = Maps.newHashMap();
-
-    /** Computes the quadrant occupied by the supplied point (which must be in the supplied
-     * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */
-    protected static int quad (IRectangle rect, float x, float y) {
-        int quad = 0;
-        quad += (x - rect.getX() < rect.getWidth()/2) ? 0 : 1;
-        quad += (y - rect.getY() < rect.getHeight()/2) ? 0 : 2;
-        return quad;
-    }
 }
