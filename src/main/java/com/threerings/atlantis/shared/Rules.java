@@ -5,7 +5,8 @@
 package com.threerings.atlantis.shared;
 
 import java.util.List;
-import java.util.ArrayList;
+
+import com.google.common.collect.Lists;
 
 /**
  * Code relating to the rules of the game.
@@ -22,7 +23,7 @@ public class Rules
      * Creates and returns the standard selection of game tiles.
      */
     public static List<GameTile> standardTiles () {
-        List<GameTile> tiles = new ArrayList<GameTile>();
+        List<GameTile> tiles = Lists.newArrayList();
         add(tiles, Terrain.CITY_FOUR, true, 1);
 
         add(tiles, Terrain.CITY_THREE, false, 3);

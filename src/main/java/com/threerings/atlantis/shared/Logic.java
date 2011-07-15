@@ -6,12 +6,16 @@ package com.threerings.atlantis.shared;
 
 import java.util.Iterator;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.ArrayList;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.threerings.nexus.distrib.DSet;
 
@@ -80,7 +84,7 @@ public class Logic
         }
 
         /** A mapping from feature to claim group, for claimed features. */
-        protected final Map<Feature,Integer> _claims = new HashMap<Feature,Integer>();
+        protected final Map<Feature,Integer> _claims = Maps.newHashMap();
     }
 
     /** Used to report score information following a tile placement. */
@@ -89,10 +93,10 @@ public class Logic
         public final boolean complete;
         public final Set<Integer> scorers;
         public final int score;
-        public final List<Piecen> piecens;
+        public final Iterable<Piecen> piecens;
 
         public FeatureScore (Feature feature, Set<Integer> scorers, int score,
-                             List<Piecen> piecens) {
+                             Iterable<Piecen> piecens) {
             this.feature = feature;
             this.complete = (score > 0);
             this.scorers = scorers;
@@ -147,7 +151,7 @@ public class Logic
         Placement play = Asserts.checkNotNull(
             _plays.get(piecen.loc), "Piecen played at location where no tile exists? %s", piecen);
 
-        List<TileFeature> flist = new ArrayList<TileFeature>();
+        List<TileFeature> flist = Lists.newArrayList();
         enumerateGroup(play, play.getFeature(piecen.featureIdx), flist);
         int claimGroup = ++_claimGroupCounter;
         for (TileFeature feat : flist) {
@@ -180,7 +184,7 @@ public class Logic
      * Returns the set of board positions where the supplied tile can be legally played.
      */
     public Set<Location> computeLegalPlays (GameTile tile) {
-        Set<Location> locs = new HashSet<Location>();
+        Set<Location> locs = Sets.newHashSet();
 
         // compute the neighbors of all existing tiles
         for (Placement play : _plays.values()) {
@@ -218,10 +222,10 @@ public class Logic
      * location.
      */
     public List<Orient> computeLegalOrients (GameTile tile, Location loc) {
-        List<Orient> orients = new ArrayList<Orient>();
+        List<Orient> orients = Lists.newArrayList();
 
         // fetch the neighbors of this tile
-        List<Placement> neighbors = new ArrayList<Placement>();
+        List<Placement> neighbors = Lists.newArrayList();
         for (Location nloc : loc.neighbors()) {
             Placement nplay = _plays.get(nloc);
             if (nplay != null) {
@@ -282,7 +286,7 @@ public class Logic
      * Computes the scores for all features involved in the supplied placement.
      */
     public List<FeatureScore> computeScores (Placement play) {
-        List<FeatureScore> scores = new ArrayList<FeatureScore>();
+        List<FeatureScore> scores = Lists.newArrayList();
         Claim claim = getClaim(play);
 
         // check all of the features on this tile for potential scores
@@ -433,11 +437,11 @@ public class Logic
         case ROAD:
         case CITY:
             // score roads and cities by loading up the group and counting the number of tiles in it
-            List<TileFeature> flist = new ArrayList<TileFeature>();
+            List<TileFeature> flist = Lists.newArrayList();
             complete = enumerateGroup(play, f, flist);
 
             // filter out multiple features on the same tile, scoring only counts tiles
-            Map<Location, TileFeature> fmap = new HashMap<Location, TileFeature>();
+            Map<Location, TileFeature> fmap = Maps.newHashMap();
             for (TileFeature feat : flist) {
                 fmap.put(feat.play.loc, feat);
             }
@@ -466,7 +470,7 @@ public class Logic
      * specified claim group. The player with the most piecens on a claim group gets points for the
      * group. In the case of ties, all tying players score. */
     protected Set<Integer> getScorers (int claimGroup) {
-        Map<Integer, Integer> piecens = new HashMap<Integer,Integer>();
+        Map<Integer, Integer> piecens = Maps.newHashMap();
 
         // count the piecens in this group by player
         int max = 0;
@@ -488,30 +492,28 @@ public class Logic
     /**
      * Returns a list of all piecens with the specified claim group.
      */
-    protected List<Piecen> getPiecens (int claimGroup) {
-        List<Piecen> ps = new ArrayList<Piecen>();
-        for (Piecen p : _piecens.values()) {
-            if (_piecenGroups.get(p.loc) == claimGroup) {
-                ps.add(p);
+    protected Iterable<Piecen> getPiecens (final int claimGroup) {
+        return Iterables.filter(_piecens.values(), new Predicate<Piecen>() {
+            public boolean apply (Piecen p) {
+                return _piecenGroups.get(p.loc) == claimGroup;
             }
-        }
-        return ps;
+        });
     }
 
     /** Used to generate claim group values. */
     protected int _claimGroupCounter;
 
     /** A mapping of currently placed tiles by placement location. */
-    protected final Map<Location, Placement> _plays = new HashMap<Location, Placement>();
+    protected final Map<Location, Placement> _plays = Maps.newHashMap();
 
     /** A mapping of currently placed piecens by placement location. */
-    protected final Map<Location, Piecen> _piecens = new HashMap<Location, Piecen>();
+    protected final Map<Location, Piecen> _piecens = Maps.newHashMap();
 
     /** Tracks the claim group assigned to every piecen on the board. */
-    protected final Map<Location, Integer> _piecenGroups = new HashMap<Location, Integer>();
+    protected final Map<Location, Integer> _piecenGroups = Maps.newHashMap();
 
     /** Maintains a mapping of claim metadata by location. */
-    protected Map<Location, Claim> _claims = new HashMap<Location, Claim>();
+    protected Map<Location, Claim> _claims = Maps.newHashMap();
 
     /** Used to keep track of actual features on placed tiles. */
     protected static final class TileFeature {
@@ -543,9 +545,6 @@ public class Logic
     };
 
     /** Features that must be checked for completion via graph traversal. */
-    protected static final Set<Feature.Type> COMPLETABLES = new HashSet<Feature.Type>();
-    static {
-        COMPLETABLES.add(Feature.Type.ROAD);
-        COMPLETABLES.add(Feature.Type.CITY);
-    }
+    protected static final Set<Feature.Type> COMPLETABLES = ImmutableSet.of(
+        Feature.Type.ROAD, Feature.Type.CITY);
 }

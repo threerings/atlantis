@@ -5,7 +5,8 @@
 package com.threerings.atlantis.shared;
 
 import java.util.Set;
-import java.util.HashSet;
+
+import com.google.common.collect.Sets;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -29,7 +30,7 @@ public class LogicTest
 
     protected void checkPlay (Logic logic, Terrain terrain, int... expect) {
         GameTile play = new GameTile(terrain, false);
-        Set<Location> valid = new HashSet<Location>();
+        Set<Location> valid = Sets.newHashSet();
         for (int ii = 0; ii < expect.length; ii += 2) {
             valid.add(new Location(expect[ii], expect[ii+1]));
         }

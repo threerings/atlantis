@@ -4,11 +4,12 @@
 
 package com.threerings.atlantis.client;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
@@ -424,7 +425,7 @@ public class Board
         protected GameTile _placing;
         protected Glyphs.Play _glyph;
         protected List<Orient> _orients;
-        protected List<Glyphs.Target> _targets = new ArrayList<Glyphs.Target>();
+        protected List<Glyphs.Target> _targets = Lists.newArrayList();
         protected Glyphs.Target _active;
         protected Glyphs.Tile _ctrls;
         protected GroupLayer _piecens;
@@ -436,7 +437,7 @@ public class Board
     protected Point _origin;
     protected Placer _placer;
     protected Point _savedTrans;
-    protected Map<Location, Glyphs.Play> _pglyphs = new HashMap<Location, Glyphs.Play>();
+    protected Map<Location, Glyphs.Play> _pglyphs = Maps.newHashMap();
 
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
      * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */

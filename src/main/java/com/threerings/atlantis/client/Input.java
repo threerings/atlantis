@@ -4,9 +4,10 @@
 
 package com.threerings.atlantis.client;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 import forplay.core.ForPlay;
 import forplay.core.Layer;
@@ -73,11 +74,9 @@ public class Input
                 Point p = new Point(x, y);
                 // take a snapshot of the reactors list at the start of the click to avoid
                 // concurrent modification if reactors are added or removed during processing
-                for (Iterator<Reactor> iter = new ArrayList<Reactor>(_reactors).iterator();
-                     iter.hasNext(); ) {
-                    Reactor r = iter.next();
+                for (Reactor r : Lists.newArrayList(_reactors)) {
                     if (r.hasExpired()) {
-                        iter.remove();
+                        _reactors.remove(r);
                     } else if (r.hitTest(p)) {
                         r.onTrigger();
                         return;
@@ -171,10 +170,10 @@ public class Input
     }
 
     /** A list of all registered reactors. */
-    protected List<Reactor> _reactors = new ArrayList<Reactor>();
+    protected List<Reactor> _reactors = Lists.newArrayList();
 
     /** A list of all registered bounded pointer listeners. */
-    protected List<BPL> _listeners = new ArrayList<BPL>();
+    protected List<BPL> _listeners = Lists.newArrayList();
 
     protected static Point inverseTransform (Layer layer, IPoint point, Point into) {
         Layer parent = layer.parent();
