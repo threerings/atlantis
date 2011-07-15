@@ -6,7 +6,6 @@ package com.threerings.atlantis.client;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -232,16 +231,10 @@ public class Board
             _placing = placing;
             _glyph = glyph;
 
-            // compute the legal placement positions for this tile
-            Set<Location> canPlay = _ctrl.logic.computeLegalPlays(placing);
-            if (canPlay.isEmpty()) {
-                Log.warning("Pants! Impossible tile! " + placing);
-                // TODO: freak out, end the game, something useful?
-            }
-
-            // display targets for all legal moves
+            // compute the legal placements for this tile and display targets for all legal moves
+            // (the server will have ensured that the tile has at least one legal play)
             Rectangle tbounds = new Rectangle(Media.TERRAIN_SIZE);
-            for (Location ploc : canPlay) {
+            for (Location ploc : _ctrl.logic.computeLegalPlays(placing)) {
                 final Glyphs.Target target =
                     new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
                 target.layer.setZOrder(-1); // targets render below tiles
