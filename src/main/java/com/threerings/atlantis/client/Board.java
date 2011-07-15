@@ -21,6 +21,7 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 import pythagoras.f.Rectangle;
 
+import com.threerings.nexus.distrib.DCustom;
 import com.threerings.nexus.distrib.DMap;
 import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
@@ -114,6 +115,13 @@ public class Board
         _gobj.scores.addListener(new DMap.PutListener<Integer,Integer>() {
             public void entryPut (Integer pidx, Integer score, Integer oscore) {
                 scores.setScore(pidx, score);
+            }
+        });
+
+        // listen for score notifications
+        _gobj.scoreEvent.addListener(new DCustom.Listener<GameObject.ScoreEvent>() {
+            public void onEvent (GameObject.ScoreEvent event) {
+                Log.info("Report score! " + event.piecen + " " + event.score);
             }
         });
 

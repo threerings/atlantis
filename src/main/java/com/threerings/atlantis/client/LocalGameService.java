@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.DistribUtil;
@@ -94,10 +95,16 @@ public class LocalGameService extends DService<GameService> implements GameServi
                 _gobj.scores.put(pidx, _gobj.getScore(pidx) + score.score);
             }
 
+            // we only want to send a score event for at most one of the piecens owned by the
+            // scoring player, so we remove them from this set once we've reported them
+            Set<Integer> toReport = Sets.newHashSet(score.scorers);
+
             // reclaim the piecens from the completed feature
             for (Piecen p : score.piecens) {
-                // TODO: send an event indicating that this piecen scored 'score' points so that
-                // the board can animate a score floating above the reclaimed piecen
+                // maybe send an event reporting this piecen as a scorer
+                if (toReport.remove(p.ownerIdx)) {
+                    _gobj.scoreEvent.emit(score.score, p);
+                }
                 _gobj.piecens.remove(p);
             }
         }
