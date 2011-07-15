@@ -28,7 +28,7 @@ public class PlacementTest
         // +-------+
         GameTile road = new GameTile(Terrain.STRAIGHT_ROAD, false);
         Location loc = new Location(0, 0);
-        Placement p = new Placement(road, Orient.EAST, loc, new Piecen(Piecen.Color.RED, loc, 0));
+        Placement p = new Placement(road, Orient.EAST, loc);
         // then ensure that asking for the feature connected to its ENE edge is 0:
         assertEquals(road.terrain.features[0], p.findFeature(Edge.ENE_F));
         // and ESE edge is 1:

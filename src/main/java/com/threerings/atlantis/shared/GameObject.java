@@ -31,11 +31,14 @@ public class GameObject extends NexusObject
     /** The current state of the game .*/
     public final DValue<State> state = DValue.create(State.PRE_GAME);
 
-    /** The players' scores keyed on player index. */
+    /** The players' scores, keyed on player index. */
     public final DMap<Integer,Integer> scores = DMap.create(new HashMap<Integer,Integer>());
 
     /** Contains the list of all plays. */
     public final DSet<Placement> plays = DSet.create(new HashSet<Placement>());
+
+    /** The piecens currently in play. */
+    public final DSet<Piecen> piecens = DSet.create(new HashSet<Piecen>());
 
     /** The index of the current turn holder, or -1. */
     public final DValue<Integer> turnHolder = DValue.create(-1);
@@ -46,14 +49,18 @@ public class GameObject extends NexusObject
     /** The tile being placed by the current turn holder, or null. */
     public final DValue<GameTile> placing = DValue.create(null);
 
-    /** Wraps the current plays map in a {@link Placements} instance for convenience. */
-    public Placements placements () {
-        return new Placements(plays);
-    }
-
     public GameObject (String[] players, DService<GameService> gameSvc) {
         this.players = players;
         this.gameSvc = gameSvc;
+    }
+
+    /** Returns the number of piecens in play by the specified player. */
+    public int piecensInPlay (int playerIdx) {
+        int count = 0;
+        for (Piecen p : piecens) {
+            if (p.ownerIdx == playerIdx) count++;
+        }
+        return count;
     }
 
     @Override
@@ -63,15 +70,16 @@ public class GameObject extends NexusObject
         case 1: return state;
         case 2: return scores;
         case 3: return plays;
-        case 4: return turnHolder;
-        case 5: return tilesRemaining;
-        case 6: return placing;
+        case 4: return piecens;
+        case 5: return turnHolder;
+        case 6: return tilesRemaining;
+        case 7: return placing;
         default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
         }
     }
 
     @Override
     protected int getAttributeCount () {
-        return 7;
+        return 8;
     }
 }

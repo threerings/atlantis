@@ -11,12 +11,11 @@ import com.threerings.nexus.distrib.DValue;
 
 import com.threerings.atlantis.shared.GameObject;
 import com.threerings.atlantis.shared.GameTile;
-import com.threerings.atlantis.shared.GameTiles;
 import com.threerings.atlantis.shared.Location;
 import com.threerings.atlantis.shared.Logic;
 import com.threerings.atlantis.shared.Orient;
+import com.threerings.atlantis.shared.Piecen;
 import com.threerings.atlantis.shared.Placement;
-import com.threerings.atlantis.shared.Placements;
 
 /**
  * Manages the game flow. Listens for distributed state changes, handles submitting a player's
@@ -24,11 +23,16 @@ import com.threerings.atlantis.shared.Placements;
  */
 public class GameController
 {
+    public final Logic logic;
+
     public GameController (GameObject gobj, Set<Integer> playerIdxs) {
         _gobj = gobj;
         _board = new Board();
         _board.init(this, gobj);
         _board.scores.init(gobj.players);
+
+        // initialize our logic based on the current state of the game
+        logic = new Logic(gobj);
 
         // listen for game state changes
         _gobj.state.addListener(new DValue.Listener<GameObject.State>() {
@@ -64,15 +68,15 @@ public class GameController
         }
     }
 
-    public void place (Placement play) {
+    public void place (Placement play, Piecen piecen) {
         // send our play up to the server; it will verify the play and we'll see a new play added
         // to the game object which will trigger the proper bits
-        _gobj.gameSvc.get().play(_gobj.turnHolder.get(), play);
+        _gobj.gameSvc.get().play(_gobj.turnHolder.get(), play, piecen);
     }
 
     protected void gameDidStart () {
         // prepare the board
-        _board.reset(_gobj.placements());
+        _board.reset();
     }
 
     protected void gameDidEnd () {

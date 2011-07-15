@@ -21,11 +21,8 @@ package com.threerings.atlantis.shared;
  */
 public class Piecen
 {
-    /** The piecen colors. (Order is important, don't rearrange!) */
-    public enum Color { RED, BLACK, BLUE, YELLOW, GREEN };
-
     /** The owner of this piecen. */
-    public final Color owner;
+    public final int ownerIdx;
 
     /** The coordinates of the tile on which this piecen is placed. */
     public final Location loc;
@@ -33,16 +30,18 @@ public class Piecen
     /** The index in the tile's feature array of the feature on which this piecen is placed. */
     public final int featureIdx;
 
-    /** The claim group to which this piecen belongs. */
-    public int claimGroup;
-
     /**
      * Constructs a piecen with the specified configuration.
      */
-    public Piecen (Color owner, Location loc, int featureIdx) {
-        this.owner = owner;
+    public Piecen (int ownerIdx, Location loc, int featureIdx) {
+        this.ownerIdx = ownerIdx;
         this.loc = loc;
         this.featureIdx = featureIdx;
+    }
+
+    @Override
+    public int hashCode () {
+        return loc.hashCode();
     }
 
     @Override
@@ -53,6 +52,6 @@ public class Piecen
 
     @Override
     public String toString () {
-        return Log.format("owner", owner, "loc", loc, "fidx", featureIdx, "claim", claimGroup);
+        return Log.format("owner", ownerIdx, "loc", loc, "fidx", featureIdx);
     }
 }

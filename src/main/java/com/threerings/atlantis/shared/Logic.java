@@ -5,10 +5,14 @@
 package com.threerings.atlantis.shared;
 
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.ArrayList;
+
+import com.threerings.nexus.distrib.DSet;
 
 import forplay.core.Asserts;
 
@@ -17,20 +21,158 @@ import forplay.core.Asserts;
  */
 public class Logic
 {
+    /** Used to track claims on tile placements. */
+    public class Claim {
+        /** The placement for which we're tracking claims. */
+        public final Placement play;
+
+        /**
+         * Returns true if the placed tile has at least one unclaimed feature.
+         */
+        public boolean hasUnclaimedFeature () {
+            return (getUnclaimedCount() > 0);
+        }
+
+        /** Returns the count of unclaimed features on our tile. */
+        public int getUnclaimedCount () {
+            return play.tile.terrain.features.length - _claims.size();
+        }
+
+        /**
+         * Looks for a feature on our tile that matches the supplied feature edge mask and returns
+         * the claim group to which that feature belongs (which may be zero).
+         *
+         * @return the claim group to which the feature that matches the supplied mask belongs, or
+         * zero if no feature matched the supplied mask.
+         */
+        public int getFeatureGroup (int edgeMask) {
+            Feature f = play.findFeature(edgeMask);
+            return (f == null) ? 0 : getClaimGroup(f);
+        }
+
+        /**
+         * Returns the claim group assigned to the specified feature, or zero if no claim group has
+         * been assigned to said feature.
+         */
+        public int getClaimGroup (Feature f) {
+            Integer group = _claims.get(f);
+            return (group == null) ? 0 : group;
+        }
+
+        /**
+         * Sets the claim group for the specified feature. This also updates the claim group for
+         * any piecen that was placed on that feature as well.
+         */
+        public void setClaimGroup (Feature f, int claimGroup) {
+            // update the claim group slot for this feature
+            _claims.put(f, claimGroup);
+
+            // if we have a piecen placed on the feature, we need to update its claim group as well
+            Piecen piecen = _piecens.get(play.loc);
+            if (piecen != null && piecen.featureIdx == play.getFeatureIndex(f)) {
+                _piecenGroups.put(play.loc, claimGroup);
+            }
+        }
+
+        Claim (Placement play) {
+            this.play = play;
+        }
+
+        /** A mapping from feature to claim group, for claimed features. */
+        protected final Map<Feature,Integer> _claims = new HashMap<Feature,Integer>();
+    }
+
     /**
-     * Computes and returns the set of board positions where the supplied tile can be legally
-     * played, given the supplied preexisting plays.
+     * Creates a new logic instance with the existing game state.
      */
-    public static Set<Location> computeLegalPlays (Placements plays, GameTile tile) {
+    public Logic (GameObject gobj) {
+        // note our existing game state
+        for (Placement play : gobj.plays) {
+            addPlacement(play);
+        }
+        for (Piecen p : gobj.piecens) {
+            addPiecen(p);
+        }
+
+        // listen for additional game state changes
+        gobj.plays.addListener(new DSet.AddedListener<Placement>() {
+            public void elementAdded (Placement play) {
+                addPlacement(play);
+            }
+        });
+        gobj.piecens.addListener(new DSet.AddedListener<Piecen>() {
+            public void elementAdded (Piecen piecen) {
+                addPiecen(piecen);
+            }
+        });
+    }
+
+    /**
+     * Creates a blank logic, for use when testing.
+     */
+    public Logic () {
+    }
+
+    /**
+     * Notes the specified play, and inherits claim information onto it from its neighbors.
+     */
+    public void addPlacement (Placement play) {
+        _plays.put(play.loc, play);
+
+        // inherit claim groups for the features on this tile
+        Claim claim = getClaim(play);
+        for (Feature f : play.tile.terrain.features) {
+            int ogroup = claim.getClaimGroup(f);
+            int ngroup = computeClaim(play.tile, play.orient, play.loc, f);
+            claim.setClaimGroup(f, Math.max(ogroup, ngroup));
+        }
+    }
+
+    /**
+     * Notes the specified piecement placement, assigns it a claim group and propagates its claim
+     * information to connected tiles.
+     */
+    public void addPiecen (Piecen piecen) {
+        _piecens.put(piecen.loc, piecen);
+
+        // make sure a play exists at the appropriate location
+        Placement play = Asserts.checkNotNull(
+            _plays.get(piecen.loc), "Piecen played at location where no tile exists? %s", piecen);
+
+        List<TileFeature> flist = new ArrayList<TileFeature>();
+        enumerateGroup(play, play.getFeature(piecen.featureIdx), flist);
+        int claimGroup = ++_claimGroupCounter;
+        for (TileFeature feat : flist) {
+            // one of these calls will result in this piecen's claim group being mapped
+            getClaim(feat.play).setClaimGroup(feat.feature, claimGroup);
+        }
+    }
+
+    /**
+     * Returns the claim metadata for the specified location. New metadata will be created if none
+     * already exists.
+     */
+    public Claim getClaim (Placement play) {
+        Claim claim = _claims.get(play.loc);
+        if (claim == null) {
+            _claims.put(play.loc, claim = new Claim(play));
+        }
+        return claim;
+    }
+
+    /**
+     * Returns the set of board positions where the supplied tile can be legally played.
+     */
+    public Set<Location> computeLegalPlays (GameTile tile) {
         Set<Location> locs = new HashSet<Location>();
 
         // compute the neighbors of all existing tiles
-        for (Placement play : plays) {
+        for (Placement play : _plays.values()) {
             locs.addAll(play.loc.neighbors());
         }
 
         // now go back and remove the occupied tiles
-        for (Placement play : plays) {
+        for (Placement play : _plays.values()) {
             locs.remove(play.loc);
         }
 
@@ -40,9 +182,9 @@ public class Logic
             Location pos = iter.next();
           ORIENT:
             for (Orient orient : Orient.values()) {
-                Placement play = new Placement(tile, orient, pos, null);
+                Placement play = new Placement(tile, orient, pos);
                 for (Location npos : pos.neighbors()) {
-                    Placement neighbor = plays.get(npos);
+                    Placement neighbor = _plays.get(npos);
                     if (neighbor != null && !tilesMatch(neighbor, play)) {
                         continue ORIENT; // try next orientation
                     }
@@ -59,13 +201,13 @@ public class Logic
      * Computes the legal orientations in which the specified tile can be placed at the supplied
      * location.
      */
-    public static List<Orient> computeLegalOrients (Placements plays, GameTile tile, Location loc) {
+    public List<Orient> computeLegalOrients (GameTile tile, Location loc) {
         List<Orient> orients = new ArrayList<Orient>();
 
         // fetch the neighbors of this tile
         List<Placement> neighbors = new ArrayList<Placement>();
         for (Location nloc : loc.neighbors()) {
-            Placement nplay = plays.get(nloc);
+            Placement nplay = _plays.get(nloc);
             if (nplay != null) {
                 neighbors.add(nplay);
             }
@@ -74,7 +216,7 @@ public class Logic
         // and validate each candidate orientation against them
       ORIENT:
         for (Orient orient : Orient.values()) {
-            Placement play = new Placement(tile, orient, loc, null);
+            Placement play = new Placement(tile, orient, loc);
             for (Placement nplay : neighbors) {
                 if (!tilesMatch(nplay, play)) continue ORIENT;
             }
@@ -85,47 +227,18 @@ public class Logic
     }
 
     /**
-     * Configures claim groups for the supplied placement. Inherits claim groups from adjacent
-     * features for the features on the placement that do not contain a piecen. Assigns and
-     * propagates a claim group for any feature on the tile that contains a piecen.
-     */
-    public static void propagateClaims (Placements plays, Placement play) {
-        // make sure the play in question has been added to the plays
-        Asserts.checkArgument(plays.get(play.loc) == play);
-
-        // inherit claim groups for the features on this tile
-        for (Feature f : play.tile.terrain.features) {
-            int ogroup = play.getClaimGroup(f);
-            int ngroup = computeClaim(plays, play.tile, play.orient, play.loc, f);
-            play.setClaimGroup(f, Math.max(ogroup, ngroup));
-        }
-
-        // if we have a piecen on this tile, assign it a claim group and propagate that to all
-        // other connected placements
-        if (play.piecen != null) {
-            List<TileFeature> flist = new ArrayList<TileFeature>();
-            enumerateGroup(plays, play, play.getFeature(play.piecen.featureIdx), flist);
-            int claimGroup = ++_claimGroupCounter;
-            for (TileFeature feat : flist) {
-                feat.play.setClaimGroup(feat.feature, claimGroup);
-            }
-        }
-    }
-
-    /**
      * Computes the claim groups for the specified feature of the specified potential placement. In
      * cases where multiple claim groups abut a single feature, the higher valued group will be
      * chosen.
      */
-    public static int computeClaim (Placements plays, GameTile tile, Orient orient,
-                                    Location loc, Feature f) {
+    public int computeClaim (GameTile tile, Orient orient, Location loc, Feature f) {
         int claim = 0;
         for (Edge.Adjacency adj : Edge.ADJACENCIES) {
             // if this feature doesn't have this edge, skip it
             if ((f.edgeMask & adj.edge) == 0) continue;
 
             // look up our neighbor in this direction
-            Placement neighbor = plays.get(loc.neighbor(adj.dir.rotate(orient.index)));
+            Placement neighbor = _plays.get(loc.neighbor(adj.dir.rotate(orient.index)));
             if (neighbor == null) continue;
 
             // translate the target mask into our orientation
@@ -144,7 +257,7 @@ public class Logic
             // inherit this feature's group; we use max() here to ensure that if a feature
             // abuts an unclaimed feature (0) and a claimed feature (>0) that we always inherit
             // the claimed feature's group
-            claim = Math.max(claim, neighbor.getClaimGroup(nf));
+            claim = Math.max(claim, getClaim(neighbor).getClaimGroup(nf));
         }
         return claim;
     }
@@ -152,7 +265,7 @@ public class Logic
     /**
      * Returns true if the two supplied placements match up (represent a legal board position).
      */
-    protected static boolean tilesMatch (Placement play1, Placement play2) {
+    protected boolean tilesMatch (Placement play1, Placement play2) {
         // based on the relative positions of the two placements, determine the "natural" edges to
         // be compared (east/west or north/south)
         Orient orient1 = play1.loc.directionTo(play2.loc), orient2 = orient1.opposite();
@@ -171,8 +284,7 @@ public class Logic
      *
      * @return true if the group is complete (has no unconnected features), false if it is not.
      */
-    protected static boolean enumerateGroup (Placements plays, Placement play, Feature f,
-                                             List<TileFeature> target) {
+    protected boolean enumerateGroup (Placement play, Feature f, List<TileFeature> target) {
         // create a tile-feature for this feature
         TileFeature feat = new TileFeature(play, f);
 
@@ -193,7 +305,7 @@ public class Logic
             }
 
             // look up our neighbor in this direction
-            Placement neighbor = plays.get(play.loc.neighbor(adj.dir.rotate(play.orient.index)));
+            Placement neighbor = _plays.get(play.loc.neighbor(adj.dir.rotate(play.orient.index)));
             if (neighbor == null) {
                 // if we don't have a neighbor in a direction that we need, we're incomplete
                 complete = false;
@@ -213,7 +325,7 @@ public class Logic
             }
 
             // add this feature and its neighbors to the group
-            if (!enumerateGroup(plays, neighbor, nf, target)) {
+            if (!enumerateGroup(neighbor, nf, target)) {
                 // if our neighbor was incomplete, we become incomplete
                 complete = false;
             }
@@ -221,6 +333,21 @@ public class Logic
 
         return complete;
     }
+
+    /** Used to generate claim group values. */
+    protected int _claimGroupCounter;
+
+    /** A mapping of currently placed tiles by placement location. */
+    protected final Map<Location, Placement> _plays = new HashMap<Location, Placement>();
+
+    /** A mapping of currently placed piecens by placement location. */
+    protected final Map<Location, Piecen> _piecens = new HashMap<Location, Piecen>();
+
+    /** Tracks the claim group assigned to every piecen on the board. */
+    protected final Map<Location, Integer> _piecenGroups = new HashMap<Location, Integer>();
+
+    /** Maintains a mapping of claim metadata by location. */
+    protected Map<Location, Claim> _claims = new HashMap<Location, Claim>();
 
     /** Used to keep track of actual features on placed tiles. */
     protected static final class TileFeature {
@@ -246,11 +373,15 @@ public class Logic
         }
     }
 
-    /** Used to generate claim group values. */
-    protected static int _claimGroupCounter;
-
     /** Used to iterate through a tile's neighbors. */
     protected static final Location[] NEIGHBORS = {
         new Location(-1, -1), new Location(-1, +1), new Location(+1, +1), new Location(+1, -1)
     };
+
+    /** Features that must be checked for completion via graph traversal. */
+    protected static final Set<Feature.Type> COMPLETABLES = new HashSet<Feature.Type>();
+    static {
+        COMPLETABLES.add(Feature.Type.ROAD);
+        COMPLETABLES.add(Feature.Type.CITY);
+    }
 }

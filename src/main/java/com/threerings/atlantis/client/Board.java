@@ -5,7 +5,9 @@
 package com.threerings.atlantis.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import forplay.core.GroupLayer;
@@ -31,7 +33,6 @@ import com.threerings.atlantis.shared.Logic;
 import com.threerings.atlantis.shared.Orient;
 import com.threerings.atlantis.shared.Piecen;
 import com.threerings.atlantis.shared.Placement;
-import com.threerings.atlantis.shared.Placements;
 import static com.threerings.atlantis.client.AtlantisClient.*;
 
 /**
@@ -87,13 +88,20 @@ public class Board
         _ctrl = ctrl;
         _gobj = gobj;
 
-        // when we see a play added, add it to the display
+        // when we see a play or piecen added, add it to the display
         _gobj.plays.addListener(new DSet.AddedListener<Placement>() {
             public void elementAdded (Placement play) {
-                Logic.propagateClaims(_gobj.placements(), play);
                 // TODO: if we didn't place this play, we need to animate it going from the
                 // scoreboard to the correct position on the board
                 addPlacement(play);
+            }
+        });
+        _gobj.piecens.addListener(new DSet.Listener<Piecen>() {
+            public void elementAdded (Piecen piecen) {
+                addPiecen(piecen);
+            }
+            public void elementRemoved (Piecen piecen) {
+                clearPiecen(piecen);
             }
         });
 
@@ -102,7 +110,7 @@ public class Board
             public void valueChanged (Integer turnHolder, Integer oldTurnHolder) {
                 GameTile placing = _gobj.placing.get();
                 Glyphs.Play pglyph = new Glyphs.Play(placing);
-                setPlacing(_gobj.placements(), placing, pglyph);
+                setPlacing(placing, pglyph);
                 scores.setNextTile(pglyph);
                 scores.setTurnInfo(_gobj.turnHolder.get(), _gobj.tilesRemaining.get());
                 // TODO: enable or disable interactivity based on whether this client controls the
@@ -140,12 +148,15 @@ public class Board
     /**
      * Resets the board, and prepares for a new game.
      */
-    public void reset (Placements plays) {
+    public void reset () {
         // TODO: clear out previously placed tiles
         clearPlacing();
 
-        for (Placement play : plays) {
+        for (Placement play : _gobj.plays) {
             addPlacement(play);
+        }
+        for (Piecen p : _gobj.piecens) {
+            addPiecen(p);
         }
     }
 
@@ -153,18 +164,26 @@ public class Board
         clearPlacing();
         Glyphs.Play glyph = new Glyphs.Play(play);
         tiles.add(glyph.layer);
-        _pglyphs.add(glyph);
+        _pglyphs.put(play.loc, glyph);
 
         if (FEATURE_DEBUG) {
-            for (Glyphs.Play pg : _pglyphs) {
-                pg.updateFeatureDebug();
+            for (Glyphs.Play pg : _pglyphs.values()) {
+                pg.updateFeatureDebug(_ctrl.logic);
             }
         }
     }
 
-    public void setPlacing (Placements plays, GameTile tile, Glyphs.Play glyph) {
+    public void addPiecen (Piecen p) {
+        _pglyphs.get(p.loc).setPiecen(p);
+    }
+
+    public void clearPiecen (Piecen p) {
+        _pglyphs.get(p.loc).clearPiecen();
+    }
+
+    public void setPlacing (GameTile tile, Glyphs.Play glyph) {
         clearPlacing();
-        _placer = new Placer(plays, tile, glyph);
+        _placer = new Placer(tile, glyph);
     }
 
     protected void clearPlacing () {
@@ -195,13 +214,12 @@ public class Board
 
     /** Handles the interaction of placing a new tile on the board. */
     protected class Placer {
-        public Placer (Placements plays, GameTile placing, Glyphs.Play glyph) {
+        public Placer (GameTile placing, Glyphs.Play glyph) {
             _placing = placing;
-            _plays = plays;
             _glyph = glyph;
 
             // compute the legal placement positions for this tile
-            Set<Location> canPlay = Logic.computeLegalPlays(plays, placing);
+            Set<Location> canPlay = _ctrl.logic.computeLegalPlays(placing);
             if (canPlay.isEmpty()) {
                 Log.warning("Pants! Impossible tile! " + placing);
                 // TODO: freak out, end the game, something useful?
@@ -298,7 +316,7 @@ public class Board
                     pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
                     _piecens.add(pimg);
 
-                    final Piecen p = new Piecen(Piecen.Color.values()[mypidx], _active.loc, fidx);
+                    final Piecen p = new Piecen(mypidx, _active.loc, fidx);
                     Atlantis.input.register(new Input.LayerReactor(pimg, pbounds) {
                         @Override public boolean hitTest (IPoint p) {
                             return _piecens.visible() && super.hitTest(p);
@@ -336,8 +354,8 @@ public class Board
                         // enable/disable piecens based on legal placements
                         int idx = 0;
                         for (Feature f : _placing.terrain.features) {
-                            int claim = Logic.computeClaim(
-                                _plays, _placing, _glyph.getOrient(), _active.loc, f);
+                            int claim = _ctrl.logic.computeClaim(
+                                _placing, _glyph.getOrient(), _active.loc, f);
                             _piecens.get(idx).setVisible(claim == 0);
                             idx++;
                         }
@@ -353,7 +371,7 @@ public class Board
             _piecens.setVisible(false);
 
             // compute the valid orientations for the placing tile at this location
-            _orients = Logic.computeLegalOrients(_plays, _placing, _active.loc);
+            _orients = _ctrl.logic.computeLegalOrients(_placing, _active.loc);
             // if whatever orient we happen to be at is not valid...
             if (!_orients.contains(_glyph.getOrient())) {
                 // ...start in the first orientation
@@ -385,13 +403,12 @@ public class Board
         }
 
         protected void commitPlacement (Piecen piecen) {
-            _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc, piecen));
+            _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc), piecen);
             // zoom back out and scroll to our original translation
             restoreZoom();
         }
 
         protected GameTile _placing;
-        protected Placements _plays;
         protected Glyphs.Play _glyph;
         protected List<Orient> _orients;
         protected List<Glyphs.Target> _targets = new ArrayList<Glyphs.Target>();
@@ -406,7 +423,7 @@ public class Board
     protected Point _origin;
     protected Placer _placer;
     protected Point _savedTrans;
-    protected List<Glyphs.Play> _pglyphs = new ArrayList<Glyphs.Play>();
+    protected Map<Location, Glyphs.Play> _pglyphs = new HashMap<Location, Glyphs.Play>();
 
     /** Computes the quadrant occupied by the supplied point (which must be in the supplied
      * rectangle's bounds): up-left=0, up-right=1, low-left=2, low-right=3. */

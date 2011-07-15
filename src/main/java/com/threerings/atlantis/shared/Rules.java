@@ -8,17 +8,20 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * {@link GameTile} related utilities.
+ * Code relating to the rules of the game.
  */
-public class GameTiles
+public class Rules
 {
     /** The tile used to start a game. */
     public static final GameTile STARTER = new GameTile(Terrain.CITY_ONE_ROAD_STRAIGHT, false);
 
+    /** The number of piecens granted to each player at the start of the game. */
+    public static final int STARTING_PIECENS = 5;
+
     /**
      * Creates and returns the standard selection of game tiles.
      */
-    public static List<GameTile> standard () {
+    public static List<GameTile> standardTiles () {
         List<GameTile> tiles = new ArrayList<GameTile>();
         add(tiles, Terrain.CITY_FOUR, true, 1);
 

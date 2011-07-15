@@ -20,5 +20,5 @@ public interface GameService extends NexusService
     /**
      * Submits the supplied play on behalf of the player with the specified index.
      */
-    void play (int playerIdx, Placement play);
+    void play (int playerIdx, Placement play, Piecen piecen);
 }

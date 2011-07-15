@@ -5,6 +5,7 @@
 package com.threerings.atlantis.client;
 
 import forplay.core.ImageLayer;
+import forplay.core.Asserts;
 import forplay.core.GroupLayer;
 import static forplay.core.ForPlay.*;
 
@@ -17,7 +18,9 @@ import com.threerings.anim.Animation;
 import com.threerings.atlantis.shared.Feature;
 import com.threerings.atlantis.shared.GameTile;
 import com.threerings.atlantis.shared.Location;
+import com.threerings.atlantis.shared.Logic;
 import com.threerings.atlantis.shared.Orient;
+import com.threerings.atlantis.shared.Piecen;
 import com.threerings.atlantis.shared.Placement;
 
 /**
@@ -99,12 +102,6 @@ public class Glyphs
             _play = play;
             setOrient(play.orient, false);
             setLocation(play.loc, false, null);
-            if (play.piecen != null) {
-                Feature f = play.tile.terrain.features[play.piecen.featureIdx];
-                ImageLayer pimg = Atlantis.media.getPiecenTile(play.piecen.owner.ordinal());
-                pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
-                layer.add(pimg);
-            }
         }
 
         public Play (GameTile tile) {
@@ -116,7 +113,21 @@ public class Glyphs
             }
         }
 
-        public void updateFeatureDebug () {
+        public void setPiecen (Piecen piecen) {
+            Asserts.checkState(_pimg == null, "Play already has piecen image: %s", _play);
+            Feature f = _play.getFeature(piecen.featureIdx);
+            _pimg = Atlantis.media.getPiecenTile(piecen.ownerIdx);
+            _pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+            layer.add(_pimg);
+        }
+
+        public void clearPiecen () {
+            Asserts.checkState(_pimg != null, "Play has no piecen image: %s", _play);
+            _pimg.destroy();
+            _pimg = null;
+        }
+
+        public void updateFeatureDebug (Logic logic) {
             if (_debug == null) {
                 _debug = graphics().createGroupLayer();
                 layer.add(_debug);
@@ -124,7 +135,7 @@ public class Glyphs
                 _debug.clear();
             }
             for (Feature f : _play.tile.terrain.features) {
-                int group = _play.getClaimGroup(f);
+                int group = logic.getClaim(_play).getClaimGroup(f);
                 if (group > 0) {
                     ImageLayer img = Atlantis.media.getPiecenTile(group % Media.PIECEN_COUNT);
                     img.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
@@ -135,6 +146,7 @@ public class Glyphs
         }
 
         protected Placement _play;
+        protected ImageLayer _pimg;
         protected GroupLayer _debug;
     }
 }
