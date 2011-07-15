@@ -97,6 +97,8 @@ public class Glyphs
 
     /** Displays a played (or pending) tile. */
     public static class Play extends Tile {
+        public final GameTile tile;
+
         public Play (Placement play) {
             this(play.tile);
             _play = play;
@@ -105,6 +107,7 @@ public class Glyphs
         }
 
         public Play (GameTile tile) {
+            this.tile = tile;
             layer.add(Atlantis.media.getTerrainTile(tile.terrain.tileIdx));
             if (tile.hasShield) {
                 ImageLayer shield = Atlantis.media.getShieldTile();
