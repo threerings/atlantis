@@ -10,10 +10,12 @@ import java.util.Map;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import forplay.core.Font;
 import forplay.core.GroupLayer;
 import forplay.core.ImageLayer;
 import forplay.core.Pointer;
 import forplay.core.SurfaceLayer;
+import forplay.core.TextFormat;
 import static forplay.core.ForPlay.*;
 
 import pythagoras.f.IPoint;
@@ -26,6 +28,7 @@ import com.threerings.nexus.distrib.DMap;
 import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
+import com.threerings.atlantis.client.util.TextGlyph;
 import com.threerings.atlantis.shared.Feature;
 import com.threerings.atlantis.shared.GameObject;
 import com.threerings.atlantis.shared.GameTile;
@@ -121,7 +124,7 @@ public class Board
         // listen for score notifications
         _gobj.scoreEvent.addListener(new DCustom.Listener<GameObject.ScoreEvent>() {
             public void onEvent (GameObject.ScoreEvent event) {
-                Log.info("Report score! " + event.piecen + " " + event.score);
+                showPiecenScoreAnimation(event.piecen, event.score);
             }
         });
 
@@ -226,6 +229,31 @@ public class Board
             _savedTrans = null;
         }
     }
+
+    protected void showPiecenScoreAnimation (Piecen p, int score) {
+        // find the tile that contains the piecen in question
+        Glyphs.Play pglyph = _pglyphs.get(p.loc);
+
+        // create a score glyph that we'll animate to alert the player of the score
+        final TextGlyph sglyph = TextGlyph.forText(""+score, SCORE_FORMAT);
+        float swidth = sglyph.layer.canvas().width(), sheight = sglyph.layer.canvas().height();
+        sglyph.layer.setOrigin(swidth/2f, sheight);
+        tiles.add(sglyph.layer);
+
+        // position it at the piecen to start and float it up and fade it out
+        Feature f = pglyph.tile.terrain.features[p.featureIdx];
+        Point start = Input.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
+        Atlantis.anim.tweenXY(sglyph.layer).in(2000f).easeIn().from(start.x, start.y).
+            to(start.x, start.y-sheight).then().action(new Runnable() {
+                public void run () {
+                    sglyph.layer.destroy();
+                }
+            });
+        Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeIn().from(1f).to(0f);
+    }
+
+    protected final TextFormat SCORE_FORMAT = new TextFormat().withFont(
+        graphics().createFont("Helvetica", Font.Style.BOLD, 24));
 
     /** Handles the interaction of placing a new tile on the board. */
     protected class Placer {
