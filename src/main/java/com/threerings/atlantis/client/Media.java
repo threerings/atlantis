@@ -31,6 +31,15 @@ public class Media extends Tiles
     public static final IDimension ACTION_SIZE = new Dimension(ACTION_WIDTH, ACTION_HEIGHT);
     public static final int NOPIECEN_ACTION = 0, CANCEL_ACTION = 1, ROTATE_ACTION = 2;
 
+    public static final int[] PIECEN_COLORS = {
+        0xFF2C88F0, // blue
+        0xFF30C94A, // green
+        0xFFEC8C2D, // orange
+        0xFFEE22D3, // pink
+        0xFFE93030, // red
+        0xFFEFC734, // yellow
+    };
+
     public void init () {
         _terrain = ForPlay.assetManager().getImage("images/tiles.png");
         _target = ForPlay.assetManager().getImage("images/target.png");
