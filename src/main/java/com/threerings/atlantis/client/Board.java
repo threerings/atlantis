@@ -67,10 +67,10 @@ public class Board
         bground.surface().fillRect(0, 0, width, height);
 
         // set the z-order of our layers appropriately
-        bground.setZOrder(-1);
-        tiles.setZOrder(0);
-        scores.layer.setZOrder(+1);
-        flight.setZOrder(+2);
+        bground.setDepth(-1);
+        tiles.setDepth(0);
+        scores.layer.setDepth(+1);
+        flight.setDepth(+2);
 
         // add everything to the root layer
         graphics().rootLayer().add(bground);
@@ -82,7 +82,7 @@ public class Board
         SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);
         grid.surface().drawLine(0f, height/2, width, height/2, 1f);
         grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
-        grid.setZOrder(+3);
+        grid.setDepth(+3);
         graphics().rootLayer().add(grid);
     }
 
@@ -235,7 +235,8 @@ public class Board
         Glyphs.Play pglyph = _pglyphs.get(p.loc);
 
         // create a score glyph that we'll animate to alert the player of the score
-        final TextGlyph sglyph = TextGlyph.forText(""+score, SCORE_FORMAT);
+        final TextGlyph sglyph = TextGlyph.forText(
+            ""+score, SCORE_FORMAT.withTextColor(Media.PIECEN_COLORS[p.ownerIdx]));
         float swidth = sglyph.layer.canvas().width(), sheight = sglyph.layer.canvas().height();
         sglyph.layer.setOrigin(swidth/2f, sheight);
         tiles.add(sglyph.layer);
@@ -243,17 +244,14 @@ public class Board
         // position it at the piecen to start and float it up and fade it out
         Feature f = pglyph.tile.terrain.features[p.featureIdx];
         Point start = Input.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
-        Atlantis.anim.tweenXY(sglyph.layer).in(2000f).easeIn().from(start.x, start.y).
+        Atlantis.anim.tweenXY(sglyph.layer).in(2000f).easeOut().from(start.x, start.y).
             to(start.x, start.y-sheight).then().action(new Runnable() {
                 public void run () {
                     sglyph.layer.destroy();
                 }
             });
-        Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeIn().from(1f).to(0f);
+        Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f);
     }
-
-    protected final TextFormat SCORE_FORMAT = new TextFormat().withFont(
-        graphics().createFont("Helvetica", Font.Style.BOLD, 24));
 
     /** Handles the interaction of placing a new tile on the board. */
     protected class Placer {
@@ -267,7 +265,7 @@ public class Board
             for (Location ploc : _ctrl.logic.computeLegalPlays(placing)) {
                 final Glyphs.Target target =
                     new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
-                target.layer.setZOrder(-1); // targets render below tiles
+                target.layer.setDepth(-1); // targets render below tiles
                 tiles.add(target.layer);
                 _targets.add(target);
 
@@ -313,7 +311,7 @@ public class Board
             _active = target;
             _active.layer.setVisible(false);
 
-            int mypidx = _gobj.turnHolder.get();
+            final int mypidx = _gobj.turnHolder.get();
 
             // if we were zoomed in and they clicked somewhere else, zoom back out
             restoreZoom();
@@ -325,7 +323,7 @@ public class Board
                 GroupLayer scores = _glyph.layer.parent();
                 scores.remove(_glyph.layer);
                 flight.add(_glyph.layer);
-                _glyph.layer.setZOrder(+1); // placing goes above other tiles
+                _glyph.layer.setDepth(+1); // placing goes above other tiles
                 // we also need to update its position so that it can be animated into place
                 _glyph.layer.transform().translate(
                     scores.transform().tx() - tiles.transform().tx(),
@@ -333,7 +331,7 @@ public class Board
 
                 // ...create our controls UI and icons
                 _ctrls = new Glyphs.Tile();
-                _ctrls.layer.setZOrder(+2); // ctrls go above tiles/placing
+                _ctrls.layer.setDepth(+2); // ctrls go above tiles/placing
                 float twidth = Media.TERRAIN_WIDTH, theight = Media.TERRAIN_HEIGHT;
                 float awidth = Media.ACTION_WIDTH, aheight = Media.ACTION_HEIGHT;
                 _ctrls.layer.add(_rotate = Atlantis.media.getActionTile(Media.ROTATE_ACTION));
@@ -349,19 +347,17 @@ public class Board
                 // create our piecen targets as well
                 _piecens = graphics().createGroupLayer();
                 Rectangle pbounds = new Rectangle(Media.PIECEN_SIZE);
-                for (int fidx = 0; fidx < _placing.terrain.features.length; fidx++) {
-                    Feature f = _placing.terrain.features[fidx];
+                for (final Feature f : _placing.terrain.features) {
                     ImageLayer pimg = Atlantis.media.getPiecenTile(mypidx);
                     pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
                     _piecens.add(pimg);
 
-                    final Piecen p = new Piecen(mypidx, _active.loc, fidx);
                     Atlantis.input.register(new Input.LayerReactor(pimg, pbounds) {
                         @Override public boolean hitTest (IPoint p) {
                             return _piecens.visible() && super.hitTest(p);
                         }
                         public void onTrigger () {
-                            commitPlacement(p);
+                            commitPlacement(f);
                         }
                     });
                 }
@@ -453,8 +449,11 @@ public class Board
             }
         }
 
-        protected void commitPlacement (Piecen piecen) {
-            _ctrl.place(new Placement(_placing, _glyph.getOrient(), _active.loc), piecen);
+        protected void commitPlacement (Feature f) {
+            Placement play = new Placement(_placing, _glyph.getOrient(), _active.loc);
+            Piecen piecen = (f == null) ? null : new Piecen(
+                _gobj.turnHolder.get(), _active.loc, play.getFeatureIndex(f));
+            _ctrl.place(play, piecen);
             // zoom back out and scroll to our original translation
             restoreZoom();
         }
@@ -475,4 +474,8 @@ public class Board
     protected Placer _placer;
     protected Point _savedTrans;
     protected Map<Location, Glyphs.Play> _pglyphs = Maps.newHashMap();
+
+    protected final TextFormat SCORE_FORMAT = new TextFormat().
+        withFont(graphics().createFont("Helvetica", Font.Style.BOLD, 24)).
+        withEffect(TextFormat.Effect.outline(0xFF000000));
 }

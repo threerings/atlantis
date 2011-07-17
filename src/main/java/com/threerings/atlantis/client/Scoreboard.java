@@ -102,7 +102,8 @@ public class Scoreboard
         CanvasLayer bg = graphics().createCanvasLayer(WIDTH, (int)Math.ceil(ypos));
         bg.canvas().setFillColor(0xFFCCCCCC);
         bg.canvas().fillRect(0, 0, WIDTH, ypos);
-        layer.add(0, bg);
+        bg.setDepth(-1); // render below everything else
+        layer.add(bg);
     }
 
     public void setPiecenCount (int playerIdx, int piecens) {
