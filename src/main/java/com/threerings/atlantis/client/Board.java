@@ -458,8 +458,7 @@ public class Board
             // enable/disable piecens based on legal placements
             int idx = 0;
             for (Feature f : _placing.terrain.features) {
-                int claim = _ctrl.logic.computeClaim(
-                    _placing, _glyph.getOrient(), _active.loc, f);
+                int claim = _ctrl.logic.computeClaim(_placing, _glyph.getOrient(), _active.loc, f);
                 _piecens.get(idx).setVisible(claim == 0);
                 idx++;
             }
