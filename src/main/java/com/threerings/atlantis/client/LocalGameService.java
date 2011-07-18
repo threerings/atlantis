@@ -157,14 +157,15 @@ public class LocalGameService extends DService<GameService> implements GameServi
         _gobj.placing.update(null);
         _gobj.turnHolder.update(-1);
 
-        // score all remaining incomplete features
+        // score all remaining incomplete features and farms
         for (Logic.FeatureScore score : _logic.computeFinalScores()) {
             if (!score.complete) { // we only want incomplete scores
                 processScore(score);
             }
         }
-
-        // TODO: score farms
+        for (Logic.FeatureScore score : _logic.computeFarmScores()) {
+            processScore(score);
+        }
 
         _gobj.state.update(GameObject.State.GAME_OVER);
     }

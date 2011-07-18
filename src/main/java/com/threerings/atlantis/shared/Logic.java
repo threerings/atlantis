@@ -395,6 +395,67 @@ public class Logic
     }
 
     /**
+     * Computes the scores for the claimed farms.
+     */
+    public List<FeatureScore> computeFarmScores () {
+        // compute fake claim groups for all cities: >0 for complete, <0 for incomplete
+        Map<Location,Claim> cityClaims = Maps.newHashMap();
+        for (Placement play : _plays.values()) {
+            cityClaims.put(play.loc, new Claim(play));
+        }
+        List<TileFeature> tfs = Lists.newArrayList();
+
+        // also compute and store the size of all cities
+        int nextCityClaimGroup = 0;
+        for (Placement play : _plays.values()) {
+            for (Feature f : play.tile.terrain.features) {
+                if (f.type != Feature.Type.CITY) continue; // only care about cities
+                if (cityClaims.get(play.loc).getClaimGroup(f) != 0) continue; // already handled
+
+                tfs.clear();
+                boolean completed = enumerateGroup(play, f, tfs);
+                int group = ++nextCityClaimGroup;
+                if (!completed) group = -group;
+                for (TileFeature tf : tfs) {
+                    cityClaims.get(tf.play.loc).setClaimGroup(tf.feature, group);
+                }
+            }
+        }
+
+        // now iterate over all claimed farms and score each of them in turn
+        Set<Integer> handledClaims = Sets.newHashSet();
+        List<FeatureScore> scores = Lists.newArrayList();
+        for (Placement play : _plays.values()) {
+            for (Feature f : play.tile.terrain.features) {
+                if (f.type != Feature.Type.GRASS) continue; // only care about grass
+
+                // skip unclaimed or already processed farms
+                int group = getClaim(play).getClaimGroup(f);
+                if (group == 0 || handledClaims.contains(group)) continue;
+                handledClaims.add(group);
+
+                // enumerate all the tiles in this farm, and count adjacent (complete) cities
+                Set<Integer> scoringCities = Sets.newHashSet();
+                tfs.clear();
+                enumerateGroup(play, f, tfs);
+                for (TileFeature tf : tfs) {
+                    for (Feature tff : tf.play.tile.terrain.features) {
+                        if (tff.type == Feature.Type.CITY) {
+                            int cgroup = cityClaims.get(tf.play.loc).getClaimGroup(tff);
+                            if (cgroup > 0) scoringCities.add(cgroup);
+                        }
+                    }
+                }
+
+                int score = scoringCities.size() * 3; // TODO: pass to rules?
+                scores.add(new FeatureScore(f, getScorers(group), score, getPiecens(group)));
+            }
+        }
+
+        return scores;
+    }
+
+    /**
      * Returns true if the two supplied placements match up (represent a legal board position).
      */
     protected boolean tilesMatch (Placement play1, Placement play2) {
@@ -478,16 +539,16 @@ public class Logic
 
         switch (f.type) {
         default:
-        case GRASS: return 0; // grass is scored later
+        case GRASS:
+            return 0; // grass is scored later
 
-        case CLOISTER: {
+        case CLOISTER:
             // cloisters score one for every tile in the 3x3 neighborhood
             for (Location nloc : play.loc.neighborhood()) {
                 if (_plays.containsKey(nloc)) score++;
             }
             complete = (score == 9);
             break;
-        }
 
         case ROAD:
         case CITY:
@@ -515,6 +576,7 @@ public class Logic
             if (f.type == Feature.Type.CITY && complete && score > 2) {
                 score *= 2;
             }
+            break;
         }
 
         // incomplete features are communicated via a negative score
