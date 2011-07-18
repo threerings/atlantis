@@ -126,7 +126,10 @@ public class Scoreboard
     public void setNextTile (Glyphs.Play tile) {
         _nextLabel.layer.setVisible(tile != null);
         tile.layer.setTranslation(WIDTH/2, _nextTileY + Media.TERRAIN_HEIGHT/2);
-        layer.add(tile.layer);
+        // use an animation to add and fade the tile in, this will ensure that we're sequenced
+        // properly with end-of-previous-turn animations
+        Atlantis.anim.add(layer, tile.layer);
+        Atlantis.anim.tweenAlpha(tile.layer).easeOut().from(0).to(1).in(500);
         // the layer will be removed for us when the tile is played
     }
 

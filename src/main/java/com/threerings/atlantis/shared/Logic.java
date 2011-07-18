@@ -359,6 +359,42 @@ public class Logic
     }
 
     /**
+     * Computes the scores for all features on the board.
+     */
+    public List<FeatureScore> computeFinalScores () {
+        // we use this set to track which claim groups we've already processed
+        Set<Integer> processedClaims = Sets.newHashSet();
+
+        // check all features on all tiles for potential scores
+        List<FeatureScore> scores = Lists.newArrayList();
+        for (Placement play : _plays.values()) {
+            Claim claim = getClaim(play);
+            for (Feature f : play.tile.terrain.features) {
+                // ignore features that aren't completable (e.g. GRASS)
+                if (!COMPLETABLES.contains(f.type)) continue;
+
+                // determine whether or not we've already processed this claim
+                int group = claim.getClaimGroup(f);
+                if (processedClaims.contains(group)) continue;
+                processedClaims.add(group);
+
+                // determine who will earn points for this claim
+                Set<Integer> scorers = getScorers(group);
+                // if we have no scorers, the feature is unclaimed; skip it
+                if (scorers.isEmpty()) continue;
+
+                // if we made it this far, we may have something to report
+                int score = computeFeatureScore(play, f);
+                if (score != 0) {
+                    scores.add(new FeatureScore(f, scorers, score, getPiecens(group)));
+                }
+            }
+        }
+
+        return scores;
+    }
+
+    /**
      * Returns true if the two supplied placements match up (represent a legal board position).
      */
     protected boolean tilesMatch (Placement play1, Placement play2) {
@@ -565,5 +601,5 @@ public class Logic
 
     /** Features that must be checked for completion via graph traversal. */
     protected static final Set<Feature.Type> COMPLETABLES = ImmutableSet.of(
-        Feature.Type.ROAD, Feature.Type.CITY);
+        Feature.Type.ROAD, Feature.Type.CITY, Feature.Type.CLOISTER);
 }

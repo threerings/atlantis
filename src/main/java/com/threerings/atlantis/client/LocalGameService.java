@@ -88,32 +88,14 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
         // if the play completes any features, score them and remove the involved piecens
         for (Logic.FeatureScore score : _logic.computeScores(play)) {
-            if (!score.complete) continue; // don't score incomplete features until endgame
-
-            // note the score increase for all participants
-            for (int pidx : score.scorers) {
-                _gobj.scores.put(pidx, _gobj.getScore(pidx) + score.score);
-            }
-
-            // we only want to send a score event for at most one of the piecens owned by the
-            // scoring player, so we remove them from this set once we've reported them
-            Set<Integer> toReport = Sets.newHashSet(score.scorers);
-
-            // reclaim the piecens from the completed feature
-            for (Piecen p : score.piecens) {
-                // maybe send an event reporting this piecen as a scorer
-                if (toReport.remove(p.ownerIdx)) {
-                    _gobj.scoreEvent.emit(score.score, p);
-                }
-                _gobj.piecens.remove(p);
+            if (score.complete) { // don't score incomplete features until endgame
+                processScore(score);
             }
         }
 
         // if we're out of tiles, end the game, otherwise start the next turn
         if (_tileBag.isEmpty()) {
-            _gobj.turnHolder.update(-1);
-            _gobj.state.update(GameObject.State.GAME_OVER);
-            // TODO: score all remaining incomplete features, plus grass
+            endGame();
         } else {
             startTurn((_gobj.turnHolder.get() + 1) % _gobj.players.length);
         }
@@ -160,14 +142,50 @@ public class LocalGameService extends DService<GameService> implements GameServi
             // crap, we found no playable tiles, end the game early with a message
             Log.info("Ending game early due to lack of playable tiles", "skipped", skipped);
             // TODO: send message
-            _gobj.turnHolder.update(-1);
-            _gobj.state.update(GameObject.State.GAME_OVER);
+            endGame();
 
         } else {
             _tileBag.addAll(skipped); // throw the skipped tiles back in the bag
             _gobj.placing.update(tile);
             _gobj.tilesRemaining.update(_tileBag.size());
             _gobj.turnHolder.update(turnHolder);
+        }
+    }
+
+    protected void endGame () {
+        // indicate that there is no next turn
+        _gobj.placing.update(null);
+        _gobj.turnHolder.update(-1);
+
+        // score all remaining incomplete features
+        for (Logic.FeatureScore score : _logic.computeFinalScores()) {
+            if (!score.complete) { // we only want incomplete scores
+                processScore(score);
+            }
+        }
+
+        // TODO: score farms
+
+        _gobj.state.update(GameObject.State.GAME_OVER);
+    }
+
+    protected void processScore (Logic.FeatureScore score) {
+        // note the score increase for all participants
+        for (int pidx : score.scorers) {
+            _gobj.scores.put(pidx, _gobj.getScore(pidx) + score.score);
+        }
+
+        // we only want to send a score event for at most one of the piecens owned by the
+        // scoring player, so we remove them from this set once we've reported them
+        Set<Integer> toReport = Sets.newHashSet(score.scorers);
+
+        // reclaim the piecens from the completed feature
+        for (Piecen p : score.piecens) {
+            // maybe send an event reporting this piecen as a scorer
+            if (toReport.remove(p.ownerIdx)) {
+                _gobj.scoreEvent.emit(score.score, p);
+            }
+            _gobj.piecens.remove(p);
         }
     }
 

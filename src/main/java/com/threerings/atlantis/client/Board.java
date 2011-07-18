@@ -97,9 +97,11 @@ public class Board
         _gobj.turnHolder.addListener(new DValue.Listener<Integer>() {
             public void valueChanged (Integer turnHolder, Integer oldTurnHolder) {
                 GameTile placing = _gobj.placing.get();
-                Glyphs.Play pglyph = new Glyphs.Play(placing);
-                setPlacing(placing, pglyph);
-                scores.setNextTile(pglyph);
+                if (placing != null) {
+                    Glyphs.Play pglyph = new Glyphs.Play(placing);
+                    setPlacing(placing, pglyph);
+                    scores.setNextTile(pglyph);
+                }
                 scores.setTurnInfo(_gobj.turnHolder.get(), _gobj.tilesRemaining.get());
                 // TODO: enable or disable interactivity based on whether this client controls the
                 // turn holder
@@ -260,6 +262,10 @@ public class Board
             to(start.x, start.y-sheight);
         Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f).
             then().destroy(sglyph.layer);
+
+        // delay subsequent score (or other) animations for one second so that the player can
+        // notice and mentally process this scoring
+        Atlantis.anim.addBarrier(1000f);
     }
 
     /** Handles the interaction of placing a new tile on the board. */
