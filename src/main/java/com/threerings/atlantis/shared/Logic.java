@@ -130,12 +130,31 @@ public class Logic
     public void addPlacement (Placement play) {
         _plays.put(play.loc, play);
 
-        // inherit claim groups for the features on this tile
-        Claim claim = getClaim(play);
+        // inherit claim groups for the features on this tile; this may result in the merging of
+        // two previously unconnected claim groups, so we enumerate the full group in each case and
+        // reassign the claim group as needed
+        List<TileFeature> tfs = Lists.newArrayList();
         for (Feature f : play.tile.terrain.features) {
-            int ogroup = claim.getClaimGroup(f);
-            int ngroup = computeClaim(play.tile, play.orient, play.loc, f);
-            claim.setClaimGroup(f, Math.max(ogroup, ngroup));
+            tfs.clear();
+            enumerateGroup(play, f, tfs);
+
+            // first find the first non-zero claim group
+            int group = 0;
+            for (TileFeature tf : tfs) {
+                int tgroup = getClaim(tf.play).getClaimGroup(tf.feature);
+                if (tgroup != 0 && group == 0) {
+                    group = tgroup;
+                    break;
+                }
+            }
+
+            // if we found no non-zero group, we have nothing to inherit
+            if (group == 0) continue;
+
+            // otherwise reassign that group to all tiles
+            for (TileFeature tf : tfs) {
+                getClaim(tf.play).setClaimGroup(tf.feature, group);
+            }
         }
     }
 
