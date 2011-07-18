@@ -239,6 +239,7 @@ public class Board
             ""+score, SCORE_FORMAT.withTextColor(Media.PIECEN_COLORS[p.ownerIdx]));
         float swidth = sglyph.layer.canvas().width(), sheight = sglyph.layer.canvas().height();
         sglyph.layer.setOrigin(swidth/2f, sheight);
+        sglyph.layer.setDepth(1);
         tiles.add(sglyph.layer);
 
         // position it at the piecen to start and float it up and fade it out
