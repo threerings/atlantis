@@ -38,10 +38,12 @@ public class Scoreboard
         layer.add(title.layer);
         ypos += title.layer.canvas().height();
 
-        // create our turn-holder indicator and add it before the player name layers
+        // create our turn-holder indicator
         _turnHolder = graphics().createCanvasLayer(WIDTH, PLAYER_HEIGHT);
         _turnHolder.canvas().setFillColor(0xFF99CCFF);
         _turnHolder.canvas().fillRect(0, 0, WIDTH, PLAYER_HEIGHT);
+        _turnHolder.setTranslation(0, ypos);
+        _turnHolder.setDepth(-1); // render below player names
         layer.add(_turnHolder);
         _turnHolder.setVisible(false);
 
@@ -102,7 +104,7 @@ public class Scoreboard
         CanvasLayer bg = graphics().createCanvasLayer(WIDTH, (int)Math.ceil(ypos));
         bg.canvas().setFillColor(0xFFCCCCCC);
         bg.canvas().fillRect(0, 0, WIDTH, ypos);
-        bg.setDepth(-1); // render below everything else
+        bg.setDepth(-2); // render below everything else
         layer.add(bg);
     }
 
@@ -115,7 +117,8 @@ public class Scoreboard
     }
 
     public void setTurnInfo (int turnHolderIdx, int remaining) {
-        _turnHolder.setTranslation(0, _playersY + turnHolderIdx * PLAYER_HEIGHT);
+        Atlantis.anim.tweenY(_turnHolder).easeInOut().
+            to(_playersY + turnHolderIdx * PLAYER_HEIGHT).in(500L);
         _turnHolder.setVisible(turnHolderIdx >= 0);
         _remaining.setText("Remaining: " + remaining);
     }
