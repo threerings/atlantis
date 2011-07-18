@@ -184,6 +184,12 @@ public class Board
         tiles.add(glyph.layer);
         _pglyphs.put(play.loc, glyph);
 
+        // delay subsequent animations until our placement animation has completed; generally there
+        // are scoring and piecen removal animations queued up, but we want to complete our zooming
+        // out and the sliding of this tile from the scoreboard onto the board before we allow
+        // those other animations to proceed
+        Atlantis.anim.addBarrier();
+
         if (FEATURE_DEBUG) {
             for (Glyphs.Play pg : _pglyphs.values()) {
                 pg.updateFeatureDebug(_ctrl.logic);
@@ -195,8 +201,13 @@ public class Board
         _pglyphs.get(p.loc).setPiecen(p);
     }
 
-    public void clearPiecen (Piecen p) {
-        _pglyphs.get(p.loc).clearPiecen();
+    public void clearPiecen (final Piecen p) {
+        // queue this up as an instant animation so that we honor barriers
+        Atlantis.anim.action(new Runnable() {
+            public void run () {
+                _pglyphs.get(p.loc).clearPiecen();
+            }
+        });
     }
 
     public void setPlacing (GameTile tile, Glyphs.Play glyph) {
@@ -240,18 +251,15 @@ public class Board
         float swidth = sglyph.layer.canvas().width(), sheight = sglyph.layer.canvas().height();
         sglyph.layer.setOrigin(swidth/2f, sheight);
         sglyph.layer.setDepth(1);
-        tiles.add(sglyph.layer);
 
         // position it at the piecen to start and float it up and fade it out
         Feature f = pglyph.tile.terrain.features[p.featureIdx];
         Point start = Input.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
+        Atlantis.anim.add(tiles, sglyph.layer);
         Atlantis.anim.tweenXY(sglyph.layer).in(2000f).easeOut().from(start.x, start.y).
-            to(start.x, start.y-sheight).then().action(new Runnable() {
-                public void run () {
-                    sglyph.layer.destroy();
-                }
-            });
-        Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f);
+            to(start.x, start.y-sheight);
+        Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f).
+            then().destroy(sglyph.layer);
     }
 
     /** Handles the interaction of placing a new tile on the board. */
@@ -323,8 +331,8 @@ public class Board
                 // (scrolling) tiles layer
                 GroupLayer scores = _glyph.layer.parent();
                 scores.remove(_glyph.layer);
-                flight.add(_glyph.layer);
                 _glyph.layer.setDepth(+1); // placing goes above other tiles
+                flight.add(_glyph.layer);
                 // we also need to update its position so that it can be animated into place
                 _glyph.layer.transform().translate(
                     scores.transform().tx() - tiles.transform().tx(),
@@ -451,12 +459,13 @@ public class Board
         }
 
         protected void commitPlacement (Feature f) {
+            // zoom back out and scroll to our original translation
+            restoreZoom();
+            // and submit our play to the server
             Placement play = new Placement(_placing, _glyph.getOrient(), _active.loc);
             Piecen piecen = (f == null) ? null : new Piecen(
                 _gobj.turnHolder.get(), _active.loc, play.getFeatureIndex(f));
             _ctrl.place(play, piecen);
-            // zoom back out and scroll to our original translation
-            restoreZoom();
         }
 
         protected GameTile _placing;
