@@ -98,8 +98,6 @@ public class Board
                     _screen.scores.setNextTile(pglyph);
                 }
                 _screen.scores.setTurnInfo(_gobj.turnHolder.get(), _gobj.tilesRemaining.get());
-                // TODO: enable or disable interactivity based on whether this client controls the
-                // turn holder
             }
         });
 
@@ -293,23 +291,26 @@ public class Board
             _placing = placing;
             _glyph = glyph;
 
-            // compute the legal placements for this tile and display targets for all legal moves
-            // (the server will have ensured that the tile has at least one legal play)
-            Rectangle tbounds = new Rectangle(Media.TERRAIN_SIZE);
-            for (Location ploc : _screen.ctrl.logic.computeLegalPlays(placing)) {
-                final Glyphs.Target target =
-                    new Glyphs.Target(_screen.anim, Atlantis.media.getTargetTile(), ploc);
-                target.layer.setDepth(-1); // targets render below tiles
-                tiles.add(target.layer);
-                target.layer.setAlpha(0);
-                _screen.anim.tweenAlpha(target.layer).easeOut().to(0.75f).in(500f);
-                _targets.add(target);
+            // if the current turn holder is controlled by this client, compute the legal
+            // placements for this tile and display targets for all legal moves (the server will
+            // have ensured that the tile has at least one legal play)
+            if (_screen.localIdxs.contains(_gobj.turnHolder.get())) {
+                Rectangle tbounds = new Rectangle(Media.TERRAIN_SIZE);
+                for (Location ploc : _screen.ctrl.logic.computeLegalPlays(placing)) {
+                    final Glyphs.Target target = new Glyphs.Target(
+                        _screen.anim, Atlantis.media.getTargetTile(), ploc);
+                    target.layer.setDepth(-1); // targets render below tiles
+                    tiles.add(target.layer);
+                    target.layer.setAlpha(0);
+                    _screen.anim.tweenAlpha(target.layer).easeOut().to(0.75f).in(500f);
+                    _targets.add(target);
 
-                _screen.input.register(target.layer, tbounds, new Input.Action() {
-                    public void onTrigger () {
-                        activateTarget(target);
-                    }
-                });
+                    _screen.input.register(target.layer, tbounds, new Input.Action() {
+                        public void onTrigger () {
+                            activateTarget(target);
+                        }
+                    });
+                }
             }
         }
 
