@@ -9,6 +9,8 @@ import forplay.core.TextFormat;
 import forplay.core.TextLayout;
 import static forplay.core.ForPlay.*;
 
+import pythagoras.f.Rectangle;
+
 /**
  * Manages a chunk of text; takes care of preserving its position through text changes.
  */
@@ -71,6 +73,10 @@ public class TextGlyph
     public TextGlyph setOriginBottomCenter () {
         layer.setOrigin(layer.canvas().width()/2, layer.canvas().height());
         return this;
+    }
+
+    public Rectangle bounds () {
+        return new Rectangle(0, 0, layer.canvas().width(), layer.canvas().height());
     }
 
     protected void createLayer (TextLayout layout) {

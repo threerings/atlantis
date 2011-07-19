@@ -4,13 +4,9 @@
 
 package com.threerings.atlantis.client;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import forplay.core.Game;
 import static forplay.core.ForPlay.*;
 
-import com.threerings.atlantis.shared.GameObject;
 import com.threerings.atlantis.shared.Log;
 
 /**
@@ -18,6 +14,9 @@ import com.threerings.atlantis.shared.Log;
  */
 public class AtlantisClient implements Game
 {
+    /** Our target frames per second. */
+    public static final int UPDATE_RATE = 30;
+
     // from interface Game
     public void init () {
         graphics().setSize(1024, 768);
@@ -37,29 +36,25 @@ public class AtlantisClient implements Game
             }
         });
 
+        // start our various media a loadin'
         Atlantis.media.init();
 
-        // start a fake game
-        GameObject gobj = LocalGameService.createLocalGame(
-            new String[] { "Mahatma Ghandi", "Elvis Presley", "Madonna" });
-        new GameController(gobj, new HashSet<Integer>(Arrays.asList(0, 1, 2)));
+        // push the main menu screen
+        Atlantis.screens.push(new MainMenuScreen());
     }
 
     // from interface Game
     public void update (float delta) {
-        _elapsed += delta;
+        Atlantis.screens.update(delta);
     }
 
     // from interface Game
     public void paint (float alpha) {
-        float current = _elapsed + alpha * updateRate();
-        Atlantis.anim.update(current);
+        Atlantis.screens.paint(alpha);
     }
 
     // from interface Game
     public int updateRate () {
-        return 30;
+        return UPDATE_RATE;
     }
-
-    protected float _elapsed;
 }

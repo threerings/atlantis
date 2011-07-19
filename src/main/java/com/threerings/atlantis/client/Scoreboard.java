@@ -21,6 +21,12 @@ public class Scoreboard
     /** Contains all of our scoreboard components. */
     public final GroupLayer layer = graphics().createGroupLayer();
 
+    public Scoreboard (GameScreen screen) {
+        _screen = screen;
+        layer.setDepth(+1); // see Board for other layer depths
+        screen.layer.add(layer);
+    }
+
     public void init (String[] players) {
         // create our various scoreboard interface elements
         float ypos = MARGIN;
@@ -117,7 +123,7 @@ public class Scoreboard
     }
 
     public void setTurnInfo (int turnHolderIdx, int remaining) {
-        Atlantis.anim.tweenY(_turnHolder).easeInOut().
+        _screen.anim.tweenY(_turnHolder).easeInOut().
             to(_playersY + turnHolderIdx * PLAYER_HEIGHT).in(500L);
         _turnHolder.setVisible(turnHolderIdx >= 0);
         _remaining.setText("Remaining: " + remaining);
@@ -128,11 +134,12 @@ public class Scoreboard
         tile.layer.setTranslation(WIDTH/2, _nextTileY + Media.TERRAIN_HEIGHT/2);
         // use an animation to add and fade the tile in, this will ensure that we're sequenced
         // properly with end-of-previous-turn animations
-        Atlantis.anim.add(layer, tile.layer);
-        Atlantis.anim.tweenAlpha(tile.layer).easeOut().from(0).to(1).in(500);
+        _screen.anim.add(layer, tile.layer);
+        _screen.anim.tweenAlpha(tile.layer).easeOut().from(0).to(1).in(500);
         // the layer will be removed for us when the tile is played
     }
 
+    protected GameScreen _screen;
     protected CanvasLayer _turnHolder;
     protected float _playersY, _nextTileY;
     protected TextGlyph _remaining, _nextLabel;

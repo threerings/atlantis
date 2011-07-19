@@ -26,16 +26,17 @@ import com.threerings.atlantis.shared.Placement;
  */
 public class GameController
 {
-    public final Logic logic;
+    public final Logic logic = new Logic();
 
-    public GameController (GameObject gobj, Set<Integer> playerIdxs) {
+    public GameController (GameScreen screen) {
+        _screen = screen;
+    }
+
+    public void init  (GameObject gobj, Set<Integer> playerIdxs) {
         _gobj = gobj;
-        _board = new Board();
-        _board.init(this, gobj);
-        _board.scores.init(gobj.players);
 
-        // initialize our logic based on the current state of the game
-        logic = new Logic(gobj);
+        // initialize our logic with the current game state
+        logic.init(gobj);
 
         // listen for game state changes
         _gobj.state.addListener(new DValue.Listener<GameObject.State>() {
@@ -55,17 +56,17 @@ public class GameController
         _gobj.plays.addListener(new DSet.AddedListener<Placement>() {
             public void elementAdded (Placement play) {
                 logic.addPlacement(play);
-                _board.addPlacement(play);
+                _screen.board.addPlacement(play);
             }
         });
         gobj.piecens.addListener(new DSet.Listener<Piecen>() {
             public void elementAdded (Piecen piecen) {
                 logic.addPiecen(piecen);
-                _board.addPiecen(piecen);
+                _screen.board.addPiecen(piecen);
             }
             public void elementRemoved (Piecen piecen) {
                 logic.clearPiecen(piecen);
-                _board.clearPiecen(piecen);
+                _screen.board.clearPiecen(piecen);
             }
         });
 
@@ -97,7 +98,7 @@ public class GameController
 
     protected void gameDidStart () {
         // prepare the board
-        _board.reset();
+        _screen.board.reset();
     }
 
     protected void gameDidEnd () {
@@ -114,9 +115,9 @@ public class GameController
                 winners.add(_gobj.players[ii]);
             }
         }
-        _board.reportWinners(winners);
+        _screen.board.reportWinners(winners);
     }
 
+    protected final GameScreen _screen;
     protected GameObject _gobj;
-    protected Board _board;
 }

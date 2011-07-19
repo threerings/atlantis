@@ -14,6 +14,7 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Rectangle;
 
 import com.threerings.anim.Animation;
+import com.threerings.anim.Animator;
 
 import com.threerings.atlantis.shared.Feature;
 import com.threerings.atlantis.shared.GameTile;
@@ -43,7 +44,7 @@ public class Glyphs
         public void setOrient (Orient orient, boolean animate) {
             if (animate) {
                 float toOrient;
-                Animation.One rotA = Atlantis.anim.tweenRotation(layer).easeInOut().
+                Animation.One rotA = _anim.tweenRotation(layer).easeInOut().
                     to(toOrient = orient.rotation()).in(1000);
                 // if we're going from east (pi/2) to south (-pi) wrap the other way and go to pi
                 // to avoid needlessly going the long way round
@@ -69,7 +70,7 @@ public class Glyphs
             if (_moveA != null) _moveA.cancel();
             float x = loc.x * Media.TERRAIN_WIDTH, y = loc.y * Media.TERRAIN_HEIGHT;
             if (animate) {
-                _moveA = Atlantis.anim.tweenXY(layer).easeInOut().to(x, y).in(1000);
+                _moveA = _anim.tweenXY(layer).easeInOut().to(x, y).in(1000);
                 if (onComplete != null) {
                     _moveA.then().action(onComplete);
                 }
@@ -81,13 +82,15 @@ public class Glyphs
             }
         }
 
-        protected Tile () {
+        protected Tile (Animator anim) {
+            _anim = anim;
             layer = graphics().createGroupLayer();
             float w = Media.TERRAIN_WIDTH, h = Media.TERRAIN_HEIGHT;
             layer.setOrigin(w/2, h/2);
             bounds = new Rectangle(-w/2, -h/2, w, h);
         }
 
+        protected Animator _anim;
         protected Animation _rotA, _moveA;
         protected Orient _orient = Orient.NORTH;
     }
@@ -96,7 +99,8 @@ public class Glyphs
     public static class Target extends Tile {
         public final Location loc;
 
-        public Target (ImageLayer tile, Location loc) {
+        public Target (Animator anim, ImageLayer tile, Location loc) {
+            super(anim);
             this.loc = loc;
             layer.add(tile);
             setLocation(loc, false, null);
@@ -107,14 +111,15 @@ public class Glyphs
     public static class Play extends Tile {
         public final GameTile tile;
 
-        public Play (Placement play) {
-            this(play.tile);
+        public Play (Animator anim, Placement play) {
+            this(anim, play.tile);
             _play = play;
             setOrient(play.orient, false);
             setLocation(play.loc, false, null);
         }
 
-        public Play (GameTile tile) {
+        public Play (Animator anim, GameTile tile) {
+            super(anim);
             this.tile = tile;
             layer.add(Atlantis.media.getTerrainTile(tile.terrain.tileIdx));
             if (tile.hasShield) {

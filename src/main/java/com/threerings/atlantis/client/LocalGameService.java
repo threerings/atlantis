@@ -108,7 +108,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
     protected void init (GameObject gobj) {
         _gobj = gobj;
-        _logic = new Logic(_gobj);
+        _logic.init(_gobj);
     }
 
     protected void startGame () {
@@ -199,7 +199,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
     }
 
     protected GameObject _gobj;
-    protected Logic _logic;
+    protected Logic _logic = new Logic();
     protected Set<Integer> _ready = new HashSet<Integer>();
     protected List<GameTile> _tileBag;
 }

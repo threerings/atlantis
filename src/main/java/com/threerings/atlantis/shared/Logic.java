@@ -106,9 +106,9 @@ public class Logic
     }
 
     /**
-     * Creates a new logic instance with the existing game state.
+     * Initializes this logic instance with the existing game state.
      */
-    public Logic (final GameObject gobj) {
+    public void init (GameObject gobj) {
         // note our existing game state
         for (Placement play : gobj.plays) {
             addPlacement(play);
@@ -116,12 +116,6 @@ public class Logic
         for (Piecen p : gobj.piecens) {
             addPiecen(p);
         }
-    }
-
-    /**
-     * Creates a blank logic, for use when testing.
-     */
-    public Logic () {
     }
 
     /**

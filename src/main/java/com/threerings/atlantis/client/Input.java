@@ -18,6 +18,8 @@ import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 
+import com.threerings.atlantis.shared.Log;
+
 /**
  * Dispatches user input to the appropriate entity.
  */
@@ -113,49 +115,12 @@ public class Input
         return into;
     }
 
-    public Input () {
-        ForPlay.pointer().setListener(new Pointer.Listener() {
-            @Override public void onPointerStart (float x, float y) {
-                // see if any of our reactors consume this click
-                Point p = new Point(x, y);
-                // take a snapshot of the reactors list at the start of the click to avoid
-                // concurrent modification if reactors are added or removed during processing
-                for (Reactor r : Lists.newArrayList(Lists.reverse(_reactors))) {
-                    if (r.hasExpired()) {
-                        _reactors.remove(r);
-                    } else if (r.hitTest(p)) {
-                        r.onTrigger();
-                        return;
-                    }
-                }
-
-                // if no reactors consume the click, potentially start a BPL
-                for (int ii = _listeners.size()-1; ii >= 0; ii--) {
-                    BPL bpl = _listeners.get(ii);
-                    if (bpl.bounds.contains(x, y)) {
-                        _activeBPL = bpl;
-                        _activeBPL.listener.onPointerStart(x, y);
-                        break;
-                    }
-                }
-            }
-
-            @Override public void onPointerDrag (float x, float y) {
-                if (_activeBPL != null) {
-                    _activeBPL.listener.onPointerDrag(x, y);
-                }
-            }
-
-            @Override public void onPointerEnd (float x, float y) {
-                if (_activeBPL != null) {
-                    _activeBPL.listener.onPointerEnd(x, y);
-                    _activeBPL = null;
-                }
-            }
-
-            protected boolean _started;
-            protected BPL _activeBPL;
-        });
+    /**
+     * Activates this input, taking over pointer input from any existing listener.
+     */
+    public void activate () {
+        Log.info("Activating " + this);
+        ForPlay.pointer().setListener(_plistener);
     }
 
     /**
@@ -216,6 +181,50 @@ public class Input
             this.listener = listener;
         }
     }
+
+    /** Receives input from the ForPlay Pointer service. */
+    protected Pointer.Listener _plistener = new Pointer.Listener() {
+        @Override public void onPointerStart (float x, float y) {
+            // see if any of our reactors consume this click
+            Point p = new Point(x, y);
+            // take a snapshot of the reactors list at the start of the click to avoid
+            // concurrent modification if reactors are added or removed during processing
+            for (Reactor r : Lists.newArrayList(Lists.reverse(_reactors))) {
+                if (r.hasExpired()) {
+                    _reactors.remove(r);
+                } else if (r.hitTest(p)) {
+                    r.onTrigger();
+                    return;
+                }
+            }
+
+            // if no reactors consume the click, potentially start a BPL
+            for (int ii = _listeners.size()-1; ii >= 0; ii--) {
+                BPL bpl = _listeners.get(ii);
+                if (bpl.bounds.contains(x, y)) {
+                    _activeBPL = bpl;
+                    _activeBPL.listener.onPointerStart(x, y);
+                    break;
+                }
+            }
+        }
+
+        @Override public void onPointerDrag (float x, float y) {
+            if (_activeBPL != null) {
+                _activeBPL.listener.onPointerDrag(x, y);
+            }
+        }
+
+        @Override public void onPointerEnd (float x, float y) {
+            if (_activeBPL != null) {
+                _activeBPL.listener.onPointerEnd(x, y);
+                _activeBPL = null;
+            }
+        }
+
+        protected boolean _started;
+        protected BPL _activeBPL;
+    };
 
     /** A list of all registered reactors. */
     protected List<Reactor> _reactors = Lists.newArrayList();
