@@ -184,11 +184,11 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
         // reclaim the piecens from the completed feature
         for (Piecen p : score.piecens) {
+            _gobj.piecens.remove(p);
             // maybe send an event reporting this piecen as a scorer
             if (toReport.remove(p.ownerIdx)) {
                 _gobj.scoreEvent.emit(score.score, p);
             }
-            _gobj.piecens.remove(p);
         }
     }
 
