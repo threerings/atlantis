@@ -32,7 +32,7 @@ public class GameController
         _screen = screen;
     }
 
-    public void init  (GameObject gobj, Set<Integer> playerIdxs) {
+    public void init  (GameObject gobj) {
         _gobj = gobj;
 
         // initialize our logic with the current game state
@@ -85,7 +85,7 @@ public class GameController
         }
 
         // let the server know that all the players we control are ready to go!
-        for (Integer pidx : playerIdxs) {
+        for (Integer pidx : _screen.localIdxs) {
             _gobj.gameSvc.get().playerReady(pidx);
         }
     }

@@ -22,14 +22,17 @@ public class GameScreen extends AtlantisScreen
     /** Manages the flow of the game. */
     public final GameController ctrl = new GameController(this);
 
+    /** The indices of players controlled by this client. */
+    public final Set<Integer> localIdxs;
+
     /**
      * Creates a game screen for the supplied game object.
      * @param playerIdxs the indices of the players controlled by this client.
      */
-    public GameScreen (GameObject gobj, Set<Integer> playerIdxs) {
+    public GameScreen (GameObject gobj, Set<Integer> localIdxs) {
+        this.localIdxs = localIdxs;
         board.init(gobj);
         scores.init(gobj.players);
-        // the controller will trigger the start of the game
-        ctrl.init(gobj, playerIdxs);
+        ctrl.init(gobj); // the controller will trigger the start of the game
     }
 }
