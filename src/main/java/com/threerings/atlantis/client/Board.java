@@ -283,7 +283,7 @@ public class Board
                 target.layer.setDepth(-1); // targets render below tiles
                 tiles.add(target.layer);
                 target.layer.setAlpha(0);
-                Atlantis.anim.tweenAlpha(target.layer).easeOut().to(0.5f).in(500f);
+                Atlantis.anim.tweenAlpha(target.layer).easeOut().to(0.75f).in(500f);
                 _targets.add(target);
 
                 Atlantis.input.register(target.layer, tbounds, new Input.Action() {
