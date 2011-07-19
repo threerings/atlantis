@@ -74,12 +74,12 @@ public class Board
         screen.layer.add(tiles);
         screen.layer.add(flight);
 
-        // TEMP: draw a grid over the board for debugging
-        SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);
-        grid.surface().drawLine(0f, height/2, width, height/2, 1f);
-        grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
-        grid.setDepth(+3);
-        screen.layer.add(grid);
+        // // TEMP: draw a grid over the board for debugging
+        // SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);
+        // grid.surface().drawLine(0f, height/2, width, height/2, 1f);
+        // grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
+        // grid.setDepth(+3);
+        // screen.layer.add(grid);
     }
 
     /**
