@@ -68,6 +68,11 @@ public class TextGlyph
         return this;
     }
 
+    public TextGlyph setOriginBottomCenter () {
+        layer.setOrigin(layer.canvas().width()/2, layer.canvas().height());
+        return this;
+    }
+
     protected void createLayer (TextLayout layout) {
         createLayer((int)Math.ceil(layout.width()), (int)Math.ceil(layout.height()));
     }
