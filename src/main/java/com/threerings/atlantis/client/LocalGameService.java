@@ -116,14 +116,16 @@ public class LocalGameService extends DService<GameService> implements GameServi
         _tileBag = Rules.standardTiles();
         Atlantis.rands.shuffle(_tileBag);
 
+        // note that the game is in play
+        _gobj.state.update(GameObject.State.IN_PLAY);
+
         // place the starting tile on the board
         _tileBag.remove(Rules.STARTER);
         Placement play = new Placement(Rules.STARTER, Orient.NORTH, new Location(0, 0));
         _gobj.plays.add(play);
         _logic.addPlacement(play);
 
-        // note that the game is in play and choose the first turn-holder
-        _gobj.state.update(GameObject.State.IN_PLAY);
+        // choose the first turn-holder
         startTurn(Atlantis.rands.getInt(_gobj.players.length));
     }
 
