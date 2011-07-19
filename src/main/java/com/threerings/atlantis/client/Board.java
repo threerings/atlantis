@@ -282,7 +282,8 @@ public class Board
                     new Glyphs.Target(Atlantis.media.getTargetTile(), ploc);
                 target.layer.setDepth(-1); // targets render below tiles
                 tiles.add(target.layer);
-                Atlantis.anim.tweenAlpha(target.layer).easeOut().from(0).to(1).in(500f);
+                target.layer.setAlpha(0);
+                Atlantis.anim.tweenAlpha(target.layer).easeOut().to(0.5f).in(500f);
                 _targets.add(target);
 
                 Atlantis.input.register(target.layer, tbounds, new Input.Action() {
