@@ -7,6 +7,8 @@ package com.threerings.atlantis.client;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
 import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
@@ -99,7 +101,20 @@ public class GameController
     }
 
     protected void gameDidEnd () {
-        // nada at the moment
+        // figure out the highest score
+        int maxScore = 0;
+        for (int score : _gobj.scores.values()) {
+            maxScore = Math.max(score, maxScore);
+        }
+
+        // now report the winner(s)
+        List<String> winners = Lists.newArrayList();
+        for (int ii = 0; ii < _gobj.players.length; ii++) {
+            if (_gobj.getScore(ii) == maxScore) {
+                winners.add(_gobj.players[ii]);
+            }
+        }
+        _board.reportWinners(winners);
     }
 
     protected GameObject _gobj;

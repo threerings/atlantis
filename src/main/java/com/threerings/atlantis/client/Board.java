@@ -217,6 +217,29 @@ public class Board
         _placer = new Placer(tile, glyph);
     }
 
+    public void reportWinners (List<String> winners) {
+        StringBuffer text = new StringBuffer();
+        if (winners.size() == 1) {
+            text.append(winners.get(0)).append(" wins!");
+        } else {
+            text.append("Winners: ");
+            for (int ii = 0; ii < winners.size(); ii++) {
+                if (ii != 0) text.append(", ");
+                text.append(winners.get(ii));
+            }
+            text.append("!");
+        }
+
+        TextGlyph sglyph = TextGlyph.forText(
+            text.toString(), SCORE_FORMAT.withTextColor(0xFFFFFFFF)).setOriginBottomCenter();
+        sglyph.layer.setDepth(1);
+        Atlantis.anim.add(tiles, sglyph.layer);
+        Atlantis.anim.tweenXY(sglyph.layer).in(2000f).easeOut().
+            from(0, sglyph.layer.canvas().height()).to(0, -sglyph.layer.canvas().height());
+        Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f).
+            then().destroy(sglyph.layer);
+    }
+
     protected void clearPlacing () {
         if (_placer != null) {
             _placer.clear();
@@ -248,10 +271,9 @@ public class Board
         Glyphs.Play pglyph = _pglyphs.get(p.loc);
 
         // create a score glyph that we'll animate to alert the player of the score
-        final TextGlyph sglyph = TextGlyph.forText(
-            ""+score, SCORE_FORMAT.withTextColor(Media.PIECEN_COLORS[p.ownerIdx]));
-        float swidth = sglyph.layer.canvas().width(), sheight = sglyph.layer.canvas().height();
-        sglyph.layer.setOrigin(swidth/2f, sheight);
+        TextGlyph sglyph = TextGlyph.
+            forText(""+score, SCORE_FORMAT.withTextColor(Media.PIECEN_COLORS[p.ownerIdx])).
+            setOriginBottomCenter();
         sglyph.layer.setDepth(1);
 
         // position it at the piecen to start and float it up and fade it out
@@ -259,7 +281,7 @@ public class Board
         Point start = Input.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
         Atlantis.anim.add(tiles, sglyph.layer);
         Atlantis.anim.tweenXY(sglyph.layer).in(2000f).easeOut().from(start.x, start.y).
-            to(start.x, start.y-sheight);
+            to(start.x, start.y-sglyph.layer.canvas().height());
         Atlantis.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f).
             then().destroy(sglyph.layer);
 
