@@ -41,35 +41,43 @@ public class Glyphs
         }
 
         public void setOrient (Orient orient, boolean animate) {
-            float dur = animate ? 1000 : 0;
-            float toOrient;
-            Animation.One rotA = Atlantis.anim.tweenRotation(layer).easeInOut().
-                to(toOrient = orient.rotation()).in(dur);
-            // if we're going from east (pi/2) to south (-pi) wrap the other way and go to pi
-            // to avoid needlessly going the long way round
-            if (_orient == Orient.EAST && orient == Orient.SOUTH) {
-                rotA.to(toOrient = FloatMath.PI);
+            if (animate) {
+                float toOrient;
+                Animation.One rotA = Atlantis.anim.tweenRotation(layer).easeInOut().
+                    to(toOrient = orient.rotation()).in(1000);
+                // if we're going from east (pi/2) to south (-pi) wrap the other way and go to pi
+                // to avoid needlessly going the long way round
+                if (_orient == Orient.EAST && orient == Orient.SOUTH) {
+                    rotA.to(toOrient = FloatMath.PI);
+                }
+                // TEMP: if we're not in the middle of another animation, set our from angle to
+                // avoid funny business that occurs when we extract our current angle from the
+                // transform matrix
+                if (_rotA == null || !_rotA.cancel()) {
+                    rotA.from(_orient.rotation());
+                }
+                _rotA = rotA;
+            } else {
+                if (_rotA != null) _rotA.cancel();
+                layer.transform().setRotation(orient.rotation());
             }
-            // TEMP: if we're not in the middle of another animation, set our from angle to avoid
-            // funny business that occurs when we extract our current angle from the transform
-            // matrix
-            if (_rotA == null || !_rotA.cancel()) {
-                rotA.from(_orient.rotation());
-            }
-            _rotA = rotA;
             _orient = orient;
         }
 
         public void setLocation (Location loc, boolean animate, Runnable onComplete) {
             // TODO: disable hit testing while animating
-            if (_moveA != null) {
-                _moveA.cancel();
-            }
-            float dur = animate ? 1000 : 0;
+            if (_moveA != null) _moveA.cancel();
             float x = loc.x * Media.TERRAIN_WIDTH, y = loc.y * Media.TERRAIN_HEIGHT;
-            _moveA = Atlantis.anim.tweenXY(layer).easeInOut().to(x, y).in(dur);
-            if (onComplete != null) {
-                _moveA.then().action(onComplete);
+            if (animate) {
+                _moveA = Atlantis.anim.tweenXY(layer).easeInOut().to(x, y).in(1000);
+                if (onComplete != null) {
+                    _moveA.then().action(onComplete);
+                }
+            } else {
+                layer.transform().setTranslation(x, y);
+                if (onComplete != null) {
+                    onComplete.run();
+                }
             }
         }
 
