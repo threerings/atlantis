@@ -18,8 +18,6 @@ import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 
-import com.threerings.atlantis.shared.Log;
-
 /**
  * Dispatches user input to the appropriate entity.
  */
@@ -119,7 +117,6 @@ public class Input
      * Activates this input, taking over pointer input from any existing listener.
      */
     public void activate () {
-        Log.info("Activating " + this);
         ForPlay.pointer().setListener(_plistener);
     }
 
