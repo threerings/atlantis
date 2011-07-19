@@ -83,6 +83,11 @@ public class Input
     public static Point layerToParent (Layer layer, Layer parent, IPoint point, Point into) {
         into.set(point);
         while (layer != parent) {
+            if (layer == null) {
+                throw new IllegalArgumentException(
+                    "Failed to find parent, perhaps you passed parent, layer instead of "+
+                    "layer, parent?");
+            }
             into.x -= layer.originX();
             into.y -= layer.originY();
             forplay.core.Transform lt = layer.transform();
