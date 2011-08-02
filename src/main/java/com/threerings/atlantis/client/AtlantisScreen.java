@@ -4,8 +4,8 @@
 
 package atlantis.client;
 
-import com.threerings.anim.Animator;
-import com.threerings.game.Screen;
+import tripleplay.anim.Animator;
+import tripleplay.game.Screen;
 
 /**
  * Makes some standard services available to all Atlantis screens.

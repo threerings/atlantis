@@ -18,7 +18,7 @@ import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 
-import com.threerings.util.Coords;
+import tripleplay.util.Coords;
 
 /**
  * Dispatches user input to the appropriate entity.

@@ -13,8 +13,8 @@ import pythagoras.f.FloatMath;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Rectangle;
 
-import com.threerings.anim.Animation;
-import com.threerings.anim.Animator;
+import tripleplay.anim.Animation;
+import tripleplay.anim.Animator;
 
 import atlantis.shared.Feature;
 import atlantis.shared.GameTile;

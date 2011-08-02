@@ -6,9 +6,9 @@ package atlantis.client;
 
 import java.util.Random;
 
-import com.threerings.anim.Animator;
-import com.threerings.game.ScreenStack;
-import com.threerings.util.Randoms;
+import tripleplay.anim.Animator;
+import tripleplay.game.ScreenStack;
+import tripleplay.util.Randoms;
 
 import atlantis.shared.Log;
 

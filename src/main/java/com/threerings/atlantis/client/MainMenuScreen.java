@@ -7,7 +7,7 @@ package atlantis.client;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import com.threerings.game.Screen;
+import tripleplay.game.Screen;
 
 import atlantis.client.util.TextGlyph;
 import atlantis.shared.GameObject;
