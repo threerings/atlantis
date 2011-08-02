@@ -18,6 +18,8 @@ import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 
+import com.threerings.util.Coords;
+
 /**
  * Dispatches user input to the appropriate entity.
  */
@@ -60,57 +62,11 @@ public class Input
             if (!_layer.visible()) return false;
             // convert the screen coordinates into layer-relative coordinates and check that the
             // point falls within the (layer-transform-relative) bounds
-            return _bounds.contains(screenToLayer(_layer, p, new Point()));
+            return _bounds.contains(Coords.screenToLayer(_layer, p, new Point()));
         }
 
         protected Layer _layer;
         protected IRectangle _bounds;
-    }
-
-    /**
-     * Converts the supplied point from coordinates relative to the specified layer to screen
-     * coordinates. The results are stored into {@code into}, which is returned for convenience.
-     */
-    public static Point layerToScreen (Layer layer, IPoint point, Point into) {
-        return layerToParent(layer, null, point, into);
-    }
-
-    /**
-     * Converts the supplied point from coordinates relative to the specified child layer to
-     * coordinates relative to the specified parent layer. The results are stored into {@code
-     * into}, which is returned for convenience.
-     */
-    public static Point layerToParent (Layer layer, Layer parent, IPoint point, Point into) {
-        into.set(point);
-        while (layer != parent) {
-            if (layer == null) {
-                throw new IllegalArgumentException(
-                    "Failed to find parent, perhaps you passed parent, layer instead of "+
-                    "layer, parent?");
-            }
-            into.x -= layer.originX();
-            into.y -= layer.originY();
-            forplay.core.Transform lt = layer.transform();
-            _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
-            _scratch.transform(into, into);
-            layer = layer.parent();
-        }
-        return into;
-    }
-
-    /**
-     * Converts the supplied point from screen coordinates to coordinates relative to the specified
-     * layer. The results are stored into {@code into}, which is returned for convenience.
-     */
-    public static Point screenToLayer (Layer layer, IPoint point, Point into) {
-        Layer parent = layer.parent();
-        IPoint cur = (parent == null) ? point : screenToLayer(parent, point, into);
-        forplay.core.Transform lt = layer.transform();
-        _scratch.setTransform(lt.m00(), lt.m10(), lt.m01(), lt.m11(), lt.tx(), lt.ty());
-        into = _scratch.inverseTransform(cur, into);
-        into.x += layer.originX();
-        into.y += layer.originY();
-        return into;
     }
 
     /**
@@ -228,7 +184,4 @@ public class Input
 
     /** A list of all registered bounded pointer listeners. */
     protected List<BPL> _listeners = Lists.newArrayList();
-
-    /** A scratch transform, used by {@link #screenToLayer} and {@link #layerToScreen}. */
-    protected static AffineTransform _scratch = new AffineTransform();
 }
