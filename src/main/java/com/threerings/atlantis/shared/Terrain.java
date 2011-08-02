@@ -2,9 +2,9 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.shared;
+package atlantis.shared;
 
-import static com.threerings.atlantis.shared.Edge.*;
+import static atlantis.shared.Edge.*;
 
 /**
  * Contains metadata for the various terrain tile types.

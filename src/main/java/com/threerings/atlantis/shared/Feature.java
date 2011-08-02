@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.shared;
+package atlantis.shared;
 
 import java.util.Arrays;
 
@@ -12,7 +12,7 @@ import pythagoras.f.Path;
 import pythagoras.f.Point;
 import pythagoras.f.RigidTransform;
 
-import static com.threerings.atlantis.shared.Edge.*;
+import static atlantis.shared.Edge.*;
 
 /**
  * Contains all of the information for a particular feature of a particular tile.

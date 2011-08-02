@@ -2,13 +2,13 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.html;
+package atlantis.html;
 
 import forplay.html.HtmlPlatform;
 import forplay.html.HtmlGame;
 import forplay.core.ForPlay;
 
-import com.threerings.atlantis.client.AtlantisClient;
+import atlantis.client.AtlantisClient;
 
 /**
  * The main entry point for the HTML5 client.

@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import java.util.List;
 import java.util.Map;
@@ -26,17 +26,17 @@ import com.threerings.nexus.distrib.DMap;
 import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
-import com.threerings.atlantis.client.util.TextGlyph;
-import com.threerings.atlantis.shared.Feature;
-import com.threerings.atlantis.shared.GameObject;
-import com.threerings.atlantis.shared.GameTile;
-import com.threerings.atlantis.shared.Location;
-import com.threerings.atlantis.shared.Log;
-import com.threerings.atlantis.shared.Logic;
-import com.threerings.atlantis.shared.Orient;
-import com.threerings.atlantis.shared.Piecen;
-import com.threerings.atlantis.shared.Placement;
-import static com.threerings.atlantis.client.AtlantisClient.*;
+import atlantis.client.util.TextGlyph;
+import atlantis.shared.Feature;
+import atlantis.shared.GameObject;
+import atlantis.shared.GameTile;
+import atlantis.shared.Location;
+import atlantis.shared.Log;
+import atlantis.shared.Logic;
+import atlantis.shared.Orient;
+import atlantis.shared.Piecen;
+import atlantis.shared.Placement;
+import static atlantis.client.AtlantisClient.*;
 
 /**
  * Manages the layer that displays the game board.

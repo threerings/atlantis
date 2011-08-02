@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.shared;
+package atlantis.shared;
 
 /**
  * Provides logging services that are routed to the appropriate logging destination on the client

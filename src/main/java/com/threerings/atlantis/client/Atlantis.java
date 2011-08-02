@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import java.util.Random;
 
@@ -10,7 +10,7 @@ import com.threerings.anim.Animator;
 import com.threerings.game.ScreenStack;
 import com.threerings.util.Randoms;
 
-import com.threerings.atlantis.shared.Log;
+import atlantis.shared.Log;
 
 /**
  * Holds static references to all the services for a game.

@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import forplay.core.TextFormat;
 import forplay.core.CanvasLayer;
@@ -11,7 +11,7 @@ import forplay.core.Font;
 import forplay.core.ImageLayer;
 import static forplay.core.ForPlay.*;
 
-import com.threerings.atlantis.client.util.TextGlyph;
+import atlantis.client.util.TextGlyph;
 
 /**
  * Displays the current score, turn holder, placing tile and other metadata.

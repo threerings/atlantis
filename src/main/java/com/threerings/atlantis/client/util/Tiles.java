@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client.util;
+package atlantis.client.util;
 
 import forplay.core.ForPlay;
 import forplay.core.Image;

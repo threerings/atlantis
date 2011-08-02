@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.shared;
+package atlantis.shared;
 
 import org.junit.Test;
 import static org.junit.Assert.*;

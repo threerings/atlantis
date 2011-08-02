@@ -2,16 +2,16 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import java.util.Arrays;
 import java.util.HashSet;
 
 import com.threerings.game.Screen;
 
-import com.threerings.atlantis.client.util.TextGlyph;
-import com.threerings.atlantis.shared.GameObject;
-import com.threerings.atlantis.shared.Log;
+import atlantis.client.util.TextGlyph;
+import atlantis.shared.GameObject;
+import atlantis.shared.Log;
 
 /**
  * Displays the game title and main menu.

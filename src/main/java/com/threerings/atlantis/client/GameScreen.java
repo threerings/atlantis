@@ -2,11 +2,11 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import java.util.Set;
 
-import com.threerings.atlantis.shared.GameObject;
+import atlantis.shared.GameObject;
 
 /**
  * Displays the interface for an actual game: board, scoreboard, etc.

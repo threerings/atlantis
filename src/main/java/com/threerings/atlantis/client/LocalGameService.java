@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,16 +17,16 @@ import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusObject;
 
-import com.threerings.atlantis.shared.GameObject;
-import com.threerings.atlantis.shared.GameService;
-import com.threerings.atlantis.shared.GameTile;
-import com.threerings.atlantis.shared.Location;
-import com.threerings.atlantis.shared.Log;
-import com.threerings.atlantis.shared.Logic;
-import com.threerings.atlantis.shared.Orient;
-import com.threerings.atlantis.shared.Piecen;
-import com.threerings.atlantis.shared.Placement;
-import com.threerings.atlantis.shared.Rules;
+import atlantis.shared.GameObject;
+import atlantis.shared.GameService;
+import atlantis.shared.GameTile;
+import atlantis.shared.Location;
+import atlantis.shared.Log;
+import atlantis.shared.Logic;
+import atlantis.shared.Orient;
+import atlantis.shared.Piecen;
+import atlantis.shared.Placement;
+import atlantis.shared.Rules;
 
 /**
  * Implements the server-side of game management for use in non-networked games.

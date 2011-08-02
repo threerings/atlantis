@@ -2,12 +2,12 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.java;
+package atlantis.java;
 
 import forplay.java.JavaPlatform;
 import forplay.core.ForPlay;
 
-import com.threerings.atlantis.client.AtlantisClient;
+import atlantis.client.AtlantisClient;
 
 /**
  * The main entry point for the Java client.

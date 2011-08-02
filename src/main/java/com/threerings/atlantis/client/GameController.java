@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import java.util.List;
 import java.util.Set;
@@ -12,13 +12,13 @@ import com.google.common.collect.Lists;
 import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
-import com.threerings.atlantis.shared.GameObject;
-import com.threerings.atlantis.shared.GameTile;
-import com.threerings.atlantis.shared.Location;
-import com.threerings.atlantis.shared.Logic;
-import com.threerings.atlantis.shared.Orient;
-import com.threerings.atlantis.shared.Piecen;
-import com.threerings.atlantis.shared.Placement;
+import atlantis.shared.GameObject;
+import atlantis.shared.GameTile;
+import atlantis.shared.Location;
+import atlantis.shared.Logic;
+import atlantis.shared.Orient;
+import atlantis.shared.Piecen;
+import atlantis.shared.Placement;
 
 /**
  * Manages the game flow. Listens for distributed state changes, handles submitting a player's

@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.client;
+package atlantis.client;
 
 import forplay.core.ImageLayer;
 import forplay.core.Asserts;
@@ -16,13 +16,13 @@ import pythagoras.f.Rectangle;
 import com.threerings.anim.Animation;
 import com.threerings.anim.Animator;
 
-import com.threerings.atlantis.shared.Feature;
-import com.threerings.atlantis.shared.GameTile;
-import com.threerings.atlantis.shared.Location;
-import com.threerings.atlantis.shared.Logic;
-import com.threerings.atlantis.shared.Orient;
-import com.threerings.atlantis.shared.Piecen;
-import com.threerings.atlantis.shared.Placement;
+import atlantis.shared.Feature;
+import atlantis.shared.GameTile;
+import atlantis.shared.Location;
+import atlantis.shared.Logic;
+import atlantis.shared.Orient;
+import atlantis.shared.Piecen;
+import atlantis.shared.Placement;
 
 /**
  * Various glyphs that we render on the board.

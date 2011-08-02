@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package com.threerings.atlantis.shared;
+package atlantis.shared;
 
 /**
  * Contains the metadata for a single game tile. Most of the metadata is encapsulated in the {@link
