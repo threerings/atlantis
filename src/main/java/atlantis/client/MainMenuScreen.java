@@ -18,6 +18,7 @@ import tripleplay.ui.Background;
 import tripleplay.ui.Button;
 import tripleplay.ui.Group;
 import tripleplay.ui.Label;
+import tripleplay.ui.Ref;
 import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
@@ -35,33 +36,27 @@ public class MainMenuScreen extends AtlantisScreen
         super.wasAdded();
 
         Root root = iface.createRoot(AxisLayout.vertical().gap(25), UI.stylesheet);
-        root.addStyles(Style.BACKGROUND.is(Background.solid(0xFFFFFFFF, 5)));
+        root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFFFFFFF, 5))));
         layer.add(root.layer);
 
-        Group botrow = new Group(AxisLayout.horizontal().alignTop().gap(50));
-        Group buttons = new Group(AxisLayout.vertical().offStretch());
-        Group games = new Group(AxisLayout.vertical().offStretch());
-        botrow.add(buttons, games);
+        Font megaFont = ForPlay.graphics().createFont("Helvetica", Font.Style.PLAIN, 64);
+        Styles lstyles = Styles.make(Style.HALIGN.is(Style.HAlign.CENTER));
 
-        Label logo = new Label().setText("Atlantis");
-        logo.addStyles(Style.FONT.is(ForPlay.graphics().createFont(
-                                         "Helvetica", Font.Style.PLAIN, 64)));
-        root.add(logo, botrow);
-
-        Label bheader = new Label().setText("Start new game:");
-        bheader.addStyles(Style.HALIGN.is(Style.HAlign.CENTER));
-        Button lgame = new Button().setText("Local game");
-        Button ogame = new Button().setText("Online game");
-        Button tgame = new Button().setText("Play-by-email game");
-        buttons.add(bheader, lgame, ogame, tgame);
-
-        Label theader = new Label().setText("Games in-progress:");
-        theader.addStyles(Style.HALIGN.is(Style.HAlign.CENTER));
-        games.add(theader);
+        Button lgb, ogb, tgb;
+        root.add(
+            new Label(Style.FONT.is(megaFont)).setText("Atlantis"),
+            new Group(AxisLayout.horizontal().alignTop().gap(50)).add(
+                new Group(AxisLayout.vertical().offStretch()).add(
+                    new Label(lstyles).setText("Start new game:"),
+                    lgb = new Button().setText("Local game"),
+                    ogb = new Button().setText("Online game"),
+                    tgb = new Button().setText("Play-by-email game")),
+                new Group(AxisLayout.vertical().offStretch()).add(
+                    new Label(lstyles).setText("Games in-progress:"))));
 
         root.setSize(ForPlay.graphics().width(), ForPlay.graphics().height());
 
-        lgame.click.connect(new UnitSlot() {
+        lgb.click.connect(new UnitSlot() {
             @Override public void onEmit () {
                 startLocalGame(new String[] { "Mahatma Ghandi", "Elvis Presley", "Madonna" });
             }
