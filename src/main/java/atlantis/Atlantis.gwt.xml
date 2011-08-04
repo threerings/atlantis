@@ -1,6 +1,6 @@
 <module rename-to="atlantis">
   <inherits name="com.google.common.collect.Collect"/>
-  <inherits name="com.threerings.TriplePlay"/>
+  <inherits name="tripleplay.TriplePlay"/>
   <inherits name="com.threerings.nexus.GWTIO"/>
   <inherits name="forplay.logging.Enhanced" />
   <!-- this bundles in the contents of src/main/resources -->
@@ -10,5 +10,5 @@
   <source path="shared"/>
   <source path="html"/>
 
-  <entry-point class="com.threerings.atlantis.html.Atlantis"/>
+  <entry-point class="atlantis.html.Atlantis"/>
 </module>
