@@ -21,7 +21,7 @@ public class MainMenuScreen extends AtlantisScreen
     @Override // from Screen
     public void wasAdded () {
         super.wasAdded();
-        TextGlyph temp = TextGlyph.forText("TEMP!", Interface.uiFormat(0xFF000000));
+        TextGlyph temp = TextGlyph.forText("TEMP!", UI.uiFormat(0xFF000000));
         temp.layer.setTranslation(100, 100);
         layer.add(temp.layer);
         input.register(temp.layer, temp.bounds(), new Input.Action() {

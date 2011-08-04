@@ -228,7 +228,7 @@ public class Board
             text.append("!");
         }
 
-        TextGlyph sglyph = TextGlyph.forText(text.toString(), Interface.scoreFormat(0xFFFFFFFF)).
+        TextGlyph sglyph = TextGlyph.forText(text.toString(), UI.scoreFormat(0xFFFFFFFF)).
             setOriginBottomCenter();
         sglyph.layer.setDepth(1);
         _screen.anim.add(tiles, sglyph.layer);
@@ -270,7 +270,7 @@ public class Board
 
         // create a score glyph that we'll animate to alert the player of the score
         TextGlyph sglyph = TextGlyph.
-            forText(""+score, Interface.scoreFormat(Media.PIECEN_COLORS[p.ownerIdx])).
+            forText(""+score, UI.scoreFormat(Media.PIECEN_COLORS[p.ownerIdx])).
             setOriginBottomCenter();
         sglyph.layer.setDepth(1);
 

@@ -11,7 +11,7 @@ import static forplay.core.ForPlay.*;
 /**
  * Contains user interface configuration and utilities.
  */
-public class Interface
+public class UI
 {
     /** The font used for score animations. */
     public static final Font SCORE_FONT = graphics().createFont("Helvetica", Font.Style.BOLD, 24);
