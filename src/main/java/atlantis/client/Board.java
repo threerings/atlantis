@@ -21,6 +21,8 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 import pythagoras.f.Rectangle;
 
+import tripleplay.util.Coords;
+
 import com.threerings.nexus.distrib.DCustom;
 import com.threerings.nexus.distrib.DMap;
 import com.threerings.nexus.distrib.DSet;
@@ -128,11 +130,12 @@ public class Board
         // wire up a dragger that is triggered for presses that don't touch anything else
         Rectangle sbounds = new Rectangle(0, 0, graphics().width(), graphics().height());
         _screen.input.register(sbounds, new Pointer.Listener() {
-            @Override public void onPointerStart (float x, float y) {
-                _drag = new Point(x, y);
+            @Override public void onPointerStart (Pointer.Event event) {
+                _drag = new Point(event.x(), event.y());
             }
-            @Override public void onPointerDrag (float x, float y) {
+            @Override public void onPointerDrag (Pointer.Event event) {
                 if (_drag != null) {
+                    float x = event.x(), y = event.y();
                     float ntx = tiles.transform().tx() + (x - _drag.x);
                     float nty = tiles.transform().ty() + (y - _drag.y);
                     tiles.setTranslation(ntx, nty);
@@ -140,7 +143,7 @@ public class Board
                     _drag.set(x, y);
                 }
             }
-            @Override public void onPointerEnd (float x, float y) {
+            @Override public void onPointerEnd (Pointer.Event event) {
                 _drag = null;
             }
             protected Point _drag;
@@ -273,7 +276,7 @@ public class Board
 
         // position it at the piecen to start and float it up and fade it out
         Feature f = pglyph.tile.terrain.features[p.featureIdx];
-        Point start = Input.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
+        Point start = Coords.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
         _screen.anim.add(tiles, sglyph.layer);
         _screen.anim.tweenXY(sglyph.layer).in(2000f).easeOut().from(start.x, start.y).
             to(start.x, start.y-sglyph.layer.canvas().height());

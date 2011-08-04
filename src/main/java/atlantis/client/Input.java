@@ -137,7 +137,8 @@ public class Input
 
     /** Receives input from the ForPlay Pointer service. */
     protected Pointer.Listener _plistener = new Pointer.Listener() {
-        @Override public void onPointerStart (float x, float y) {
+        @Override public void onPointerStart (Pointer.Event event) {
+            float x = event.x(), y = event.y();
             // see if any of our reactors consume this click
             Point p = new Point(x, y);
             // take a snapshot of the reactors list at the start of the click to avoid
@@ -156,21 +157,21 @@ public class Input
                 BPL bpl = _listeners.get(ii);
                 if (bpl.bounds.contains(x, y)) {
                     _activeBPL = bpl;
-                    _activeBPL.listener.onPointerStart(x, y);
+                    _activeBPL.listener.onPointerStart(event);
                     break;
                 }
             }
         }
 
-        @Override public void onPointerDrag (float x, float y) {
+        @Override public void onPointerDrag (Pointer.Event event) {
             if (_activeBPL != null) {
-                _activeBPL.listener.onPointerDrag(x, y);
+                _activeBPL.listener.onPointerDrag(event);
             }
         }
 
-        @Override public void onPointerEnd (float x, float y) {
+        @Override public void onPointerEnd (Pointer.Event event) {
             if (_activeBPL != null) {
-                _activeBPL.listener.onPointerEnd(x, y);
+                _activeBPL.listener.onPointerEnd(event);
                 _activeBPL = null;
             }
         }
