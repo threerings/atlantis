@@ -18,7 +18,6 @@ import tripleplay.ui.Background;
 import tripleplay.ui.Button;
 import tripleplay.ui.Group;
 import tripleplay.ui.Label;
-import tripleplay.ui.Ref;
 import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
@@ -40,11 +39,13 @@ public class MainMenuScreen extends AtlantisScreen
         layer.add(root.layer);
 
         Font megaFont = ForPlay.graphics().createFont("Helvetica", Font.Style.PLAIN, 64);
+        Styles tstyles = Styles.make(Style.FONT.is(megaFont),
+                                     Style.TEXT_EFFECT.is(Style.TextEffect.SHADOW));
         Styles lstyles = Styles.make(Style.HALIGN.is(Style.HAlign.CENTER));
 
         Button lgb, ogb, tgb;
         root.add(
-            new Label(Style.FONT.is(megaFont)).setText("Atlantis"),
+            new Label(tstyles).setText("Atlantis"),
             new Group(AxisLayout.horizontal().alignTop().gap(50)).add(
                 new Group(AxisLayout.vertical().offStretch()).add(
                     new Label(lstyles).setText("Start new game:"),
