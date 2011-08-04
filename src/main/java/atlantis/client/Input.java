@@ -69,12 +69,50 @@ public class Input
         protected IRectangle _bounds;
     }
 
-    /**
-     * Activates this input, taking over pointer input from any existing listener.
-     */
-    public void activate () {
-        ForPlay.pointer().setListener(_plistener);
-    }
+    /** Receives input from the ForPlay Pointer service. */
+    public final Pointer.Listener plistener = new Pointer.Listener() {
+        @Override public void onPointerStart (Pointer.Event event) {
+            float x = event.x(), y = event.y();
+            // see if any of our reactors consume this click
+            Point p = new Point(x, y);
+            // take a snapshot of the reactors list at the start of the click to avoid
+            // concurrent modification if reactors are added or removed during processing
+            for (Reactor r : Lists.newArrayList(Lists.reverse(_reactors))) {
+                if (r.hasExpired()) {
+                    _reactors.remove(r);
+                } else if (r.hitTest(p)) {
+                    r.onTrigger();
+                    return;
+                }
+            }
+
+            // if no reactors consume the click, potentially start a BPL
+            for (int ii = _listeners.size()-1; ii >= 0; ii--) {
+                BPL bpl = _listeners.get(ii);
+                if (bpl.bounds.contains(x, y)) {
+                    _activeBPL = bpl;
+                    _activeBPL.listener.onPointerStart(event);
+                    break;
+                }
+            }
+        }
+
+        @Override public void onPointerDrag (Pointer.Event event) {
+            if (_activeBPL != null) {
+                _activeBPL.listener.onPointerDrag(event);
+            }
+        }
+
+        @Override public void onPointerEnd (Pointer.Event event) {
+            if (_activeBPL != null) {
+                _activeBPL.listener.onPointerEnd(event);
+                _activeBPL = null;
+            }
+        }
+
+        protected boolean _started;
+        protected BPL _activeBPL;
+    };
 
     /**
      * Configures a listener to be notified of pointer activity that does not trigger a reactor. On
@@ -134,51 +172,6 @@ public class Input
             this.listener = listener;
         }
     }
-
-    /** Receives input from the ForPlay Pointer service. */
-    protected Pointer.Listener _plistener = new Pointer.Listener() {
-        @Override public void onPointerStart (Pointer.Event event) {
-            float x = event.x(), y = event.y();
-            // see if any of our reactors consume this click
-            Point p = new Point(x, y);
-            // take a snapshot of the reactors list at the start of the click to avoid
-            // concurrent modification if reactors are added or removed during processing
-            for (Reactor r : Lists.newArrayList(Lists.reverse(_reactors))) {
-                if (r.hasExpired()) {
-                    _reactors.remove(r);
-                } else if (r.hitTest(p)) {
-                    r.onTrigger();
-                    return;
-                }
-            }
-
-            // if no reactors consume the click, potentially start a BPL
-            for (int ii = _listeners.size()-1; ii >= 0; ii--) {
-                BPL bpl = _listeners.get(ii);
-                if (bpl.bounds.contains(x, y)) {
-                    _activeBPL = bpl;
-                    _activeBPL.listener.onPointerStart(event);
-                    break;
-                }
-            }
-        }
-
-        @Override public void onPointerDrag (Pointer.Event event) {
-            if (_activeBPL != null) {
-                _activeBPL.listener.onPointerDrag(event);
-            }
-        }
-
-        @Override public void onPointerEnd (Pointer.Event event) {
-            if (_activeBPL != null) {
-                _activeBPL.listener.onPointerEnd(event);
-                _activeBPL = null;
-            }
-        }
-
-        protected boolean _started;
-        protected BPL _activeBPL;
-    };
 
     /** A list of all registered reactors. */
     protected List<Reactor> _reactors = Lists.newArrayList();
