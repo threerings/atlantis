@@ -8,6 +8,13 @@ import forplay.core.Font;
 import forplay.core.TextFormat;
 import static forplay.core.ForPlay.*;
 
+import tripleplay.ui.Background;
+import tripleplay.ui.Button;
+import tripleplay.ui.Element;
+import tripleplay.ui.Style;
+import tripleplay.ui.Styles;
+import tripleplay.ui.Stylesheet;
+
 /**
  * Contains user interface configuration and utilities.
  */
@@ -27,6 +34,20 @@ public class UI
     /** Returns a text format for displaying buttons, labels and such. */
     public static final TextFormat uiFormat (int color) {
         return BASE_UI_FORMAT.withTextColor(color);
+    }
+
+    /** Our default stylesheet. */
+    public static final Stylesheet stylesheet = createRootSheet();
+    protected static Stylesheet createRootSheet () {
+        Styles elemStyles = Styles.none().
+            add(Style.FONT.is(graphics().createFont("Helvetica", Font.Style.PLAIN, 18)));
+        Styles buttonStyles = Styles.none().
+            add(Style.BACKGROUND.is(Background.solid(0xFF99CCFF, 5))).
+            addDown(Style.BACKGROUND.is(Background.solid(0xFFCCCCCC, 6, 4, 4, 6)));
+        return Stylesheet.builder().
+            add(Element.class, elemStyles).
+            add(Button.class, buttonStyles).
+            create();
     }
 
     protected static final TextFormat BASE_SCORE_FORMAT = new TextFormat().
