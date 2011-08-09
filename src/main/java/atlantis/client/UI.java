@@ -4,9 +4,9 @@
 
 package atlantis.client;
 
-import forplay.core.Font;
-import forplay.core.TextFormat;
-import static forplay.core.ForPlay.*;
+import playn.core.Font;
+import playn.core.TextFormat;
+import static playn.core.PlayN.*;
 
 import tripleplay.ui.Background;
 import tripleplay.ui.Button;

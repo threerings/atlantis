@@ -6,9 +6,9 @@ package atlantis.client;
 
 import atlantis.client.util.Tiles;
 
-import forplay.core.ForPlay;
-import forplay.core.Image;
-import forplay.core.ImageLayer;
+import playn.core.PlayN;
+import playn.core.Image;
+import playn.core.ImageLayer;
 
 import pythagoras.f.Dimension;
 import pythagoras.f.IDimension;
@@ -41,12 +41,12 @@ public class Media extends Tiles
     };
 
     public void init () {
-        _terrain = ForPlay.assetManager().getImage("images/tiles.png");
-        _target = ForPlay.assetManager().getImage("images/target.png");
-        _piecens = ForPlay.assetManager().getImage("images/piecens.png");
-        _shield = ForPlay.assetManager().getImage("images/shield.png");
-        _table = ForPlay.assetManager().getImage("images/table.png");
-        _actions = ForPlay.assetManager().getImage("images/actions.png");
+        _terrain = PlayN.assetManager().getImage("images/tiles.png");
+        _target = PlayN.assetManager().getImage("images/target.png");
+        _piecens = PlayN.assetManager().getImage("images/piecens.png");
+        _shield = PlayN.assetManager().getImage("images/shield.png");
+        _table = PlayN.assetManager().getImage("images/table.png");
+        _actions = PlayN.assetManager().getImage("images/actions.png");
         // TODO: delay initialization completion until images are loaded
     }
 

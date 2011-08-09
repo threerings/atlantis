@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 
 import com.threerings.nexus.distrib.DSet;
 
-import forplay.core.Asserts;
+import playn.core.Asserts;
 
 /**
  * Implements various game logic.

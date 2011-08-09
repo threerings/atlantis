@@ -4,8 +4,8 @@
 
 package atlantis.java;
 
-import forplay.java.JavaPlatform;
-import forplay.core.ForPlay;
+import playn.java.JavaPlatform;
+import playn.core.PlayN;
 
 import atlantis.client.AtlantisClient;
 
@@ -17,6 +17,6 @@ public class Atlantis
     public static void main (String[] args) {
         JavaPlatform platform = JavaPlatform.register();
         platform.assetManager().setPathPrefix("src/main/resources");
-        ForPlay.run(new AtlantisClient());
+        PlayN.run(new AtlantisClient());
     }
 }

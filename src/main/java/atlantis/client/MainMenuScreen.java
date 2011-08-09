@@ -7,8 +7,8 @@ package atlantis.client;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import forplay.core.Font;
-import forplay.core.ForPlay;
+import playn.core.Font;
+import playn.core.PlayN;
 
 import react.UnitSlot;
 
@@ -38,7 +38,7 @@ public class MainMenuScreen extends AtlantisScreen
         root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFFFFFFF, 5))));
         layer.add(root.layer);
 
-        Font megaFont = ForPlay.graphics().createFont("Helvetica", Font.Style.PLAIN, 64);
+        Font megaFont = PlayN.graphics().createFont("Helvetica", Font.Style.PLAIN, 64);
         Styles tstyles = Styles.make(Style.FONT.is(megaFont),
                                      Style.TEXT_EFFECT.is(Style.TextEffect.SHADOW));
         Styles lstyles = Styles.make(Style.HALIGN.is(Style.HAlign.CENTER));
@@ -55,7 +55,7 @@ public class MainMenuScreen extends AtlantisScreen
                 new Group(AxisLayout.vertical().offStretch()).add(
                     new Label(lstyles).setText("Games in-progress:"))));
 
-        root.setSize(ForPlay.graphics().width(), ForPlay.graphics().height());
+        root.setSize(PlayN.graphics().width(), PlayN.graphics().height());
 
         lgb.click.connect(new UnitSlot() {
             @Override public void onEmit () {

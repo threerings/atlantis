@@ -4,10 +4,10 @@
 
 package atlantis.client.util;
 
-import forplay.core.CanvasLayer;
-import forplay.core.TextFormat;
-import forplay.core.TextLayout;
-import static forplay.core.ForPlay.*;
+import playn.core.CanvasLayer;
+import playn.core.TextFormat;
+import playn.core.TextLayout;
+import static playn.core.PlayN.*;
 
 import pythagoras.f.Rectangle;
 

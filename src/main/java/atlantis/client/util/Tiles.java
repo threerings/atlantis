@@ -4,10 +4,10 @@
 
 package atlantis.client.util;
 
-import forplay.core.ForPlay;
-import forplay.core.Image;
-import forplay.core.ImageLayer;
-import forplay.core.ResourceCallback;
+import playn.core.PlayN;
+import playn.core.Image;
+import playn.core.ImageLayer;
+import playn.core.ResourceCallback;
 
 /**
  * Provides support for creating tile images.
@@ -31,7 +31,7 @@ public class Tiles
      * </pre>
      */
     public ImageLayer createTile (Image source, int tileWidth, int tileHeight, int tileIdx) {
-        ImageLayer layer = ForPlay.graphics().createImageLayer();
+        ImageLayer layer = PlayN.graphics().createImageLayer();
         initTileLayer(layer, source, tileWidth, tileHeight, tileIdx);
         return layer;
     }
@@ -42,7 +42,7 @@ public class Tiles
      */
     public ImageLayer createTileDeferred (final Image source, final int tileWidth,
                                           final int tileHeight, final int tileIdx) {
-        final ImageLayer layer = ForPlay.graphics().createImageLayer();
+        final ImageLayer layer = PlayN.graphics().createImageLayer();
         source.addCallback(new ResourceCallback<Image>() {
             public void done (Image rimage) {
                 initTileLayer(layer, rimage, tileWidth, tileHeight, tileIdx);
@@ -65,6 +65,6 @@ public class Tiles
     }
 
     protected void reportError (String errmsg, Throwable cause) {
-        ForPlay.log().warn(errmsg, cause);
+        PlayN.log().warn(errmsg, cause);
     }
 }

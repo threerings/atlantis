@@ -4,10 +4,10 @@
 
 package atlantis.client;
 
-import forplay.core.ImageLayer;
-import forplay.core.Asserts;
-import forplay.core.GroupLayer;
-import static forplay.core.ForPlay.*;
+import playn.core.ImageLayer;
+import playn.core.Asserts;
+import playn.core.GroupLayer;
+import static playn.core.PlayN.*;
 
 import pythagoras.f.FloatMath;
 import pythagoras.f.IRectangle;

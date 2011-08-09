@@ -4,9 +4,9 @@
 
 package atlantis.html;
 
-import forplay.html.HtmlPlatform;
-import forplay.html.HtmlGame;
-import forplay.core.ForPlay;
+import playn.html.HtmlPlatform;
+import playn.html.HtmlGame;
+import playn.core.PlayN;
 
 import atlantis.client.AtlantisClient;
 
@@ -18,6 +18,6 @@ public class Atlantis extends HtmlGame
     @Override public void start() {
         HtmlPlatform platform = HtmlPlatform.register();
         platform.assetManager().setPathPrefix("atlantis/");
-        ForPlay.run(new AtlantisClient());
+        PlayN.run(new AtlantisClient());
     }
 }

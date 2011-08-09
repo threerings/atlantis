@@ -4,12 +4,12 @@
 
 package atlantis.client;
 
-import forplay.core.TextFormat;
-import forplay.core.CanvasLayer;
-import forplay.core.GroupLayer;
-import forplay.core.Font;
-import forplay.core.ImageLayer;
-import static forplay.core.ForPlay.*;
+import playn.core.TextFormat;
+import playn.core.CanvasLayer;
+import playn.core.GroupLayer;
+import playn.core.Font;
+import playn.core.ImageLayer;
+import static playn.core.PlayN.*;
 
 import atlantis.client.util.TextGlyph;
 

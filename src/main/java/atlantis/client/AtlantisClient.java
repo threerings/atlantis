@@ -4,8 +4,8 @@
 
 package atlantis.client;
 
-import forplay.core.Game;
-import static forplay.core.ForPlay.*;
+import playn.core.Game;
+import static playn.core.PlayN.*;
 
 import atlantis.shared.Log;
 

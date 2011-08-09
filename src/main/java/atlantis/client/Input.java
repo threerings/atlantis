@@ -9,9 +9,9 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import forplay.core.ForPlay;
-import forplay.core.Layer;
-import forplay.core.Pointer;
+import playn.core.PlayN;
+import playn.core.Layer;
+import playn.core.Pointer;
 
 import pythagoras.f.AffineTransform;
 import pythagoras.f.IPoint;
@@ -69,7 +69,7 @@ public class Input
         protected IRectangle _bounds;
     }
 
-    /** Receives input from the ForPlay Pointer service. */
+    /** Receives input from the PlayN Pointer service. */
     public final Pointer.Listener plistener = new Pointer.Listener() {
         @Override public void onPointerStart (Pointer.Event event) {
             float x = event.x(), y = event.y();

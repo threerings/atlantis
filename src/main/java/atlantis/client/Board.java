@@ -10,11 +10,11 @@ import java.util.Map;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import forplay.core.GroupLayer;
-import forplay.core.ImageLayer;
-import forplay.core.Pointer;
-import forplay.core.SurfaceLayer;
-import static forplay.core.ForPlay.*;
+import playn.core.GroupLayer;
+import playn.core.ImageLayer;
+import playn.core.Pointer;
+import playn.core.SurfaceLayer;
+import static playn.core.PlayN.*;
 
 import pythagoras.f.IPoint;
 import pythagoras.f.IRectangle;

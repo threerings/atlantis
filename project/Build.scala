@@ -20,7 +20,7 @@ object AtlantisBuild extends Build {
     ("nexus", "gwt-server", "com.threerings" % "nexus-gwt-server" % "1.0-SNAPSHOT"),
     ("nexus", "jvm-server", "com.threerings" % "nexus-jvm-server" % "1.0-SNAPSHOT")
   )
-  // TBD: local symlinks are currently also needed for react, pythagoras and forplay
+  // TBD: local symlinks are currently also needed for react, pythagoras and playn
 
   lazy val atlantis = locals.addDeps(Project(
     "atlantis", file("."), settings = Defaults.defaultSettings ++ Seq(
@@ -38,7 +38,7 @@ object AtlantisBuild extends Build {
       libraryDependencies ++= locals.libDeps ++ Seq(
         // compile dependencies
         "com.google.guava" % "guava" % "r09",
-        "com.google.gwt" % "gwt-user" % "2.3.0", // should be exported by forplay-core?
+        "com.google.gwt" % "gwt-user" % "2.3.0", // should be exported by playn-core?
         "allen_sauer" % "gwt-log" % "1.0.r613",
         // test dependencies
         "junit" % "junit" % "4.+" % "test",
