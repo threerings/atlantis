@@ -4,12 +4,33 @@
 
 package atlantis.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import playn.core.TextFormat;
 import playn.core.CanvasLayer;
 import playn.core.GroupLayer;
 import playn.core.Font;
 import playn.core.ImageLayer;
 import static playn.core.PlayN.*;
+
+import pythagoras.f.Dimension;
+import pythagoras.f.Point;
+
+import react.Function;
+import react.Functions;
+import react.Slot;
+import react.Value;
+
+import tripleplay.ui.AxisLayout;
+import tripleplay.ui.Background;
+import tripleplay.ui.Element;
+import tripleplay.ui.Group;
+import tripleplay.ui.Label;
+import tripleplay.ui.Root;
+import tripleplay.ui.Style;
+import tripleplay.ui.Styles;
+import tripleplay.util.Coords;
 
 import atlantis.client.util.TextGlyph;
 
@@ -18,135 +39,127 @@ import atlantis.client.util.TextGlyph;
  */
 public class Scoreboard
 {
-    /** Contains all of our scoreboard components. */
-    public final GroupLayer layer = graphics().createGroupLayer();
+    /** The current piecen counts for all of the players. */
+    public final List<Value<Integer>> piecens = new ArrayList<Value<Integer>>();
+
+    /** The current scores for all of the players. */
+    public final List<Value<Integer>> scores = new ArrayList<Value<Integer>>();
+
+    /** The number of tiles remaining. */
+    public Value<Integer> remaining = Value.create(0);
+
+    /** The current turn holder index, or -1 if it's no one's turn. */
+    public Value<Integer> turnHolder = Value.create(-1);
 
     public Scoreboard (GameScreen screen) {
         _screen = screen;
-        layer.setDepth(+1); // see Board for other layer depths
-        screen.layer.add(layer);
+        _root = screen.iface.createRoot(AxisLayout.vertical().gap(10), UI.stylesheet);
+        _root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFCCCCCC, 16))));
+        // adjust the depth of the UI layer; see Board for other layer depths
+        _root.layer.setDepth(+1);
+        screen.layer.add(_root.layer);
     }
 
     public void init (String[] players) {
+        Styles titleStyles = Styles.make(
+            Style.FONT.is(graphics().createFont("Helvetica", Font.Style.BOLD, 24)));
+        Styles nameStyles = Styles.make(
+            Style.FONT.is(graphics().createFont("Helvetica", Font.Style.PLAIN, 16)));
+        Styles numberStyles = nameStyles.add(Style.HALIGN.is(Style.HAlign.RIGHT));
+
+        // this is kind of sneaky, but have our player group create the turn holder background
+        // layer after the first time that it is laid out (so that we know the height of a player
+        // info row)
+        _pgroup = new Group(AxisLayout.vertical().offStretch()) {
+            @Override protected void layout () {
+                super.layout();
+                if (_turnHolder == null) {
+                    // create our turn-holder indicator
+                    int width = (int)Math.ceil(_root.size().getWidth());
+                    int height = (int)Math.ceil(childAt(0).size().getHeight()) + 4;
+                    _turnHolder = graphics().createCanvasLayer(width, height);
+                    _turnHolder.canvas().setFillColor(0xFF99CCFF);
+                    _turnHolder.canvas().fillRect(0, 0, width, height);
+                    _turnHolder.setDepth(-1); // render below player names
+                    _turnHolder.setTranslation(0, playerRowPos(0)); // start on player 0
+                    _turnHolder.setVisible(false);
+                    _root.layer.add(_turnHolder);
+                }
+                turnHolder.connectNotify(_highlightTurnHolder);
+            }
+        };
+
         // create our various scoreboard interface elements
-        float ypos = MARGIN;
+        Label remain;
+        _root.add(
+            new Label(titleStyles).setText("Atlantis"),
+            _pgroup,
+            remain = new Label(nameStyles),
+            new Label(nameStyles).setText("Current tile:"),
+            _curtile = new Label() {
+                @Override protected Dimension computeSize (float hintX, float hintY) {
+                    return new Dimension(Media.TERRAIN_SIZE);
+                }
+            });
 
-        TextFormat titleFormat = new TextFormat().withFont(
-            graphics().createFont("Helvetica", Font.Style.BOLD, 24));
-        Font nameFont = graphics().createFont("Helvetica", Font.Style.PLAIN, 16);
-        TextFormat nameFormat = new TextFormat().withFont(nameFont);
-        TextFormat numberFormat = new TextFormat().withFont(nameFont).
-            withAlignment(TextFormat.Alignment.RIGHT);
-
-        // title on top
-        TextGlyph title = TextGlyph.forText("Atlantis", titleFormat);
-        title.layer.setTranslation(MARGIN, ypos);
-        layer.add(title.layer);
-        ypos += title.layer.canvas().height();
-
-        // create our turn-holder indicator
-        _turnHolder = graphics().createCanvasLayer(WIDTH, PLAYER_HEIGHT);
-        _turnHolder.canvas().setFillColor(0xFF99CCFF);
-        _turnHolder.canvas().fillRect(0, 0, WIDTH, PLAYER_HEIGHT);
-        _turnHolder.setTranslation(0, ypos);
-        _turnHolder.setDepth(-1); // render below player names
-        layer.add(_turnHolder);
-        _turnHolder.setVisible(false);
+        remaining.map(new Function<Integer,String>() {
+            public String apply (Integer remain) {
+                return "Remaining: " + remain;
+            }
+        }).connectNotify(remain.textSlot());
 
         // player names and other metadata
-        _playersY = ypos;
-        _piecens = new TextGlyph[players.length];
-        _scores = new TextGlyph[players.length];
         int pidx = 0;
         for (String player : players) {
-            TextGlyph score = (_scores[pidx] = TextGlyph.forTemplate("0000", numberFormat));
-            TextGlyph piecens = (_piecens[pidx] = TextGlyph.forTemplate("0", numberFormat));
-            ImageLayer piecen = Atlantis.media.getPiecenTile(pidx++);
-
-            // manual layout is awesome!
-            int hgap = 4, vgap = 4, nameWidth = WIDTH - 2*MARGIN - Media.PIECEN_WIDTH -
-                score.layer.canvas().width() - piecens.layer.canvas().width() - 3*hgap;
-
-            TextGlyph name = TextGlyph.forWidth(nameWidth, nameFormat);
-            name.setText(player);
-
-            float xpos = MARGIN;
-            name.layer.setTranslation(xpos, ypos + vgap/2);
-            xpos += nameWidth + hgap;
-            // bump the piecen up by two to align it to the baseline of the font, hack!
-            piecen.setTranslation(xpos + Media.PIECEN_WIDTH/2, ypos + PLAYER_HEIGHT/2 - 2);
-            xpos += Media.PIECEN_WIDTH + hgap;
-            piecens.layer.setTranslation(xpos, ypos + vgap/2);
-            xpos += piecens.layer.canvas().width() + hgap;
-            score.layer.setTranslation(xpos, ypos + vgap/2);
-
-            layer.add(name.layer);
-            layer.add(piecen);
-            layer.add(piecens.layer);
-            layer.add(score.layer);
-
-            ypos += Media.PIECEN_HEIGHT + vgap;
+            Label s, p;
+            _pgroup.add(
+                new Group(AxisLayout.horizontal()).add(
+                    new Label(nameStyles).setText(player).setConstraint(AxisLayout.stretched()),
+                    s = new Label(numberStyles),
+                    p = new Label(numberStyles).setIcon(Atlantis.media.getPiecensImage(),
+                                                        Atlantis.media.getPiecenBounds(pidx++))));
+            scores.add(Value.create(0));
+            scores.get(scores.size()-1).map(Functions.TO_STRING).connectNotify(s.textSlot());
+            piecens.add(Value.create(0));
+            piecens.get(piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.textSlot());
         }
 
-        // add remaining tiles count
-        ypos += MARGIN;
-        _remaining = TextGlyph.forTemplate("Remaining: 000", nameFormat);
-        _remaining.layer.setTranslation(MARGIN, ypos);
-        layer.add(_remaining.layer);
-        ypos += _remaining.layer.canvas().height();
-
-        // and add next tile to be placed display
-        ypos += MARGIN/2;
-        _nextLabel = TextGlyph.forText("Current tile:", nameFormat);
-        _nextLabel.layer.setTranslation(MARGIN, ypos);
-        layer.add(_nextLabel.layer);
-        _nextLabel.layer.setVisible(false);
-        ypos += _nextLabel.layer.canvas().height();
-        _nextTileY = ypos;
-        ypos += Media.TERRAIN_HEIGHT; // leave room for a terrain tile
-
-        // finally create a solid background to go behind all these bits
-        ypos += MARGIN;
-        CanvasLayer bg = graphics().createCanvasLayer(WIDTH, (int)Math.ceil(ypos));
-        bg.canvas().setFillColor(0xFFCCCCCC);
-        bg.canvas().fillRect(0, 0, WIDTH, ypos);
-        bg.setDepth(-2); // render below everything else
-        layer.add(bg);
-    }
-
-    public void setPiecenCount (int playerIdx, int piecens) {
-        _piecens[playerIdx].setText(""+piecens);
-    }
-
-    public void setScore (int playerIdx, int score) {
-        _scores[playerIdx].setText(""+score);
-    }
-
-    public void setTurnInfo (int turnHolderIdx, int remaining) {
-        _screen.anim.tweenY(_turnHolder).easeInOut().
-            to(_playersY + turnHolderIdx * PLAYER_HEIGHT).in(500L);
-        _turnHolder.setVisible(turnHolderIdx >= 0);
-        _remaining.setText("Remaining: " + remaining);
+        _root.packToWidth(WIDTH);
     }
 
     public void setNextTile (Glyphs.Play tile) {
-        _nextLabel.layer.setVisible(tile != null);
-        tile.layer.setTranslation(WIDTH/2, _nextTileY + Media.TERRAIN_HEIGHT/2);
+        // TODO: _nextLabel.layer.setVisible(tile != null);
+        Point ppos = Coords.layerToParent(_curtile.layer, _root.layer, 0, 0, new Point());
+        tile.layer.setTranslation(ppos.x + Media.TERRAIN_WIDTH/2,
+                                  ppos.y + Media.TERRAIN_HEIGHT/2);
         // use an animation to add and fade the tile in, this will ensure that we're sequenced
         // properly with end-of-previous-turn animations
-        _screen.anim.add(layer, tile.layer);
+        _screen.anim.add(_root.layer, tile.layer);
         _screen.anim.tweenAlpha(tile.layer).easeOut().from(0).to(1).in(500);
         // the layer will be removed for us when the tile is played
     }
 
+    protected float playerRowPos (int playerIdx) {
+        Element pinfo = _pgroup.childAt(playerIdx);
+        Point ppos = Coords.layerToParent(pinfo.layer, _root.layer, 0, 0, new Point());
+        return ppos.y - 2;
+    }
+
+    protected Slot<Integer> _highlightTurnHolder = new Slot<Integer>() {
+        public void onEmit (Integer turnHolder) {
+            _turnHolder.setVisible(turnHolder >= 0);
+            if (turnHolder >= 0) {
+                _screen.anim.tweenY(_turnHolder).easeInOut().to(playerRowPos(turnHolder)).in(500L);
+            }
+        }
+    };
+
     protected GameScreen _screen;
+    protected Root _root;
     protected CanvasLayer _turnHolder;
     protected float _playersY, _nextTileY;
-    protected TextGlyph _remaining, _nextLabel;
-    protected TextGlyph[] _piecens;
-    protected TextGlyph[] _scores;
+    protected Group _pgroup;
+    protected Label _curtile;
 
     protected static final int WIDTH = 180;
-    protected static final int MARGIN = 16;
-    protected static final int PLAYER_HEIGHT = Media.PIECEN_HEIGHT + 4;
 }

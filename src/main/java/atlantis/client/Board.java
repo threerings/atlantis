@@ -99,24 +99,25 @@ public class Board
                     setPlacing(placing, pglyph);
                     _screen.scores.setNextTile(pglyph);
                 }
-                _screen.scores.setTurnInfo(_gobj.turnHolder.get(), _gobj.tilesRemaining.get());
+                _screen.scores.remaining.update(_gobj.tilesRemaining.get()); // TODO: wire direct!
+                _screen.scores.turnHolder.update(_gobj.turnHolder.get()); // TODO: wire direct!
             }
         });
 
         // listen for piecen count and score changes
         _gobj.piecens.addListener(new DSet.Listener<Piecen>() {
             public void elementAdded (Piecen piecen) {
-                _screen.scores.setPiecenCount(
-                    piecen.ownerIdx, _gobj.piecensAvailable(piecen.ownerIdx));
+                _screen.scores.piecens.get(piecen.ownerIdx).update( // TODO: wire direct!
+                    _gobj.piecensAvailable(piecen.ownerIdx));
             }
             public void elementRemoved (Piecen piecen) {
-                _screen.scores.setPiecenCount(
-                    piecen.ownerIdx, _gobj.piecensAvailable(piecen.ownerIdx));
+                _screen.scores.piecens.get(piecen.ownerIdx).update( // TODO: wire direct!
+                    _gobj.piecensAvailable(piecen.ownerIdx));
             }
         });
         _gobj.scores.addListener(new DMap.PutListener<Integer,Integer>() {
             public void entryPut (Integer pidx, Integer score, Integer oscore) {
-                _screen.scores.setScore(pidx, score);
+                _screen.scores.scores.get(pidx).update(score);
             }
         });
 
@@ -170,8 +171,8 @@ public class Board
         }
 
         for (int ii = 0; ii < _gobj.players.length; ii++) {
-            _screen.scores.setPiecenCount(ii, _gobj.piecensAvailable(ii));
-            _screen.scores.setScore(ii, _gobj.getScore(ii));
+            _screen.scores.piecens.get(ii).update(_gobj.piecensAvailable(ii));
+            _screen.scores.scores.get(ii).update(_gobj.getScore(ii));
         }
     }
 
