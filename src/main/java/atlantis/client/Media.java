@@ -12,6 +12,8 @@ import playn.core.ImageLayer;
 
 import pythagoras.f.Dimension;
 import pythagoras.f.IDimension;
+import pythagoras.f.IRectangle;
+import pythagoras.f.Rectangle;
 
 /**
  * Provides images and other media.
@@ -72,6 +74,20 @@ public class Media extends Tiles
         ImageLayer img = createTile(_piecens, PIECEN_WIDTH, PIECEN_HEIGHT, tileIdx);
         img.setOrigin(PIECEN_WIDTH/2f, PIECEN_HEIGHT/2f);
         return img;
+    }
+
+    /**
+     * Returns the bounds of the specified piecen in the piecen image.
+     */
+    public IRectangle getPiecenBounds (int tileIdx) {
+        return new Rectangle(PIECEN_WIDTH*tileIdx, 0, PIECEN_WIDTH, PIECEN_HEIGHT);
+    }
+
+    /**
+     * Returns the composite piecen image.
+     */
+    public Image getPiecensImage () {
+        return _piecens;
     }
 
     /**
