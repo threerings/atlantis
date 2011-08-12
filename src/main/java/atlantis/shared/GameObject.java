@@ -9,12 +9,13 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.threerings.nexus.distrib.DAttribute;
-import com.threerings.nexus.distrib.DCustom;
 import com.threerings.nexus.distrib.DMap;
 import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.DSet;
+import com.threerings.nexus.distrib.DSignal;
 import com.threerings.nexus.distrib.DValue;
 import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.io.Streamable;
 
 /**
  * Contains the shared state of a single game.
@@ -22,24 +23,16 @@ import com.threerings.nexus.distrib.NexusObject;
 public class GameObject extends NexusObject
 {
     /** An event emitted when a feature is scored. */
-    public static class ScoreEvent extends DCustom.Event {
+    public static class Score implements Streamable {
         /** The number of points earned. */
         public final int score;
 
         /** The piecen that scored. */
         public final Piecen piecen;
 
-        public ScoreEvent (int targetId, short index, int score, Piecen piecen) {
-            super(targetId, index);
+        public Score (int score, Piecen piecen) {
             this.score = score;
             this.piecen = piecen;
-        }
-    }
-
-    /** Used to emit and listen for score events. */
-    public static class ScoreEventSlot extends DCustom<ScoreEvent> {
-        public void emit (int score, Piecen piecen) {
-            postEvent(new ScoreEvent(_owner.getId(), _index, score, piecen));
         }
     }
 
@@ -73,8 +66,8 @@ public class GameObject extends NexusObject
     /** The tile being placed by the current turn holder, or null. */
     public final DValue<GameTile> placing = DValue.create(null);
 
-    /** A slot by which score events can be listened for, and (on the server), emitted. */
-    public final ScoreEventSlot scoreEvent = new ScoreEventSlot();
+    /** A signal that emits score events. */
+    public final DSignal<Score> scoreSignal = DSignal.create();
 
     public GameObject (String[] players, DService<GameService> gameSvc) {
         this.players = players;
@@ -105,12 +98,6 @@ public class GameObject extends NexusObject
         return null;
     }
 
-    /** Returns the specified player's current score. */
-    public int getScore (int playerIdx) {
-        Integer score = scores.get(playerIdx);
-        return (score == null) ? 0 : score;
-    }
-
     @Override
     protected DAttribute getAttribute (int index) {
         switch (index) {
@@ -122,7 +109,7 @@ public class GameObject extends NexusObject
         case 5: return turnHolder;
         case 6: return tilesRemaining;
         case 7: return placing;
-        case 8: return scoreEvent;
+        case 8: return scoreSignal;
         default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
         }
     }

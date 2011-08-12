@@ -46,6 +46,7 @@ public class Piecen
 
     @Override
     public boolean equals (Object other) {
+        if (other == null) return false;
         // only one piecen can ever exist at a given x,y so that's sufficient for equals
         return loc.equals(((Piecen)other).loc);
     }

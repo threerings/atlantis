@@ -32,25 +32,17 @@ import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
 import tripleplay.util.Coords;
 
+import com.threerings.nexus.distrib.DSet;
+
 import atlantis.client.util.TextGlyph;
+import atlantis.shared.GameObject;
+import atlantis.shared.Piecen;
 
 /**
  * Displays the current score, turn holder, placing tile and other metadata.
  */
 public class Scoreboard
 {
-    /** The current piecen counts for all of the players. */
-    public final List<Value<Integer>> piecens = new ArrayList<Value<Integer>>();
-
-    /** The current scores for all of the players. */
-    public final List<Value<Integer>> scores = new ArrayList<Value<Integer>>();
-
-    /** The number of tiles remaining. */
-    public Value<Integer> remaining = Value.create(0);
-
-    /** The current turn holder index, or -1 if it's no one's turn. */
-    public Value<Integer> turnHolder = Value.create(-1);
-
     public Scoreboard (GameScreen screen) {
         _screen = screen;
         _root = screen.iface.createRoot(AxisLayout.vertical().gap(10), UI.stylesheet);
@@ -60,7 +52,7 @@ public class Scoreboard
         screen.layer.add(_root.layer);
     }
 
-    public void init (String[] players) {
+    public void init (final GameObject gobj) {
         Styles titleStyles = Styles.make(
             Style.FONT.is(graphics().createFont("Helvetica", Font.Style.BOLD, 24)));
         Styles nameStyles = Styles.make(
@@ -75,8 +67,8 @@ public class Scoreboard
                 super.layout();
                 if (_turnHolder == null) {
                     // create our turn-holder indicator
-                    int width = (int)Math.ceil(_root.size().getWidth());
-                    int height = (int)Math.ceil(childAt(0).size().getHeight()) + 4;
+                    int width = (int)Math.ceil(_root.size().width());
+                    int height = (int)Math.ceil(childAt(0).size().height()) + 4;
                     _turnHolder = graphics().createCanvasLayer(width, height);
                     _turnHolder.canvas().setFillColor(0xFF99CCFF);
                     _turnHolder.canvas().fillRect(0, 0, width, height);
@@ -85,7 +77,7 @@ public class Scoreboard
                     _turnHolder.setVisible(false);
                     _root.layer.add(_turnHolder);
                 }
-                turnHolder.connectNotify(_highlightTurnHolder);
+                gobj.turnHolder.connectNotify(_highlightTurnHolder);
             }
         };
 
@@ -102,26 +94,36 @@ public class Scoreboard
                 }
             });
 
-        remaining.map(new Function<Integer,String>() {
+        gobj.tilesRemaining.map(new Function<Integer,String>() {
             public String apply (Integer remain) {
                 return "Remaining: " + remain;
             }
         }).connectNotify(remain.textSlot());
 
+        // listen for piecen count changes
+        gobj.piecens.listen(new DSet.Listener<Piecen>() {
+            public void onAdd (Piecen piecen) {
+                _piecens.get(piecen.ownerIdx).update(gobj.piecensAvailable(piecen.ownerIdx));
+            }
+            public void onRemove (Piecen piecen) {
+                _piecens.get(piecen.ownerIdx).update(gobj.piecensAvailable(piecen.ownerIdx));
+            }
+        });
+
         // player names and other metadata
         int pidx = 0;
-        for (String player : players) {
+        for (String player : gobj.players) {
             Label s, p;
+            final int curidx = pidx++;
             _pgroup.add(
                 new Group(AxisLayout.horizontal()).add(
                     new Label(nameStyles).setText(player).setConstraint(AxisLayout.stretched()),
                     s = new Label(numberStyles),
                     p = new Label(numberStyles).setIcon(Atlantis.media.getPiecensImage(),
-                                                        Atlantis.media.getPiecenBounds(pidx++))));
-            scores.add(Value.create(0));
-            scores.get(scores.size()-1).map(Functions.TO_STRING).connectNotify(s.textSlot());
-            piecens.add(Value.create(0));
-            piecens.get(piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.textSlot());
+                                                        Atlantis.media.getPiecenBounds(curidx))));
+            gobj.scores.getView(curidx).map(Functions.TO_STRING).connectNotify(s.textSlot());
+            _piecens.add(Value.create(gobj.piecensAvailable(curidx)));
+            _piecens.get(_piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.textSlot());
         }
 
         _root.packToWidth(WIDTH);
@@ -160,6 +162,9 @@ public class Scoreboard
     protected float _playersY, _nextTileY;
     protected Group _pgroup;
     protected Label _curtile;
+
+    /** The current piecen counts for all of the players. */
+    protected final List<Value<Integer>> _piecens = new ArrayList<Value<Integer>>();
 
     protected static final int WIDTH = 180;
 }

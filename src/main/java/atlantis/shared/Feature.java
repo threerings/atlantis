@@ -64,6 +64,7 @@ public class Feature
     }
 
     @Override public boolean equals (Object other) {
+        if (other == null) return false;
         Feature ofeature = (Feature)other;
         return ofeature.type == type && ofeature.edgeMask == edgeMask;
     }

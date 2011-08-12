@@ -32,7 +32,7 @@ public class GameScreen extends AtlantisScreen
     public GameScreen (GameObject gobj, Set<Integer> localIdxs) {
         this.localIdxs = localIdxs;
         board.init(gobj);
-        scores.init(gobj.players);
+        scores.init(gobj);
         ctrl.init(gobj); // the controller will trigger the start of the game
     }
 }

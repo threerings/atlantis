@@ -80,6 +80,7 @@ public class Location
 
     @Override
     public boolean equals (Object other) {
+        if (other == null) return false;
         Location oloc = (Location)other;
         return oloc.x == x && oloc.y == y;
     }

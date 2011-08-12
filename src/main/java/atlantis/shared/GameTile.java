@@ -29,6 +29,7 @@ public class GameTile
 
     @Override
     public boolean equals (Object other) {
+        if (other == null) return false;
         GameTile otile = (GameTile)other;
         return otile.terrain == terrain && otile.hasShield == hasShield;
     }

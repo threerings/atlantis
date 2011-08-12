@@ -125,6 +125,11 @@ public class LocalGameService extends DService<GameService> implements GameServi
         _gobj.plays.add(play);
         _logic.addPlacement(play);
 
+        // set the scores for all players to zero
+        for (int ii = 0; ii < _gobj.players.length; ii++) {
+            _gobj.scores.put(ii, 0);
+        }
+
         // choose the first turn-holder
         startTurn(Atlantis.rands.getInt(_gobj.players.length));
     }
@@ -175,7 +180,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
     protected void processScore (Logic.FeatureScore score) {
         // note the score increase for all participants
         for (int pidx : score.scorers) {
-            _gobj.scores.put(pidx, _gobj.getScore(pidx) + score.score);
+            _gobj.scores.put(pidx, _gobj.scores.get(pidx) + score.score);
         }
 
         // we only want to send a score event for at most one of the piecens owned by the
@@ -187,7 +192,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
             _gobj.piecens.remove(p);
             // maybe send an event reporting this piecen as a scorer
             if (toReport.remove(p.ownerIdx)) {
-                _gobj.scoreEvent.emit(score.score, p);
+                _gobj.scoreSignal.emit(new GameObject.Score(score.score, p));
             }
         }
     }

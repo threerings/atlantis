@@ -9,8 +9,9 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 
+import react.Slot;
+
 import com.threerings.nexus.distrib.DSet;
-import com.threerings.nexus.distrib.DValue;
 
 import atlantis.shared.GameObject;
 import atlantis.shared.GameTile;
@@ -39,8 +40,8 @@ public class GameController
         logic.init(gobj);
 
         // listen for game state changes
-        _gobj.state.addListener(new DValue.Listener<GameObject.State>() {
-            public void valueChanged (GameObject.State value, GameObject.State oldValue) {
+        _gobj.state.connect(new Slot<GameObject.State>() {
+            @Override public void onEmit (GameObject.State value) {
                 switch (value) {
                 case IN_PLAY:
                     gameDidStart();
@@ -53,18 +54,18 @@ public class GameController
         });
 
         // listen for plays and keep the logic and board up to date
-        _gobj.plays.addListener(new DSet.AddedListener<Placement>() {
-            public void elementAdded (Placement play) {
+        _gobj.plays.listen(new DSet.Listener<Placement>() {
+            @Override public void onAdd (Placement play) {
                 logic.addPlacement(play);
                 _screen.board.addPlacement(play);
             }
         });
-        gobj.piecens.addListener(new DSet.Listener<Piecen>() {
-            public void elementAdded (Piecen piecen) {
+        gobj.piecens.listen(new DSet.Listener<Piecen>() {
+            @Override public void onAdd (Piecen piecen) {
                 logic.addPiecen(piecen);
                 _screen.board.addPiecen(piecen);
             }
-            public void elementRemoved (Piecen piecen) {
+            @Override public void onRemove (Piecen piecen) {
                 logic.clearPiecen(piecen);
                 _screen.board.clearPiecen(piecen);
             }
@@ -111,7 +112,7 @@ public class GameController
         // now report the winner(s)
         List<String> winners = Lists.newArrayList();
         for (int ii = 0; ii < _gobj.players.length; ii++) {
-            if (_gobj.getScore(ii) == maxScore) {
+            if (_gobj.scores.get(ii) == maxScore) {
                 winners.add(_gobj.players[ii]);
             }
         }

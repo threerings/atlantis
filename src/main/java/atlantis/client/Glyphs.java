@@ -133,7 +133,7 @@ public class Glyphs
             Asserts.checkState(_pimg == null, "Play already has piecen image: %s", _play);
             Feature f = _play.getFeature(piecen.featureIdx);
             _pimg = Atlantis.media.getPiecenTile(piecen.ownerIdx);
-            _pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+            _pimg.setTranslation(f.piecenSpot.x(), f.piecenSpot.y());
             layer.add(_pimg);
         }
 
@@ -154,7 +154,7 @@ public class Glyphs
                 int group = logic.getClaim(_play).getClaimGroup(f);
                 if (group > 0) {
                     ImageLayer img = Atlantis.media.getPiecenTile(group % Media.PIECEN_COUNT);
-                    img.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+                    img.setTranslation(f.piecenSpot.y(), f.piecenSpot.y());
                     img.setAlpha(0.5f);
                     _debug.add(img);
                 }

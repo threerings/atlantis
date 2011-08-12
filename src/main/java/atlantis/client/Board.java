@@ -21,9 +21,10 @@ import pythagoras.f.IRectangle;
 import pythagoras.f.Point;
 import pythagoras.f.Rectangle;
 
+import react.Slot;
+
 import tripleplay.util.Coords;
 
-import com.threerings.nexus.distrib.DCustom;
 import com.threerings.nexus.distrib.DMap;
 import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
@@ -91,39 +92,20 @@ public class Board
         _gobj = gobj;
 
         // when the turn-holder changes, update all of the other bits
-        _gobj.turnHolder.addListener(new DValue.Listener<Integer>() {
-            public void valueChanged (Integer turnHolder, Integer oldTurnHolder) {
+        _gobj.turnHolder.listen(new DValue.Listener<Integer>() {
+            @Override public void onChange (Integer turnHolder) {
                 GameTile placing = _gobj.placing.get();
                 if (placing != null) {
                     Glyphs.Play pglyph = new Glyphs.Play(_screen.anim, placing);
                     setPlacing(placing, pglyph);
                     _screen.scores.setNextTile(pglyph);
                 }
-                _screen.scores.remaining.update(_gobj.tilesRemaining.get()); // TODO: wire direct!
-                _screen.scores.turnHolder.update(_gobj.turnHolder.get()); // TODO: wire direct!
-            }
-        });
-
-        // listen for piecen count and score changes
-        _gobj.piecens.addListener(new DSet.Listener<Piecen>() {
-            public void elementAdded (Piecen piecen) {
-                _screen.scores.piecens.get(piecen.ownerIdx).update( // TODO: wire direct!
-                    _gobj.piecensAvailable(piecen.ownerIdx));
-            }
-            public void elementRemoved (Piecen piecen) {
-                _screen.scores.piecens.get(piecen.ownerIdx).update( // TODO: wire direct!
-                    _gobj.piecensAvailable(piecen.ownerIdx));
-            }
-        });
-        _gobj.scores.addListener(new DMap.PutListener<Integer,Integer>() {
-            public void entryPut (Integer pidx, Integer score, Integer oscore) {
-                _screen.scores.scores.get(pidx).update(score);
             }
         });
 
         // listen for score notifications
-        _gobj.scoreEvent.addListener(new DCustom.Listener<GameObject.ScoreEvent>() {
-            public void onEvent (GameObject.ScoreEvent event) {
+        _gobj.scoreSignal.connect(new Slot<GameObject.Score>() {
+            public void onEmit (GameObject.Score event) {
                 showPiecenScoreAnimation(event.piecen, event.score);
             }
         });
@@ -151,7 +133,7 @@ public class Board
         });
 
         // translate (0,0) to the center of the screen
-        _origin = sbounds.getCenter();
+        _origin = sbounds.center();
         tiles.setTranslation(_origin.x, _origin.y);
         flight.setTranslation(_origin.x, _origin.y);
     }
@@ -168,11 +150,6 @@ public class Board
         }
         for (Piecen p : _gobj.piecens) {
             addPiecen(p);
-        }
-
-        for (int ii = 0; ii < _gobj.players.length; ii++) {
-            _screen.scores.piecens.get(ii).update(_gobj.piecensAvailable(ii));
-            _screen.scores.scores.get(ii).update(_gobj.getScore(ii));
         }
     }
 
@@ -390,7 +367,7 @@ public class Board
                 Rectangle pbounds = new Rectangle(Media.PIECEN_SIZE);
                 for (final Feature f : _placing.terrain.features) {
                     ImageLayer pimg = Atlantis.media.getPiecenTile(mypidx);
-                    pimg.setTranslation(f.piecenSpot.getX(), f.piecenSpot.getY());
+                    pimg.setTranslation(f.piecenSpot.x(), f.piecenSpot.y());
                     _piecens.add(pimg);
 
                     _screen.input.register(new Input.LayerReactor(pimg, pbounds) {

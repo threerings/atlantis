@@ -63,6 +63,7 @@ public class Placement
 
     @Override
     public boolean equals (Object other) {
+        if (other == null) return false;
         // only one placement can ever exist at a given x,y so that's sufficient for equals
         return loc.equals(((Placement)other).loc);
     }
