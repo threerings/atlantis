@@ -2,7 +2,7 @@
   <inherits name="com.google.common.collect.Collect"/>
   <inherits name="tripleplay.TriplePlay"/>
   <inherits name="com.threerings.nexus.GWTIO"/>
-  <inherits name="forplay.logging.Enhanced" />
+  <inherits name="playn.logging.Enhanced" />
   <!-- this bundles in the contents of src/main/resources -->
   <inherits name="Resources"/>
 
