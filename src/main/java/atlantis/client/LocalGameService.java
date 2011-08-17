@@ -43,7 +43,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
             public void postEvent (NexusObject source, NexusEvent event) {
                 event.applyTo(source);
             }
-            public void postCall (int objectId, short attrIndex, short methodId, Object[] args) {
+            public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args) {
                 throw new UnsupportedOperationException();
             }
         });
