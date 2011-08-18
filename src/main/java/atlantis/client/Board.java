@@ -24,9 +24,8 @@ import pythagoras.f.Rectangle;
 import react.Slot;
 
 import tripleplay.util.Coords;
+import tripleplay.util.Input;
 
-import com.threerings.nexus.distrib.DMap;
-import com.threerings.nexus.distrib.DSet;
 import com.threerings.nexus.distrib.DValue;
 
 import atlantis.client.util.TextGlyph;
@@ -34,12 +33,9 @@ import atlantis.shared.Feature;
 import atlantis.shared.GameObject;
 import atlantis.shared.GameTile;
 import atlantis.shared.Location;
-import atlantis.shared.Log;
-import atlantis.shared.Logic;
 import atlantis.shared.Orient;
 import atlantis.shared.Piecen;
 import atlantis.shared.Placement;
-import static atlantis.client.AtlantisClient.*;
 
 /**
  * Manages the layer that displays the game board.

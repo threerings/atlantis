@@ -7,6 +7,7 @@ package atlantis.client;
 import tripleplay.anim.Animator;
 import tripleplay.game.Screen;
 import tripleplay.ui.Interface;
+import tripleplay.util.Input;
 
 /**
  * Makes some standard services available to all Atlantis screens.
