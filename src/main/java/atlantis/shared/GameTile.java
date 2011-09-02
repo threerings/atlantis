@@ -4,12 +4,14 @@
 
 package atlantis.shared;
 
+import com.threerings.nexus.io.Streamable;
+
 /**
  * Contains the metadata for a single game tile. Most of the metadata is encapsulated in the {@link
  * Terrain} enum, but tiles optionally have a shield which is easier to model with this
  * encapsulating class.
  */
-public class GameTile
+public class GameTile implements Streamable
 {
     /** This tile's terrain and features. */
     public final Terrain terrain;

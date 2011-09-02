@@ -11,10 +11,12 @@ import com.google.common.collect.Lists;
 
 import pythagoras.i.Points;
 
+import com.threerings.nexus.io.Streamable;
+
 /**
  * Represents a board location.
  */
-public class Location
+public class Location implements Streamable
 {
     /** The x-coordinate of this location. */
     public final int x;

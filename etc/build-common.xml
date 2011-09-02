@@ -143,4 +143,28 @@
       </classpath>
     </java>
   </target>
+
+  <property name="gencode.excludes" value="__nothing__"/>
+  <property name="gencode.header" value="etc/SOURCE_HEADER"/>
+  <target name="gencode" depends="-prepare" description="Generates marshalling code.">
+    <artifact:dependencies pathId="tools.classpath">
+      <dependency groupId="com.threerings" artifactId="nexus-tools" version="1.0-SNAPSHOT"/>
+    </artifact:dependencies>
+    <javac srcdir="${src.dir}" includeAntRuntime="false"
+           source="1.6" target="1.6" encoding="utf-8">
+      <classpath>
+        <path refid="compile.path"/>
+        <path refid="tools.classpath"/>
+      </classpath>
+      <compilerarg value="-s"/>
+      <compilerarg value="${src.dir}"/>
+      <compilerarg value="-processor"/>
+      <compilerarg value="com.threerings.nexus.gencode.Processor"/>
+      <compilerarg value="-proc:only"/>
+      <compilerarg value="-Acom.threerings.nexus.gencode.header=${gencode.header}"/>
+      <exclude name="**/Streamer_*.java"/>
+      <exclude name="**/Factory_*.java"/>
+      <exclude name="${gencode.excludes}"/>
+    </javac>
+  </target>
 </project>

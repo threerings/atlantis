@@ -7,10 +7,12 @@ package atlantis.shared;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.threerings.nexus.io.Streamable;
+
 /**
  * Describes the placement of a tile.
  */
-public class Placement
+public class Placement implements Streamable
 {
     /** The metadata for the tile that was placed. */
     public final GameTile tile;

@@ -4,6 +4,8 @@
 
 package atlantis.shared;
 
+import com.threerings.nexus.io.Streamable;
+
 /**
  * A piecen is a piece and a person all rolled into one!
  *
@@ -19,7 +21,7 @@ package atlantis.shared;
  * If two or more players have equal numbers of piecens in a group, they each get the points for
  * the group.</p>
  */
-public class Piecen
+public class Piecen implements Streamable
 {
     /** The owner of this piecen. */
     public final int ownerIdx;
