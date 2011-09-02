@@ -43,12 +43,18 @@ public class LocalGameService extends DService<GameService> implements GameServi
             public void postEvent (NexusObject source, NexusEvent event) {
                 event.applyTo(source);
             }
-            public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args) {
-                throw new UnsupportedOperationException();
+            public void postCall (NexusObject source, short attrIndex,
+                                  short methodId, Object[] args) {
+                DistribUtil.dispatchCall(source, attrIndex, methodId, args);
             }
         });
         svc.init(gobj);
         return gobj;
+    }
+
+    @Override
+    public Class<GameService> getServiceClass () {
+        return GameService.class;
     }
 
     // from interface GameService
