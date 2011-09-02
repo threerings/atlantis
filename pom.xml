@@ -26,7 +26,13 @@
     <!-- compile/runtime dependencies -->
     <dependency>
       <groupId>com.googlecode.playn</groupId>
-      <artifactId>core</artifactId>
+      <artifactId>playn-java</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.playn</groupId>
+      <artifactId>playn-html</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
 
@@ -51,7 +57,7 @@
     <dependency>
       <groupId>allen_sauer</groupId>
       <artifactId>gwt-log</artifactId>
-      <version>1.0.r613</version>
+      <version>3.1.4</version>
     </dependency>
 
     <dependency>
@@ -65,13 +71,6 @@
       <artifactId>guava</artifactId>
       <version>r09</version>
       <classifier>gwt</classifier>
-    </dependency>
-
-    <!-- for some reason this is not exported by forplay-core -->
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-user</artifactId>
-      <version>2.3.0</version>
     </dependency>
 
     <!-- test dependencies -->
