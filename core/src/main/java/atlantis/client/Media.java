@@ -43,12 +43,12 @@ public class Media extends Tiles
     };
 
     public void init () {
-        _terrain = PlayN.assetManager().getImage("images/tiles.png");
-        _target = PlayN.assetManager().getImage("images/target.png");
-        _piecens = PlayN.assetManager().getImage("images/piecens.png");
-        _shield = PlayN.assetManager().getImage("images/shield.png");
-        _table = PlayN.assetManager().getImage("images/table.png");
-        _actions = PlayN.assetManager().getImage("images/actions.png");
+        _terrain = PlayN.assetManager().getImage("tiles.png");
+        _target = PlayN.assetManager().getImage("target.png");
+        _piecens = PlayN.assetManager().getImage("piecens.png");
+        _shield = PlayN.assetManager().getImage("shield.png");
+        _table = PlayN.assetManager().getImage("table.png");
+        _actions = PlayN.assetManager().getImage("actions.png");
         // TODO: delay initialization completion until images are loaded
     }
 

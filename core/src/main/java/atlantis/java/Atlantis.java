@@ -16,7 +16,7 @@ public class Atlantis
 {
     public static void main (String[] args) {
         JavaPlatform platform = JavaPlatform.register();
-        platform.assetManager().setPathPrefix("src/main/resources");
+        platform.assetManager().setPathPrefix("src/main/resources/atlantis/images/");
         PlayN.run(new AtlantisClient());
     }
 }

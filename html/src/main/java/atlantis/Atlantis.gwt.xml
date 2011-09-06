@@ -3,12 +3,12 @@
   <inherits name="tripleplay.TriplePlay"/>
   <inherits name="com.threerings.nexus.GWTIO"/>
   <inherits name="playn.logging.Enhanced" />
-  <!-- this bundles in the contents of src/main/resources -->
-  <inherits name="Resources"/>
 
   <source path="client"/>
   <source path="shared"/>
   <source path="html"/>
+
+  <public path="images"/>
 
   <entry-point class="atlantis.html.Atlantis"/>
 </module>

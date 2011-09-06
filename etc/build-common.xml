@@ -13,10 +13,17 @@
   <property name="webapp.dir"   value="${target.dir}/webapp"/>
 
   <target name="-prepare" depends="-init-ooo">
-    <mavendep pom="pom.xml" id="compile"/>
-    <mavendep pom="pom.xml" id="test" scope="test"/>
+    <mavendep pom="core/pom.xml" id="core.compile"/>
+
+    <mavendep pom="html/pom.xml" id="html.compile"/>
+    <path id="html.classpath">
+      <path refid="html.compile.path"/>
+      <pathelement location="${classes.dir}"/>
+    </path>
+
+    <mavendep pom="core/pom.xml" id="core.test" scope="test"/>
     <path id="test.classpath">
-      <path refid="test.path"/>
+      <path refid="core.test.path"/>
       <pathelement location="${classes.dir}"/>
       <pathelement location="${tclasses.dir}"/>
     </path>
@@ -52,10 +59,11 @@
 
   <target name="compile" depends="-prepare" description="Compiles the code.">
     <mkdir dir="${classes.dir}"/>
-    <ooojavac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="compile.path"/>
+    <ooojavac srcdir="core/${src.dir}" destdir="${classes.dir}" classpathref="core.compile.path"/>
+    <ooojavac srcdir="html/${src.dir}" destdir="${classes.dir}" classpathref="html.compile.path"/>
 
     <mkdir dir="${tclasses.dir}"/>
-    <ooojavac srcdir="${tsrc.dir}" destdir="${tclasses.dir}" classpathref="test.classpath"/>
+    <ooojavac srcdir="core/${tsrc.dir}" destdir="${tclasses.dir}" classpathref="test.classpath"/>
   </target>
 
   <property name="test" value=""/>
@@ -73,7 +81,7 @@
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
       <batchtest todir="${target.dir}/test-reports">
-        <fileset dir="${tsrc.dir}" includes="**/*${test}*Test.java"/>
+        <fileset dir="core/${tsrc.dir}" includes="**/*${test}*Test.java"/>
       </batchtest>
     </unit>
   </target>
@@ -83,10 +91,11 @@
       <classpath>
         <pathelement location="${javax.validation:validation-api:jar}"/>
         <pathelement location="${validation.source.jar}"/>
-        <pathelement path="${src.dir}"/>
+        <pathelement path="core/${src.dir}"/>
+        <pathelement path="html/${src.dir}"/>
         <pathelement path="${target.dir}/rsrcmod"/>
         <pathelement location="${classes.dir}"/>
-        <path refid="test.classpath"/>
+        <path refid="html.classpath"/>
       </classpath>
       <jvmarg value="-Djava.awt.headless=true"/>
       <!--<arg value="-style"/><arg value="pretty"/>-->
@@ -122,7 +131,7 @@
         <pathelement path="${src.dir}"/>
         <pathelement path="${target.dir}/rsrcmod"/>
         <pathelement location="${classes.dir}"/>
-        <path refid="test.classpath"/>
+        <path refid="html.classpath"/>
       </classpath>
       <jvmarg value="-Xmx256M"/>
       <arg value="-startupUrl"/>
@@ -138,7 +147,7 @@
   <target name="run-java" depends="compile" description="Runs game in JVM.">
     <java fork="true" classname="${java.classname}">
       <classpath>
-        <path refid="compile.path"/>
+        <path refid="core.compile.path"/>
         <pathelement location="${classes.dir}"/>
       </classpath>
     </java>
@@ -150,14 +159,14 @@
     <artifact:dependencies pathId="tools.classpath">
       <dependency groupId="com.threerings" artifactId="nexus-tools" version="1.0-SNAPSHOT"/>
     </artifact:dependencies>
-    <javac srcdir="${src.dir}" includeAntRuntime="false"
+    <javac srcdir="core/${src.dir}" includeAntRuntime="false"
            source="1.6" target="1.6" encoding="utf-8">
       <classpath>
-        <path refid="compile.path"/>
+        <path refid="core.compile.path"/>
         <path refid="tools.classpath"/>
       </classpath>
       <compilerarg value="-s"/>
-      <compilerarg value="${src.dir}"/>
+      <compilerarg value="core/${src.dir}"/>
       <compilerarg value="-processor"/>
       <compilerarg value="com.threerings.nexus.gencode.Processor"/>
       <compilerarg value="-proc:only"/>
