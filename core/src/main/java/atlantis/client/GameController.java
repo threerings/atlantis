@@ -85,10 +85,15 @@ public class GameController
             break;
         }
 
-        // let the server know that all the players we control are ready to go!
-        for (Integer pidx : _screen.localIdxs) {
-            _gobj.gameSvc.get().playerReady(pidx);
-        }
+        // we need to let the user interface settle down before we report readiness
+        _screen.iface.deferAction(new Runnable() {
+            public void run () {
+                // let the server know that all the players we control are ready to go!
+                for (Integer pidx : _screen.localIdxs) {
+                    _gobj.gameSvc.get().playerReady(pidx);
+                }
+            }
+        });
     }
 
     public void place (Placement play, Piecen piecen) {
