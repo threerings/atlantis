@@ -10,7 +10,7 @@ import tripleplay.anim.Animator;
 import tripleplay.game.ScreenStack;
 import tripleplay.util.Randoms;
 
-import atlantis.shared.Log;
+import static atlantis.shared.Log.log;
 
 /**
  * Holds static references to all the services for a game.
@@ -29,7 +29,7 @@ public class Atlantis
     /** Manages our game screens. */
     public static final ScreenStack screens = new ScreenStack() {
         protected void handleError (RuntimeException error) {
-            Log.warning("Screen error", error);
+            log.warning("Screen error", error);
         }
     };
 }

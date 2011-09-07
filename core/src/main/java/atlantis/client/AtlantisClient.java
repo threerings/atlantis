@@ -7,7 +7,7 @@ package atlantis.client;
 import playn.core.Game;
 import static playn.core.PlayN.*;
 
-import atlantis.shared.Log;
+import tripleplay.util.Logger;
 
 /**
  * The main entry point for the game.
@@ -21,7 +21,7 @@ public class AtlantisClient implements Game
     public void init () {
         graphics().setSize(graphics().screenWidth(), graphics().screenHeight());
 
-        Log.setImpl(new Log.Impl() {
+        Logger.setImpl(new Logger.Impl() {
             public void debug (String message, Throwable t) {
                 if (t != null) log().debug(message, t);
                 else log().debug(message);

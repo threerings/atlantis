@@ -9,6 +9,8 @@ import java.util.Map;
 
 import com.threerings.nexus.io.Streamable;
 
+import tripleplay.util.Logger;
+
 /**
  * Describes the placement of a tile.
  */
@@ -72,6 +74,6 @@ public class Placement implements Streamable
 
     @Override
     public String toString () {
-        return Log.format("tile", tile, "orient", orient, "loc", loc);
+        return Logger.format("tile", tile, "orient", orient, "loc", loc);
     }
 }

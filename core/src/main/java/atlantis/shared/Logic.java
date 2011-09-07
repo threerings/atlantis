@@ -21,6 +21,10 @@ import com.threerings.nexus.distrib.DSet;
 
 import playn.core.Asserts;
 
+import tripleplay.util.Logger;
+
+import static atlantis.shared.Log.log;
+
 /**
  * Implements various game logic.
  */
@@ -285,7 +289,7 @@ public class Logic
             // obtain the index of the feature on the opposing tile
             Feature nf = neighbor.findFeature(opp_mask);
             if (nf == null) {
-                Log.warning("Tile mismatch while inheriting", "tile", tile, "orient", orient,
+                log.warning("Tile mismatch while inheriting", "tile", tile, "orient", orient,
                             "loc", loc, "feat", f, "neighbor", neighbor,
                             "srcEdge", mask, "destEdge", opp_mask);
                 continue;
@@ -516,7 +520,7 @@ public class Logic
             // obtain the index of the feature on the opposing tile
             Feature nf = neighbor.findFeature(opp_mask);
             if (nf == null) {
-                Log.warning("Tile mismatch while propagating", "play", play, "feat", f,
+                log.warning("Tile mismatch while propagating", "play", play, "feat", f,
                             "neighbor", neighbor, "srcEdge", mask, "destEdge", opp_mask);
                 continue;
             }
@@ -656,7 +660,7 @@ public class Logic
         }
 
         @Override public String toString () {
-            return Log.format("play", play, "feat", feature);
+            return Logger.format("play", play, "feat", feature);
         }
     }
 

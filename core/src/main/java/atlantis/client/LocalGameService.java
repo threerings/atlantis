@@ -17,16 +17,18 @@ import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusObject;
 
+import tripleplay.util.Logger;
+
 import atlantis.shared.GameObject;
 import atlantis.shared.GameService;
 import atlantis.shared.GameTile;
 import atlantis.shared.Location;
-import atlantis.shared.Log;
 import atlantis.shared.Logic;
 import atlantis.shared.Orient;
 import atlantis.shared.Piecen;
 import atlantis.shared.Placement;
 import atlantis.shared.Rules;
+import static atlantis.shared.Log.log;
 
 /**
  * Implements the server-side of game management for use in non-networked games.
@@ -144,7 +146,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
         List<GameTile> skipped = Lists.newArrayList();
         GameTile tile = _tileBag.remove(0);
         while (_logic.computeLegalPlays(tile).isEmpty()) {
-            Log.info("Skipping unplayable tile", "tile", tile);
+            log.info("Skipping unplayable tile", "tile", tile);
             skipped.add(tile);
             tile = null;
             if (_tileBag.isEmpty()) break;
@@ -153,7 +155,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
         if (tile == null) {
             // crap, we found no playable tiles, end the game early with a message
-            Log.info("Ending game early due to lack of playable tiles", "skipped", skipped);
+            log.info("Ending game early due to lack of playable tiles", "skipped", skipped);
             // TODO: send message
             endGame();
 
@@ -205,7 +207,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
 
     protected static void checkState (boolean condition, String message, Object... args) {
         if (!condition) {
-            throw new IllegalStateException(Log.format(message, args));
+            throw new IllegalStateException(Logger.format(message, args));
         }
     }
 

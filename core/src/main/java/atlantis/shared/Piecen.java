@@ -6,6 +6,8 @@ package atlantis.shared;
 
 import com.threerings.nexus.io.Streamable;
 
+import tripleplay.util.Logger;
+
 /**
  * A piecen is a piece and a person all rolled into one!
  *
@@ -55,6 +57,6 @@ public class Piecen implements Streamable
 
     @Override
     public String toString () {
-        return Log.format("owner", ownerIdx, "loc", loc, "fidx", featureIdx);
+        return Logger.format("owner", ownerIdx, "loc", loc, "fidx", featureIdx);
     }
 }

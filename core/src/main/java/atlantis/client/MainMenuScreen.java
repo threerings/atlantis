@@ -23,7 +23,7 @@ import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
 
 import atlantis.shared.GameObject;
-import atlantis.shared.Log;
+import static atlantis.shared.Log.log;
 
 /**
  * Displays the game title and main menu.
@@ -65,7 +65,7 @@ public class MainMenuScreen extends AtlantisScreen
     }
 
     protected void startLocalGame (String[] players) {
-        Log.info("Starting local game", "players", players);
+        log.info("Starting local game", "players", players);
         GameObject gobj = LocalGameService.createLocalGame(players);
         Atlantis.screens.push(new GameScreen(gobj, new HashSet<Integer>(Arrays.asList(0, 1, 2))));
     }
