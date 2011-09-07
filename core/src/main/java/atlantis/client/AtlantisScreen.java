@@ -4,6 +4,9 @@
 
 package atlantis.client;
 
+import playn.core.PlayN;
+import playn.core.Pointer;
+
 import tripleplay.anim.Animator;
 import tripleplay.game.Screen;
 import tripleplay.ui.Interface;
@@ -25,7 +28,19 @@ public class AtlantisScreen extends Screen
 
     @Override // from Screen
     public void wasShown () {
-        iface.activate();
+        PlayN.pointer().setListener(new Pointer.Listener() {
+            public void onPointerStart (Pointer.Event event) {
+                iface.plistener.onPointerStart(event);
+                // disable all scrolling in iOS/touch web browsers
+                event.setPreventDefault(true);
+            }
+            public void onPointerEnd (Pointer.Event event) {
+                iface.plistener.onPointerEnd(event);
+            }
+            public void onPointerDrag (Pointer.Event event) {
+                iface.plistener.onPointerDrag(event);
+            }
+        });
     }
 
     @Override // from Screen
