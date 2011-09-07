@@ -103,6 +103,10 @@ public class Logic
             this.score = Math.abs(score);
             this.piecens = piecens;
         }
+
+        public String toString () {
+            return feature + " c:" + complete + " s:" + scorers + " s:" + score + " p:" + piecens;
+        }
     }
 
     /**
@@ -303,12 +307,18 @@ public class Logic
         Claim claim = getClaim(play);
 
         // check all of the features on this tile for potential scores
+        Set<Integer> groups = Sets.newHashSet();
         for (Feature f : play.tile.terrain.features) {
             // ignore features that aren't completed in this way (e.g. GRASS)
             if (!COMPLETABLES.contains(f.type)) continue;
 
-            // see who should score this feature
+            // make sure we haven't already scored this group; some tiles have disconnected
+            // features that can be linked into the same group
             int group = claim.getClaimGroup(f);
+            if (groups.contains(group)) continue;
+            groups.add(group);
+
+            // see who should score this feature
             Set<Integer> scorers = getScorers(group);
             // if we have no scorers, the feature is unclaimed; skip it
             if (scorers.isEmpty()) continue;
