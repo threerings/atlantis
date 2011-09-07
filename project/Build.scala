@@ -1,33 +1,21 @@
 import sbt._
 import Keys._
+import com.samskivert.condep.Depends
 import net.thunderklaus.GwtPlugin._
-
-// allows projects to be symlinked into the current directory for a direct dependency,
-// or fall back to obtaining the project from Maven otherwise
-class Local (locals :(String, String, ModuleID)*) {
-  def addDeps (p :Project) = (locals collect {
-    case (id, subp, dep) if (file(id).exists) => symproj(file(id), subp)
-  }).foldLeft(p) { _ dependsOn _ }
-  def libDeps = locals collect {
-    case (id, subp, dep) if (!file(id).exists) => dep
-  }
-  private def symproj (dir :File, subproj :String = null) =
-    if (subproj == null) RootProject(dir) else ProjectRef(dir, subproj)
-}
 
 object AtlantisBuild extends Build {
   val playnVersion = "1.0-SNAPSHOT"
   val nexusVersion = "1.0-SNAPSHOT"
 
-  val coreLocals = new Local(
+  val coreLocals = Depends(
     ("tripleplay", null,  "com.threerings" % "tripleplay" % "1.0-SNAPSHOT"),
     ("nexus",     "core", "com.threerings" % "nexus-core" % nexusVersion)
   )
-  val htmlLocals = new Local(
+  val htmlLocals = Depends(
     ("playn", "html",   "com.googlecode.playn" % "playn-html" % playnVersion),
     ("nexus", "gwt-io", "com.threerings" % "nexus-gwt-io" % nexusVersion)
   )
-  val serverLocals = new Local(
+  val serverLocals = Depends(
     ("nexus", "gwt-server", "com.threerings" % "nexus-gwt-server" % nexusVersion),
     ("nexus", "jvm-server", "com.threerings" % "nexus-jvm-server" % nexusVersion)
   )
