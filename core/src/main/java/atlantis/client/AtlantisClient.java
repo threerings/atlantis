@@ -19,7 +19,7 @@ public class AtlantisClient implements Game
 
     // from interface Game
     public void init () {
-        graphics().setSize(1024, 768);
+        graphics().setSize(graphics().screenWidth(), graphics().screenHeight());
 
         Log.setImpl(new Log.Impl() {
             public void debug (String message, Throwable t) {
