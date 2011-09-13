@@ -11,13 +11,13 @@
 
   <artifactId>atlantis-core</artifactId>
   <packaging>jar</packaging>
-  <name>Atlantis core client</name>
+  <name>Atlantis Core client</name>
 
   <dependencies>
     <!-- compile/runtime dependencies -->
     <dependency>
       <groupId>com.googlecode.playn</groupId>
-      <artifactId>playn-java</artifactId>
+      <artifactId>playn-core</artifactId>
       <version>${playn.version}</version>
     </dependency>
 

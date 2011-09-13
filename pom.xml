@@ -14,7 +14,7 @@
   <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
 
-  <name>atlantis</name>
+  <name>Atlantis</name>
   <description>A tile laying game that's fun for the whole family!</description>
   <url>http://github.com/threerings/atlantis</url>
   <issueManagement>
@@ -38,6 +38,8 @@
 
   <modules>
     <module>core</module>
+    <module>java</module>
     <module>html</module>
+    <module>server</module>
   </modules>
 </project>

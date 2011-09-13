@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="atlantis" default="compile">
-  <property name="java.classname" value="atlantis.java.Atlantis"/>
+  <property name="java.classname" value="atlantis.client.AtlantisJava"/>
   <property name="gwt.module" value="atlantis.Atlantis"/>
   <property name="html.index" value="index.html"/>
   <import file="etc/build-common.xml"/>

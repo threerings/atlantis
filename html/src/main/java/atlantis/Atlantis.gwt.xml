@@ -6,9 +6,8 @@
 
   <source path="client"/>
   <source path="shared"/>
-  <source path="html"/>
 
   <public path="images"/>
 
-  <entry-point class="atlantis.html.Atlantis"/>
+  <entry-point class="atlantis.client.AtlantisHtml"/>
 </module>

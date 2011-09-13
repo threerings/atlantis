@@ -21,6 +21,12 @@
       <pathelement location="${classes.dir}"/>
     </path>
 
+    <mavendep pom="java/pom.xml" id="java.compile"/>
+    <path id="java.classpath">
+      <path refid="java.compile.path"/>
+      <pathelement location="${classes.dir}"/>
+    </path>
+
     <mavendep pom="core/pom.xml" id="core.test" scope="test"/>
     <path id="test.classpath">
       <path refid="core.test.path"/>
@@ -61,6 +67,7 @@
     <mkdir dir="${classes.dir}"/>
     <ooojavac srcdir="core/${src.dir}" destdir="${classes.dir}" classpathref="core.compile.path"/>
     <ooojavac srcdir="html/${src.dir}" destdir="${classes.dir}" classpathref="html.compile.path"/>
+    <ooojavac srcdir="java/${src.dir}" destdir="${classes.dir}" classpathref="java.compile.path"/>
 
     <mkdir dir="${tclasses.dir}"/>
     <ooojavac srcdir="core/${tsrc.dir}" destdir="${tclasses.dir}" classpathref="test.classpath"/>
@@ -145,12 +152,7 @@
   </target>
 
   <target name="run-java" depends="compile" description="Runs game in JVM.">
-    <java fork="true" classname="${java.classname}">
-      <classpath>
-        <path refid="core.compile.path"/>
-        <pathelement location="${classes.dir}"/>
-      </classpath>
-    </java>
+    <java fork="true" classname="${java.classname}" classpathref="java.classpath"/>
   </target>
 
   <property name="gencode.excludes" value="__nothing__"/>

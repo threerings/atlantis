@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.threerings</groupId>
+    <artifactId>atlantis</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>atlantis-java</artifactId>
+  <packaging>jar</packaging>
+  <name>Atlantis Java client</name>
+
+  <properties>
+    <exec.mainClass>atlantis.java.Atlantis</exec.mainClass>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.threerings</groupId>
+      <artifactId>atlantis-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.playn</groupId>
+      <artifactId>playn-java</artifactId>
+      <version>${playn.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.threerings</groupId>
+      <artifactId>nexus-jvm-io</artifactId>
+      <version>${nexus.version}</version>
+    </dependency>
+  </dependencies>
+</project>
