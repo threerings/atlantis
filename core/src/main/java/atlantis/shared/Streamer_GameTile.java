@@ -26,13 +26,13 @@ public class Streamer_GameTile
     @Override
     public GameTile readObject (Streamable.Input in) {
         return new GameTile(
-            in.<Terrain>readValue(),
+            in.readEnum(Terrain.class),
             in.readBoolean()
         );
     }
 
     public static  void writeObjectImpl (Streamable.Output out, GameTile obj) {
-        out.writeValue(obj.terrain);
+        out.writeEnum(obj.terrain);
         out.writeBoolean(obj.hasShield);
     }
 }

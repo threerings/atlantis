@@ -62,11 +62,16 @@ public class MainMenuScreen extends AtlantisScreen
                 startLocalGame(new String[] { "Mahatma Ghandi", "Elvis Presley", "Madonna" });
             }
         });
+        ogb.click.connect(new UnitSlot() {
+            @Override public void onEmit () {
+                Atlantis.screens.push(new PlayOnlineScreen());
+            }
+        });
     }
 
     protected void startLocalGame (String[] players) {
         log.info("Starting local game", "players", players);
-        GameObject gobj = LocalGameService.createLocalGame(players);
+        GameObject gobj = LocalGameManager.createLocalGame(players);
         Atlantis.screens.push(new GameScreen(gobj, new HashSet<Integer>(Arrays.asList(0, 1, 2))));
     }
 }

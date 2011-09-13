@@ -27,14 +27,14 @@ public class Streamer_Placement
     public Placement readObject (Streamable.Input in) {
         return new Placement(
             in.<GameTile>readValue(),
-            in.<Orient>readValue(),
+            in.readEnum(Orient.class),
             in.<Location>readValue()
         );
     }
 
     public static  void writeObjectImpl (Streamable.Output out, Placement obj) {
         out.writeValue(obj.tile);
-        out.writeValue(obj.orient);
+        out.writeEnum(obj.orient);
         out.writeValue(obj.loc);
     }
 }

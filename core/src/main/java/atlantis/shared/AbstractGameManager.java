@@ -2,7 +2,7 @@
 // Atlantis - tile laying fun for the whole family!
 // https://github.com/threerings/atlantis
 
-package atlantis.client;
+package atlantis.shared;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,52 +11,24 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.threerings.nexus.distrib.DService;
-import com.threerings.nexus.distrib.DistribUtil;
-import com.threerings.nexus.distrib.EventSink;
-import com.threerings.nexus.distrib.NexusEvent;
-import com.threerings.nexus.distrib.NexusObject;
-
 import tripleplay.util.Logger;
+import tripleplay.util.Randoms;
 
-import atlantis.shared.GameObject;
-import atlantis.shared.GameService;
-import atlantis.shared.GameTile;
-import atlantis.shared.Location;
-import atlantis.shared.Logic;
-import atlantis.shared.Orient;
-import atlantis.shared.Piecen;
-import atlantis.shared.Placement;
-import atlantis.shared.Rules;
 import static atlantis.shared.Log.log;
 
 /**
- * Implements the server-side of game management for use in non-networked games.
+ * Handles most of the "server" game logic. This serves as the basis for the real server game
+ * manager and for the client-side game manager used for client-local games.
  */
-public class LocalGameService extends DService<GameService> implements GameService
+public class AbstractGameManager implements GameService
 {
-    public static GameObject createLocalGame (String[] players) {
-        LocalGameService svc = new LocalGameService();
-        GameObject gobj = new GameObject(players, svc);
-        DistribUtil.init(gobj, 1, new EventSink() {
-            public String getHost () {
-                return "loopback";
-            }
-            public void postEvent (NexusObject source, NexusEvent event) {
-                event.applyTo(source);
-            }
-            public void postCall (NexusObject source, short attrIndex,
-                                  short methodId, Object[] args) {
-                DistribUtil.dispatchCall(source, attrIndex, methodId, args);
-            }
-        });
-        svc.init(gobj);
-        return gobj;
-    }
-
-    @Override
-    public Class<GameService> getServiceClass () {
-        return GameService.class;
+    /**
+     * Provides this game manager with a reference to its game object. Must be called before the
+     * manager is used.
+     */
+    public void init (GameObject gobj) {
+        _gobj = gobj;
+        _logic.init(_gobj);
     }
 
     // from interface GameService
@@ -109,20 +81,14 @@ public class LocalGameService extends DService<GameService> implements GameServi
         }
     }
 
-    @Override // from DService<GameService>
-    public GameService get () {
-        return this;
-    }
-
-    protected void init (GameObject gobj) {
-        _gobj = gobj;
-        _logic.init(_gobj);
+    protected AbstractGameManager (Randoms rands) {
+        _rands = rands;
     }
 
     protected void startGame () {
         // prepare our game tiles
         _tileBag = Rules.standardTiles();
-        Atlantis.rands.shuffle(_tileBag);
+        _rands.shuffle(_tileBag);
 
         // note that the game is in play
         _gobj.state.update(GameObject.State.IN_PLAY);
@@ -139,7 +105,7 @@ public class LocalGameService extends DService<GameService> implements GameServi
         }
 
         // choose the first turn-holder
-        startTurn(Atlantis.rands.getInt(_gobj.players.length));
+        startTurn(_rands.getInt(_gobj.players.length));
     }
 
     protected void startTurn (int turnHolder) {
@@ -210,6 +176,8 @@ public class LocalGameService extends DService<GameService> implements GameServi
             throw new IllegalStateException(Logger.format(message, args));
         }
     }
+
+    protected final Randoms _rands;
 
     protected GameObject _gobj;
     protected Logic _logic = new Logic();
