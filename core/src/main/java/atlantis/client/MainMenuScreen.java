@@ -45,15 +45,15 @@ public class MainMenuScreen extends AtlantisScreen
 
         Button lgb, ogb, tgb;
         root.add(
-            new Label().setStyles(tstyles).setText("Atlantis"),
+            new Label(tstyles).setText("Atlantis"),
             new Group(AxisLayout.horizontal().alignTop().gap(50)).add(
                 new Group(AxisLayout.vertical().offStretch()).add(
-                    new Label().setStyles(lstyles).setText("Start new game:"),
+                    new Label(lstyles).setText("Start new game:"),
                     lgb = new Button().setText("Local game"),
                     ogb = new Button().setText("Online game"),
                     tgb = new Button().setText("Play-by-email game")),
                 new Group(AxisLayout.vertical().offStretch()).add(
-                    new Label().setStyles(lstyles).setText("Games in-progress:"))));
+                    new Label(lstyles).setText("Games in-progress:"))));
 
         root.setSize(PlayN.graphics().width(), PlayN.graphics().height());
 
