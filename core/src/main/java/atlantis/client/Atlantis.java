@@ -20,7 +20,7 @@ import static atlantis.shared.Log.log;
 public class Atlantis
 {
     /** The port on which our simple server listens. */
-    public static final int SIMPLE_PORT = 1234;
+    public static final int SIMPLE_PORT = 4321;
 
     /** Provides images and other media. */
     public static final Media media = new Media();
