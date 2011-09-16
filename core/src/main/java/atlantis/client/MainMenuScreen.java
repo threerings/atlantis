@@ -57,12 +57,12 @@ public class MainMenuScreen extends AtlantisScreen
 
         root.setSize(PlayN.graphics().width(), PlayN.graphics().height());
 
-        lgb.click.connect(new UnitSlot() {
+        lgb.clicked.connect(new UnitSlot() {
             @Override public void onEmit () {
                 startLocalGame(new String[] { "Mahatma Ghandi", "Elvis Presley", "Madonna" });
             }
         });
-        ogb.click.connect(new UnitSlot() {
+        ogb.clicked.connect(new UnitSlot() {
             @Override public void onEmit () {
                 Atlantis.screens.push(new PlayOnlineScreen());
             }
