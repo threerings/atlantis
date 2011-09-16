@@ -15,6 +15,7 @@ import com.threerings.nexus.server.JVMConnectionManager;
 import com.threerings.nexus.server.NexusConfig;
 import com.threerings.nexus.server.NexusServer;
 
+import atlantis.client.Atlantis;
 // import atlantis.shared.AtlantisSerializer;
 
 /**
@@ -40,7 +41,7 @@ public class SimpleServer
 
         // set up a connection manager and listen on a port
         final JVMConnectionManager jvmmgr = new JVMConnectionManager(server.getSessionManager());
-        jvmmgr.listen(config.publicHostname, 1234);
+        jvmmgr.listen(config.publicHostname, Atlantis.SIMPLE_PORT);
         jvmmgr.start();
 
         // // set up a Jetty instance and our GWTIO servlet

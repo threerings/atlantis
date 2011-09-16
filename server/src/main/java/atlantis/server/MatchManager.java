@@ -46,7 +46,7 @@ public class MatchManager implements MatchService, Singleton
     }
 
     @Override // from interface MatchService
-    public void matchMe (Callback<GameObject> callback) {
+    public void matchMe (Callback<MatchService.GameInfo> callback) {
         Player player = Player.getPlayer();
         final Waiter waiter = new Waiter(player, callback);
         // if the player disconnects, remove their waiter record
@@ -90,8 +90,9 @@ public class MatchManager implements MatchService, Singleton
         }
         // the game manager will register with the nexus and kick everything off
         GameObject gobj = new GameManager(_nexus, ++_gameId, playerNames).gameObject();
-        for (Waiter w : players) {
-            w.callback.onSuccess(gobj);
+        for (int ii = 0; ii < playerNames.length; ii++) {
+            Waiter w = players.get(ii);
+            w.callback.onSuccess(new MatchService.GameInfo(gobj, ii));
         }
         players.clear(); // removes players from _waiters
     }
@@ -106,11 +107,11 @@ public class MatchManager implements MatchService, Singleton
 
     protected static class Waiter {
         public final Player player;
-        public final Callback<GameObject> callback;
+        public final Callback<MatchService.GameInfo> callback;
         public final long waitStart = System.currentTimeMillis();
         public Connection onDisconnect;
 
-        public Waiter (Player player, Callback<GameObject> callback) {
+        public Waiter (Player player, Callback<MatchService.GameInfo> callback) {
             this.player = player;
             this.callback = callback;
         }

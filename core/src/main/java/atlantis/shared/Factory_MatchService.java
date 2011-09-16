@@ -34,7 +34,7 @@ public class Factory_MatchService implements ServiceFactory<MatchService>
                 switch (methodId) {
                 case 1:
                     service.matchMe(
-                        this.<Callback<GameObject>>cast(args[0]));
+                        this.<Callback<MatchService.GameInfo>>cast(args[0]));
                     break;
                 case 2:
                     service.nevermind();
@@ -54,7 +54,7 @@ public class Factory_MatchService implements ServiceFactory<MatchService>
         @Override public Class<MatchService> getServiceClass () {
             return MatchService.class;
         }
-        @Override public void matchMe (Callback<GameObject> callback) {
+        @Override public void matchMe (Callback<MatchService.GameInfo> callback) {
             postCall((short)1, callback);
         }
         @Override public void nevermind () {

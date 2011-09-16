@@ -23,6 +23,7 @@ import tripleplay.ui.Styles;
 
 import atlantis.shared.GameObject;
 import atlantis.shared.MatchObject;
+import atlantis.shared.MatchService;
 
 /**
  * Connects to the server and waits for an online game opponent.
@@ -57,11 +58,10 @@ public class PlayOnlineScreen extends AtlantisScreen
             Address.create(address, MatchObject.class), new Callback<MatchObject>() {
             public void onSuccess (MatchObject matchobj) {
                 status.setText("Waiting for opponent...");
-                matchobj.matchSvc.get().matchMe(new Callback<GameObject>() {
-                    public void onSuccess (GameObject gobj) {
-                        int ourIdx = 0; // TODO
+                matchobj.matchSvc.get().matchMe(new Callback<MatchService.GameInfo>() {
+                    public void onSuccess (MatchService.GameInfo info) {
                         Atlantis.screens.replace(
-                            new GameScreen(gobj, Collections.singleton(ourIdx)));
+                            new GameScreen(info.gobj, Collections.singleton(info.playerIdx)));
                     }
                     public void onFailure (Throwable cause) {
                         status.setText("Failed to find opponent: " + cause.getMessage());
