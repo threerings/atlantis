@@ -107,8 +107,7 @@ public class Board
         });
 
         // wire up a dragger that is triggered for presses that don't touch anything else
-        Rectangle sbounds = new Rectangle(0, 0, graphics().width(), graphics().height());
-        _screen.input.register(sbounds, new Pointer.Listener() {
+        _screen.input.register(new Pointer.Listener() {
             @Override public void onPointerStart (Pointer.Event event) {
                 _drag = new Point(event.x(), event.y());
             }
@@ -129,7 +128,7 @@ public class Board
         });
 
         // translate (0,0) to the center of the screen
-        _origin = sbounds.center();
+        _origin = new Point(graphics().width()/2, graphics().height()/2);
         tiles.setTranslation(_origin.x, _origin.y);
         flight.setTranslation(_origin.x, _origin.y);
     }
@@ -366,10 +365,11 @@ public class Board
                     pimg.setTranslation(f.piecenSpot.x(), f.piecenSpot.y());
                     _piecens.add(pimg);
 
-                    _screen.input.register(new Input.LayerReactor(pimg, pbounds) {
+                    _screen.input.register(new Input.LayerRegion(pimg, pbounds) {
                         @Override public boolean hitTest (IPoint p) {
                             return _piecens.visible() && super.hitTest(p);
                         }
+                    }, new Input.Action() {
                         public void onTrigger () {
                             commitPlacement(f);
                         }
