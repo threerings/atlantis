@@ -24,7 +24,7 @@ import pythagoras.f.Rectangle;
 import react.Slot;
 
 import tripleplay.util.Coords;
-import tripleplay.util.Input;
+import tripleplay.util.PointerInput;
 
 import com.threerings.nexus.distrib.DValue;
 
@@ -281,7 +281,7 @@ public class Board
                     _screen.anim.tweenAlpha(target.layer).easeOut().to(0.75f).in(500f);
                     _targets.add(target);
 
-                    _screen.input.register(target.layer, tbounds, new Input.Action() {
+                    _screen.input.register(target.layer, tbounds, new PointerInput.Action() {
                         public void onTrigger () {
                             activateTarget(target);
                         }
@@ -365,11 +365,11 @@ public class Board
                     pimg.setTranslation(f.piecenSpot.x(), f.piecenSpot.y());
                     _piecens.add(pimg);
 
-                    _screen.input.register(new Input.LayerRegion(pimg, pbounds) {
+                    _screen.input.register(new PointerInput.LayerRegion(pimg, pbounds) {
                         @Override public boolean hitTest (IPoint p) {
                             return _piecens.visible() && super.hitTest(p);
                         }
-                    }, new Input.Action() {
+                    }, new PointerInput.Action() {
                         public void onTrigger () {
                             commitPlacement(f);
                         }
@@ -379,27 +379,27 @@ public class Board
 
                 // create our controls reactors
                 IRectangle abounds = new Rectangle(Media.ACTION_SIZE);
-                _screen.input.register(_rotate, abounds, new Input.Action() {
+                _screen.input.register(_rotate, abounds, new PointerInput.Action() {
                     public void onTrigger () {
                         int cidx = _orients.indexOf(_glyph.getOrient());
                         _glyph.setOrient(_orients.get((cidx + 1) % _orients.size()), true);
                     }
                 });
 
-                _screen.input.register(_nopiecen, abounds, new Input.Action() {
+                _screen.input.register(_nopiecen, abounds, new PointerInput.Action() {
                     public void onTrigger () {
                         commitPlacement(null); // place with no piecen
                     }
                 });
 
-                _screen.input.register(_cancel, abounds, new Input.Action() {
+                _screen.input.register(_cancel, abounds, new PointerInput.Action() {
                     public void onTrigger () {
                         restoreZoom();          // zoom back out
                         showConsiderControls(); // and return to "consider" controls
                     }
                 });
 
-                _screen.input.register(_placep, pbounds, new Input.Action() {
+                _screen.input.register(_placep, pbounds, new PointerInput.Action() {
                     public void onTrigger () {
                         zoomInOn(_active);    // zoom into the to-be-placed tile
                         showCommitControls(); // put the controls in "commit placement" mode

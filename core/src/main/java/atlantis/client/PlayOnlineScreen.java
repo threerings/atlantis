@@ -40,7 +40,7 @@ public class PlayOnlineScreen extends AtlantisScreen
 
         final Label status = new Label().setText("Connecting...");
         Button back = new Button().setText("Cancel");
-        back.clicked.connect(new UnitSlot() {
+        back.clicked().connect(new UnitSlot() {
             @Override public void onEmit () {
                 Atlantis.screens.remove(PlayOnlineScreen.this);
             }

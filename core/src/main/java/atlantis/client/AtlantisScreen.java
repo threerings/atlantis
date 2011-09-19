@@ -10,7 +10,7 @@ import playn.core.Pointer;
 import tripleplay.anim.Animator;
 import tripleplay.game.Screen;
 import tripleplay.ui.Interface;
-import tripleplay.util.Input;
+import tripleplay.util.PointerInput;
 
 /**
  * Makes some standard services available to all Atlantis screens.
@@ -21,7 +21,7 @@ public class AtlantisScreen extends Screen
     public final Animator anim = Animator.create();
 
     /** Routes user input to reactors. */
-    public final Input input = new Input();
+    public final PointerInput input = new PointerInput();
 
     /** Manages our user interfaces. */
     public final Interface iface = new Interface(input.plistener);
