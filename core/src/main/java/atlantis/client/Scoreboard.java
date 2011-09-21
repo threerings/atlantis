@@ -30,6 +30,7 @@ import tripleplay.ui.Label;
 import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
+import tripleplay.ui.TableLayout;
 import tripleplay.util.Coords;
 
 import com.threerings.nexus.distrib.DSet;
@@ -62,7 +63,7 @@ public class Scoreboard
         // this is kind of sneaky, but have our player group create the turn holder background
         // layer after the first time that it is laid out (so that we know the height of a player
         // info row)
-        _pgroup = new Group(AxisLayout.vertical().offStretch()) {
+        _pgroup = new Group(new TableLayout(3).gaps(5, 5)) {
             @Override protected void layout () {
                 super.layout();
                 if (_turnHolder == null) {
@@ -116,12 +117,11 @@ public class Scoreboard
             Label s, p;
             final int curidx = pidx++;
             _pgroup.add(
-                new Group(AxisLayout.horizontal()).add(
-                    new Label(nameStyles).setText(player).setConstraint(
-                        AxisLayout.stretched()),
-                    s = new Label(numberStyles),
-                    p = new Label(numberStyles).setIcon(
-                        Atlantis.media.getPiecensImage(), Atlantis.media.getPiecenBounds(curidx))));
+                new Label(nameStyles).setText(player).setConstraint(
+                    AxisLayout.stretched()),
+                s = new Label(numberStyles),
+                p = new Label(numberStyles).setIcon(
+                    Atlantis.media.getPiecensImage(), Atlantis.media.getPiecenBounds(curidx)));
             gobj.scores.getView(curidx).map(Functions.TO_STRING).connectNotify(s.textSlot());
             _piecens.add(Value.create(gobj.piecensAvailable(curidx)));
             _piecens.get(_piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.textSlot());
