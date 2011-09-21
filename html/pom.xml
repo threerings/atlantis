@@ -20,7 +20,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.threerings.atlantis</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>atlantis-core</artifactId>
       <version>${project.version}</version>
     </dependency>
