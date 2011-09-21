@@ -41,19 +41,19 @@ public class MainMenuScreen extends AtlantisScreen
         Font megaFont = PlayN.graphics().createFont("Helvetica", Font.Style.PLAIN, 64);
         Styles tstyles = Styles.make(Style.FONT.is(megaFont),
                                      Style.TEXT_EFFECT.is(Style.TextEffect.SHADOW));
-        Styles lstyles = Styles.make(Style.HALIGN.is(Style.HAlign.CENTER));
+        Styles alignTop = Styles.make(Style.VALIGN.is(Style.VAlign.TOP));
 
         Button lgb, ogb, tgb;
         root.add(
             new Label(tstyles).setText("Atlantis"),
-            new Group(AxisLayout.horizontal().alignTop().gap(50)).add(
+            new Group(AxisLayout.horizontal().gap(50), alignTop).add(
                 new Group(AxisLayout.vertical().offStretch()).add(
-                    new Label(lstyles).setText("Start new game:"),
+                    new Label().setText("Start new game:"),
                     lgb = new Button().setText("Local game"),
                     ogb = new Button().setText("Online game"),
                     tgb = new Button().setText("Play-by-email game")),
                 new Group(AxisLayout.vertical().offStretch()).add(
-                    new Label(lstyles).setText("Games in-progress:"))));
+                    new Label().setText("Games in-progress:"))));
 
         root.setSize(PlayN.graphics().width(), PlayN.graphics().height());
 
