@@ -16,7 +16,7 @@
   <dependencies>
     <!-- compile/runtime dependencies -->
     <dependency>
-      <groupId>com.threerings</groupId>
+      <groupId>com.threerings.atlantis</groupId>
       <artifactId>atlantis-core</artifactId>
       <version>${project.version}</version>
     </dependency>
