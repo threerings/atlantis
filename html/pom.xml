@@ -56,6 +56,10 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>gwt-maven-plugin</artifactId>
+        <!-- we need class metadata, override PlayN's disabling of such -->
+        <configuration>
+          <disableClassMetadata>false</disableClassMetadata>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-eclipse-plugin</artifactId>
@@ -72,14 +76,6 @@
           <additionalProjectnatures>
             <projectnature>com.google.gwt.eclipse.core.gwtNature</projectnature>
           </additionalProjectnatures>
-        </configuration>
-      </plugin>
-      <!-- we need class metadata, override PlayN's disabling of such -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>gwt-maven-plugin</artifactId>
-        <configuration>
-          <disableClassMetadata>false</disableClassMetadata>
         </configuration>
       </plugin>
     </plugins>
