@@ -74,6 +74,14 @@
           </additionalProjectnatures>
         </configuration>
       </plugin>
+      <!-- we need class metadata, override PlayN's disabling of such -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>gwt-maven-plugin</artifactId>
+        <configuration>
+          <disableClassMetadata>false</disableClassMetadata>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
