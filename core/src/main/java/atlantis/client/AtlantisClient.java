@@ -19,7 +19,10 @@ public class AtlantisClient implements Game
 
     // from interface Game
     public void init () {
-        graphics().setSize(graphics().screenWidth(), graphics().screenHeight());
+        // if we're on iOS, we'll see a height shorter than 416 because of the (removable) titlebar
+        // (and possibly a JavaScript errors button), account for that; TODO: only do this when the
+        // user-agent is appropriate
+        graphics().setSize(graphics().screenWidth(), Math.max(416, graphics().screenHeight()));
 
         Logger.setImpl(new Logger.Impl() {
             public void debug (String message, Throwable t) {
