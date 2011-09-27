@@ -32,7 +32,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.threerings</groupId>
+      <groupId>com.threerings.nexus</groupId>
       <artifactId>nexus-gwt-io</artifactId>
       <version>${nexus.version}</version>
     </dependency>

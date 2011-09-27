@@ -22,7 +22,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.threerings</groupId>
+      <groupId>com.threerings.nexus</groupId>
       <artifactId>nexus-core</artifactId>
       <version>${nexus.version}</version>
     </dependency>
