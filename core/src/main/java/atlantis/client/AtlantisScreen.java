@@ -31,7 +31,7 @@ public class AtlantisScreen extends Screen
         PlayN.pointer().setListener(new Pointer.Listener() {
             public void onPointerStart (Pointer.Event event) {
                 iface.plistener.onPointerStart(event);
-                // disable all scrolling in iOS/touch web browsers
+                // disable weird selection behavior in iOS browser
                 event.setPreventDefault(true);
             }
             public void onPointerEnd (Pointer.Event event) {
@@ -39,6 +39,8 @@ public class AtlantisScreen extends Screen
             }
             public void onPointerDrag (Pointer.Event event) {
                 iface.plistener.onPointerDrag(event);
+                // disable all scrolling in iOS/touch web browsers
+                event.setPreventDefault(true);
             }
         });
     }
