@@ -12,12 +12,12 @@ import playn.core.PlayN;
 
 import react.UnitSlot;
 
-import tripleplay.game.Screen;
 import tripleplay.ui.AxisLayout;
 import tripleplay.ui.Background;
 import tripleplay.ui.Button;
 import tripleplay.ui.Group;
 import tripleplay.ui.Label;
+import tripleplay.ui.Layout;
 import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
@@ -43,17 +43,21 @@ public class MainMenuScreen extends AtlantisScreen
                                      Style.TEXT_EFFECT.is(Style.TextEffect.SHADOW));
         Styles alignTop = Styles.make(Style.VALIGN.is(Style.VAlign.TOP));
 
+        // if we're on a skinny (i.e. smartphone) screen; use a different menu layout
+        Layout l2 = (PlayN.graphics().screenWidth() < 400) ? AxisLayout.vertical().gap(25) :
+            AxisLayout.horizontal().gap(50);
+
         Button lgb, ogb, tgb;
         root.add(
             new Label(tstyles).setText("Atlantis"),
-            new Group(AxisLayout.horizontal().gap(50), alignTop).add(
+            new Group(l2, alignTop).add(
                 new Group(AxisLayout.vertical().offStretch()).add(
-                    new Label().setText("Start new game:"),
-                    lgb = new Button().setText("Local game"),
-                    ogb = new Button().setText("Online game"),
-                    tgb = new Button().setText("Play-by-email game")),
+                    new Label("Start new game:"),
+                    lgb = new Button("Local game"),
+                    ogb = new Button("Online game"),
+                    tgb = new Button("Play-by-email game")),
                 new Group(AxisLayout.vertical().offStretch()).add(
-                    new Label().setText("Games in-progress:"))));
+                    new Label("Games in-progress:"))));
 
         root.setSize(PlayN.graphics().width(), PlayN.graphics().height());
 
