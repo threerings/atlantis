@@ -31,6 +31,7 @@ import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
 import tripleplay.ui.TableLayout;
+import static tripleplay.ui.TableLayout.COL;
 import tripleplay.util.Coords;
 
 import com.threerings.nexus.distrib.DSet;
@@ -63,7 +64,7 @@ public class Scoreboard
         // this is kind of sneaky, but have our player group create the turn holder background
         // layer after the first time that it is laid out (so that we know the height of a player
         // info row)
-        _pgroup = new Group(new TableLayout(3).gaps(5, 5)) {
+        _pgroup = new Group(new TableLayout(COL, COL, COL).gaps(5, 5)) {
             @Override protected void layout () {
                 super.layout();
                 if (_turnHolder == null) {
