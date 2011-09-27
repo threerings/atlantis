@@ -54,13 +54,13 @@ public class GameController
         });
 
         // listen for plays and keep the logic and board up to date
-        _gobj.plays.listen(new DSet.Listener<Placement>() {
+        _gobj.plays.connect(new DSet.Listener<Placement>() {
             @Override public void onAdd (Placement play) {
                 logic.addPlacement(play);
                 _screen.board.addPlacement(play);
             }
         });
-        gobj.piecens.listen(new DSet.Listener<Piecen>() {
+        gobj.piecens.connect(new DSet.Listener<Piecen>() {
             @Override public void onAdd (Piecen piecen) {
                 logic.addPiecen(piecen);
                 _screen.board.addPiecen(piecen);

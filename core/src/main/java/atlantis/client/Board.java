@@ -88,7 +88,7 @@ public class Board
         _gobj = gobj;
 
         // when the turn-holder changes, update all of the other bits
-        _gobj.turnHolder.listen(new DValue.Listener<Integer>() {
+        _gobj.turnHolder.connect(new DValue.Listener<Integer>() {
             @Override public void onChange (Integer turnHolder) {
                 GameTile placing = _gobj.placing.get();
                 if (placing != null) {

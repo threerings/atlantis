@@ -102,7 +102,7 @@ public class Scoreboard
         }).connectNotify(remain.textSlot());
 
         // listen for piecen count changes
-        gobj.piecens.listen(new DSet.Listener<Piecen>() {
+        gobj.piecens.connect(new DSet.Listener<Piecen>() {
             public void onAdd (Piecen piecen) {
                 _piecens.get(piecen.ownerIdx).update(gobj.piecensAvailable(piecen.ownerIdx));
             }
