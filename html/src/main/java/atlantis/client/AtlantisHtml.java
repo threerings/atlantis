@@ -8,6 +8,8 @@ import playn.html.HtmlPlatform;
 import playn.html.HtmlGame;
 import playn.core.PlayN;
 
+import com.google.gwt.user.client.Window;
+
 import com.threerings.nexus.client.GWTClient;
 
 /**
@@ -21,5 +23,7 @@ public class AtlantisHtml extends HtmlGame
         // TODO: GWTIO.Serializer szer = ...
         // Atlantis.setClient(GWTClient.create(Atlantis.SIMPLE_PORT, szer));
         PlayN.run(new AtlantisClient());
+        // scroll the iPhone header crap off the screen
+        Window.scrollTo(0, 0);
     }
 }
