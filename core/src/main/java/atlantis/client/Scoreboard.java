@@ -86,10 +86,10 @@ public class Scoreboard
         // create our various scoreboard interface elements
         Label remain;
         _root.add(
-            new Label(titleStyles).setText("Atlantis"),
+            new Label("Atlantis", titleStyles),
             _pgroup,
             remain = new Label(nameStyles),
-            new Label(nameStyles).setText("Current tile:"),
+            new Label("Current tile:", nameStyles),
             _curtile = new Label() {
                 @Override protected Dimension computeSize (float hintX, float hintY) {
                     return new Dimension(Media.TERRAIN_SIZE);
@@ -100,7 +100,7 @@ public class Scoreboard
             public String apply (Integer remain) {
                 return "Remaining: " + remain;
             }
-        }).connectNotify(remain.textSlot());
+        }).connectNotify(remain.text.slot());
 
         // listen for piecen count changes
         gobj.piecens.connect(new DSet.Listener<Piecen>() {
@@ -118,14 +118,14 @@ public class Scoreboard
             Label s, p;
             final int curidx = pidx++;
             _pgroup.add(
-                new Label(nameStyles).setText(player).setConstraint(
+                new Label(player, nameStyles).setConstraint(
                     AxisLayout.stretched()),
                 s = new Label(numberStyles),
                 p = new Label(numberStyles).setIcon(
                     Atlantis.media.getPiecensImage(), Atlantis.media.getPiecenBounds(curidx)));
-            gobj.scores.getView(curidx).map(Functions.TO_STRING).connectNotify(s.textSlot());
+            gobj.scores.getView(curidx).map(Functions.TO_STRING).connectNotify(s.text.slot());
             _piecens.add(Value.create(gobj.piecensAvailable(curidx)));
-            _piecens.get(_piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.textSlot());
+            _piecens.get(_piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.text.slot());
         }
 
         _root.packToWidth(WIDTH);
