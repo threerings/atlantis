@@ -49,7 +49,7 @@ public class MainMenuScreen extends AtlantisScreen
 
         Button lgb, ogb, tgb;
         root.add(
-            new Label(tstyles).setText("Atlantis"),
+            new Label("Atlantis", tstyles),
             new Group(l2, alignTop).add(
                 new Group(AxisLayout.vertical().offStretch()).add(
                     new Label("Start new game:"),

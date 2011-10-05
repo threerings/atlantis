@@ -38,8 +38,8 @@ public class PlayOnlineScreen extends AtlantisScreen
         root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFFFFFFF, 5))));
         layer.add(root.layer);
 
-        final Label status = new Label().setText("Connecting...");
-        Button back = new Button().setText("Cancel");
+        final Label status = new Label("Connecting...");
+        Button back = new Button("Cancel");
         back.clicked().connect(new UnitSlot() {
             @Override public void onEmit () {
                 Atlantis.screens.remove(PlayOnlineScreen.this);
@@ -57,20 +57,20 @@ public class PlayOnlineScreen extends AtlantisScreen
         Atlantis.client().subscribe(
             Address.create(address, MatchObject.class), new Callback<MatchObject>() {
             public void onSuccess (MatchObject matchobj) {
-                status.setText("Waiting for opponent...");
+                status.text.update("Waiting for opponent...");
                 matchobj.matchSvc.get().matchMe(new Callback<MatchService.GameInfo>() {
                     public void onSuccess (MatchService.GameInfo info) {
                         Atlantis.screens.replace(
                             new GameScreen(info.gobj, Collections.singleton(info.playerIdx)));
                     }
                     public void onFailure (Throwable cause) {
-                        status.setText("Failed to find opponent: " + cause.getMessage());
+                        status.text.update("Failed to find opponent: " + cause.getMessage());
                     }
                 });
                 // TODO
             }
             public void onFailure (Throwable cause) {
-                status.setText("Failed to connect: " + cause.getMessage());
+                status.text.update("Failed to connect: " + cause.getMessage());
             }
         });
     }
