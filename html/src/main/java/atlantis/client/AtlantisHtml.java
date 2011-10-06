@@ -22,7 +22,8 @@ public class AtlantisHtml extends HtmlGame
     @Override public void start() {
         HtmlPlatform platform = HtmlPlatform.register();
         platform.assetManager().setPathPrefix("atlantis/");
-        Atlantis.setClient(GWTClient.create(Atlantis.SIMPLE_PORT, new AtlantisSerializer()));
+        // TODO: whether to listen on 8080 or 80 needs to come from build properties
+        Atlantis.setClient(GWTClient.create(8080, new AtlantisSerializer()));
         PlayN.run(new AtlantisClient());
         // scroll the iPhone header crap off the screen
         Window.scrollTo(0, 0);
