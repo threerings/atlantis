@@ -21,6 +21,7 @@ import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
 
+import atlantis.shared.Deployment;
 import atlantis.shared.GameObject;
 import atlantis.shared.MatchObject;
 import atlantis.shared.MatchService;
@@ -49,13 +50,11 @@ public class PlayOnlineScreen extends AtlantisScreen
 
         root.setSize(PlayN.graphics().width(), PlayN.graphics().height());
 
-        // TODO: get address from config somewhere
-        String address = "localhost";
-
         // subscribe to the singleton MatchObject on the specified host; this will trigger a
         // connection to that host
         Atlantis.client().subscribe(
-            Address.create(address, MatchObject.class), new Callback<MatchObject>() {
+            Address.create(Deployment.nexusServerHost(), MatchObject.class),
+            new Callback<MatchObject>() {
             public void onSuccess (MatchObject matchobj) {
                 status.text.update("Waiting for opponent...");
                 matchobj.matchSvc.get().matchMe(new Callback<MatchService.GameInfo>() {
@@ -67,7 +66,6 @@ public class PlayOnlineScreen extends AtlantisScreen
                         status.text.update("Failed to find opponent: " + cause.getMessage());
                     }
                 });
-                // TODO
             }
             public void onFailure (Throwable cause) {
                 status.text.update("Failed to connect: " + cause.getMessage());

@@ -16,7 +16,8 @@ import com.threerings.nexus.server.NexusConfig;
 import com.threerings.nexus.server.NexusServer;
 
 import atlantis.client.Atlantis;
-// import atlantis.shared.AtlantisSerializer;
+import atlantis.shared.AtlantisSerializer;
+import atlantis.shared.Deployment;
 
 /**
  * Operates the chat server.
@@ -28,7 +29,7 @@ public class SimpleServer
     {
         Properties props = new Properties();
         props.setProperty("nexus.node", "test");
-        props.setProperty("nexus.hostname", "localhost");
+        props.setProperty("nexus.hostname", Deployment.nexusServerHost());
         props.setProperty("nexus.rpc_timeout", "1000");
         NexusConfig config = new NexusConfig(props);
 
@@ -39,15 +40,17 @@ public class SimpleServer
         // create our singleton match manager
         new MatchManager(server);
 
-        // set up a connection manager and listen on a port
+        // set up a direct socket connection manager
         final JVMConnectionManager jvmmgr = new JVMConnectionManager(server.getSessionManager());
-        jvmmgr.listen(config.publicHostname, Atlantis.SIMPLE_PORT);
+        jvmmgr.listen(config.publicHostname, Deployment.nexusSocketPort());
         jvmmgr.start();
 
-        // // set up a Jetty instance and our GWTIO servlet
-        // final GWTConnectionManager gwtmgr = new GWTConnectionManager(
-        //     server.getSessionManager(), new AtlantisSerializer(), config.publicHostname, 6502);
-        // gwtmgr.setDocRoot(new File("dist/webapp"));
-        // gwtmgr.start();
+        // set up a Jetty instance and our GWTIO servlet
+        final GWTConnectionManager gwtmgr = new GWTConnectionManager(
+            server.getSessionManager(), new AtlantisSerializer(),
+            config.publicHostname, Deployment.nexusWebPort(), Deployment.nexusWebPath());
+        // TODO: scan the directory to find the war dir to avoid hardcoding version
+        gwtmgr.setDocRoot(new File("../html/target/atlantis-1.0-SNAPSHOT"));
+        gwtmgr.start();
     }
 }
