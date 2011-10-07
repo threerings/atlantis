@@ -57,10 +57,11 @@ public class Board
         _screen = screen;
 
         // create a background layer that will tile a pattern
-        float width = graphics().width(), height = graphics().height();
-        SurfaceLayer bground = graphics().createSurfaceLayer((int)width, (int)height);
-        bground.surface().setFillPattern(graphics().createPattern(Atlantis.media.getTableImage()));
-        bground.surface().fillRect(0, 0, width, height);
+        ImageLayer bground = graphics().createImageLayer(Atlantis.media.getTableImage());
+        bground.setRepeatX(true);
+        bground.setRepeatY(true);
+        bground.setWidth(graphics().width());
+        bground.setHeight(graphics().height());
 
         // set the z-order of our layers appropriately
         bground.setDepth(-1);
@@ -74,6 +75,7 @@ public class Board
         screen.layer.add(flight);
 
         // // TEMP: draw a grid over the board for debugging
+        // float width = graphics().width(), height = graphics().height();
         // SurfaceLayer grid = graphics().createSurfaceLayer((int)width, (int)height);
         // grid.surface().drawLine(0f, height/2, width, height/2, 1f);
         // grid.surface().drawLine(width/2, 0f, width/2, height, 1f);
