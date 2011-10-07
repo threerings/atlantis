@@ -21,6 +21,12 @@ public class AtlantisSerializer extends AbstractSerializer
         mapStreamer(new Streamer_Piecen());
         mapStreamer(new Streamer_Placement());
 
+        mapEnumStreamer(Edge.class);
+        mapEnumStreamer(Feature.class);
+        mapEnumStreamer(GameObject.State.class);
+        mapEnumStreamer(Orient.class);
+        mapEnumStreamer(Terrain.class);
+
         mapService(new Factory_GameService(), GameService.class);
         mapService(new Factory_MatchService(), MatchService.class);
     }
