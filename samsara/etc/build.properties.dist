@@ -1,0 +1,5 @@
+#
+# Build configuration for the Atlantis app
+
+# Used when testing with a local samsara installation
+local_samsara_dir = /export/samsara

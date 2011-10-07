@@ -1,0 +1,23 @@
+#
+# Atlantis app configuration
+
+# Our Facebook app configuration
+facebook_appname = atlantisgame
+facebook_appid = APP_ID
+facebook_key = API_KEY
+facebook_secret = APP_SECRET
+
+candidate_facebook_appname = atlantiscandidate
+candidate_facebook_appid = APP_ID
+candidate_facebook_key = API_KEY
+candidate_facebook_secret = APP_SECRET
+
+# Our Postgres database configuration
+db.default.server = localhost
+db.default.port = 5432
+db.default.database = atlantis
+db.default.username = atlantis
+db.default.password = PASSWORD
+
+db.readonly.maxconns = 1
+db.readwrite.maxconns = 1

@@ -1,0 +1,178 @@
+<?xml version="1.0" standalone="yes"?>
+<project name="atlantis" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
+  <property name="app.ident"  value="atlantis"/>
+  <property name="deploy.dir" location="target"/>
+  <property name="config.dir" location="${deploy.dir}/config"/>
+
+  <!-- bring in our standard build support -->
+  <property name="ooo-build.vers" value="2.6"/>
+  <ant antfile="etc/bootstrap.xml"/>
+  <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
+
+  <!-- these will be overridden on the build server -->
+  <property name="ooo.distribution" value="local"/>
+  <property name="mvn.bin" value="mvn"/>
+
+  <target name="-prepare" depends="-init-ooo">
+    <mkdir dir="${deploy.dir}"/>
+    <mkdir dir="${config.dir}"/>
+
+    <!-- read in our pom so that we can determine the project version -->
+    <artifact:pom id="pom" file="pom.xml"/>
+
+    <!-- obtain our configuration files -->
+    <maventaskdef groupId="com.threerings.internal.ant"
+                  artifactId="gatherconfiguration" version="1.3"/>
+    <internalgather app="${app.ident}" distribution="${ooo.distribution}" dest="${config.dir}">
+      <sources refid="ooo.appsconfig.source"/>
+      <sources><directory path="${basedir}/samsara/etc"/></sources>
+      <files>
+        <file name="atlantis.properties"/>
+      </files>
+    </internalgather>
+  </target>
+
+  <target name="-version" depends="-prepare">
+    <!-- generate a build version and create our Build.java file -->
+    <tstamp><format property="build.version" pattern="yyyyMMddHHmmss"/></tstamp>
+    <tstamp><format property="build.time" pattern="yyyy-MM-dd HH:mm:ss"/></tstamp>
+<!--
+    <copy file="${src.dir}/com/threerings/everything/data/Build.java.tmpl"
+          tofile="${src.dir}/com/threerings/everything/data/Build.java" overwrite="true">
+      <filterset>
+        <filter token="build_time" value="${build.time}"/>
+        <filter token="build_version" value="${build.version}"/>
+        <filter token="facebook_appid" value="${facebook_appid}"/>
+        <filter token="facebook_key" value="${facebook_key}"/>
+        <filter token="candidate_facebook_appid" value="${candidate_facebook_appid}"/>
+        <filter token="candidate_facebook_key" value="${candidate_facebook_key}"/>
+        <filter token="facebook_got_tmpl" value="${facebook_got_tmpl}"/>
+        <filter token="facebook_gotgift_tmpl" value="${facebook_gotgift_tmpl}"/>
+        <filter token="facebook_gotcomp_tmpl" value="${facebook_gotcomp_tmpl}"/>
+        <filter token="facebook_gave_tmpl" value="${facebook_gave_tmpl}"/>
+        <filter token="facebook_want_tmpl" value="${facebook_want_tmpl}"/>
+        <filter token="kontagent_key" value="${kontagent_key}"/>
+        <filter token="billing_url" value="${billing_url}"/>
+      </filterset>
+    </copy>
+-->
+    <echo>Assigned build version ${build.version}.</echo>
+  </target>
+
+  <target name="clean" description="Cleans out all build data.">
+    <delete dir="${deploy.dir}"/>
+    <exec executable="${mvn.bin}" failonerror="true">
+      <arg value="clean"/>
+      <arg value="-P"/>
+      <arg value="samsara"/>
+    </exec>
+  </target>
+
+  <target name="package" depends="-version" description="Builds all artifacts.">
+    <!-- TODO: generate customized Deployment.jar -->
+
+    <!-- run Maven to build and package everything up; we have to install it into the local
+         Maven repository so that we can resolve our dependencies in -install-app -->
+    <exec executable="${mvn.bin}" failonerror="true">
+      <arg value="install"/>
+      <arg value="-P"/>
+      <arg value="samsara"/>
+    </exec>
+
+    <!-- TODO: revert customized Deployment.jar -->
+
+    <!-- create our various configuration jars -->
+    <jar destfile="${deploy.dir}/config-${ooo.distribution}.jar">
+      <fileset dir="${config.dir}" includes="**"/>
+    </jar>
+    <jar destfile="${deploy.dir}/config-shipped.jar">
+      <fileset dir="samsara/etc/shipped" includes="*"/>
+    </jar>
+    <if><equals arg1="${ooo.distribution}" arg2="local"/><then>
+      <jar destfile="${deploy.dir}/config-candidate.jar">
+        <fileset dir="samsara/etc/local" includes="*"/>
+      </jar>
+    </then><else>
+      <jar destfile="${deploy.dir}/config-candidate.jar">
+        <fileset dir="samsara/etc/candidate" includes="*"/>
+      </jar>
+    </else></if>
+  </target>
+
+  <target name="-install-app">
+    <delete dir="${instroot.dir}"/>
+
+    <!-- copy our dependencies into the right place -->
+    <mkdir dir="${instroot.dir}/lib"/>
+    <artifact:dependencies filesetId="atlantis.fileset">
+      <dependency groupId="com.threerings.atlantis" artifactId="atlantis-samsara"
+                  version="${pom.version}"/>
+    </artifact:dependencies>
+    <copy todir="${instroot.dir}/lib">
+      <fileset dir="${deploy.dir}" includes="*.jar"/>
+      <fileset refid="atlantis.fileset"/>
+      <mapper type="flatten"/>
+    </copy>
+
+    <!-- we need to remove the libraries provided by samsara-shared -->
+    <artifact:dependencies filesetId="shared.fileset">
+      <dependency groupId="com.threerings.samsara" artifactId="samsara-shared"
+                  version="0.0-SNAPSHOT"/>
+    </artifact:dependencies>
+    <pathconvert property="shared.list" pathsep="," refid="shared.fileset">
+      <mapper type="flatten"/>
+    </pathconvert>
+    <for list="${shared.list}" param="file">
+      <sequential>
+        <delete file="${instroot.dir}/lib/@{file}"/>
+      </sequential>
+    </for>
+
+    <!-- unpack the atlantis-html war into the right place -->
+    <mkdir dir="${instroot.dir}/web"/>
+    <unjar src="html/target/atlantis-html-${pom.version}.war" dest="${instroot.dir}/web"/>
+    <delete dir="${instroot.dir}/web/WEB-INF"/>
+    <delete dir="${instroot.dir}/web/META-INF"/>
+
+    <!-- create the manifest that indicates our app Guice module -->
+    <manifest file="${instroot.dir}/MANIFEST.MF">
+      <attribute name="Main-Class" value="atlantis.server.AtlantisApp$Module"/>
+    </manifest>
+  </target>
+
+  <target name="install" depends="package" description="Installs our app into the local Samsara.">
+    <property file="samsara/etc/build.properties"/>
+    <fail unless="local_samsara_dir" message="Please configure samsara/etc/build.properties"/>
+    <antcall target="-install-app">
+      <param name="instroot.dir" value="${local_samsara_dir}/apps/${app.ident}/candidate"/>
+      <param name="pom.version" value="${pom.version}"/>
+    </antcall>
+  </target>
+
+  <target name="dpkg" depends="package" description="Builds our deployment package.">
+    <property name="pkgroot.dir" value="${deploy.dir}/packages/${app.ident}-app"/>
+    <antcall target="-install-app">
+      <param name="instroot.dir"
+             value="${pkgroot.dir}/export/samsara/apps/${app.ident}/candidate"/>
+      <param name="pom.version" value="${pom.version}"/>
+    </antcall>
+
+    <property name="pkg.user" value="_samsara"/>
+    <maventaskdef groupId="com.threerings.internal.ant" artifactId="dpkg" version="1.1"/>
+    <ooodpkg prefix="/export/${app.ident}" destroot="${pkgroot.dir}" version="${build.version}"
+             name="${app.ident}-app" description="Atlantis App">
+      <permissions>
+        <permission user="${pkg.user}" group="${pkg.user}" mode="755" recursive="false">
+          <path>.</path>
+        </permission>
+      </permissions>
+    </ooodpkg>
+  </target>
+
+  <target name="bamboo" depends="clean,dpkg"
+          description="Run by the build server to build, package and deploy the app.">
+    <aptupdate/>
+    <!-- after everything is built and installed, clean things again -->
+    <antcall target="clean"/>
+  </target>
+</project>

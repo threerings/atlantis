@@ -39,8 +39,26 @@
   <modules>
     <module>core</module>
     <module>java</module>
-    <module>html</module>
-    <module>android</module>
     <module>server</module>
   </modules>
+
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>html</module>
+        <module>android</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>samsara</id>
+      <modules>
+        <module>html</module>
+        <module>samsara</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
