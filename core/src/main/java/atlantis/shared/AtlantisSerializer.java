@@ -22,7 +22,7 @@ public class AtlantisSerializer extends AbstractSerializer
         mapStreamer(new Streamer_Placement());
 
         mapEnumStreamer(Edge.class);
-        mapEnumStreamer(Feature.class);
+        mapEnumStreamer(Feature.Type.class);
         mapEnumStreamer(GameObject.State.class);
         mapEnumStreamer(Orient.class);
         mapEnumStreamer(Terrain.class);
