@@ -12,6 +12,7 @@ import playn.core.CanvasLayer;
 import playn.core.GroupLayer;
 import playn.core.Font;
 import playn.core.ImageLayer;
+import playn.core.Layer;
 import static playn.core.PlayN.*;
 
 import pythagoras.f.Dimension;
@@ -32,7 +33,6 @@ import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
 import tripleplay.ui.TableLayout;
 import static tripleplay.ui.TableLayout.COL;
-import tripleplay.util.Coords;
 
 import com.threerings.nexus.distrib.DSet;
 
@@ -133,7 +133,7 @@ public class Scoreboard
 
     public void setNextTile (Glyphs.Play tile) {
         // TODO: _nextLabel.layer.setVisible(tile != null);
-        Point ppos = Coords.layerToParent(_curtile.layer, _root.layer, 0, 0, new Point());
+        Point ppos = Layer.Util.layerToParent(_curtile.layer, _root.layer, 0, 0);
         tile.layer.setTranslation(ppos.x + Media.TERRAIN_WIDTH/2,
                                   ppos.y + Media.TERRAIN_HEIGHT/2);
         // use an animation to add and fade the tile in, this will ensure that we're sequenced
@@ -145,7 +145,7 @@ public class Scoreboard
 
     protected float playerRowPos (int playerIdx) {
         Element pinfo = _pgroup.childAt(playerIdx);
-        Point ppos = Coords.layerToParent(pinfo.layer, _root.layer, 0, 0, new Point());
+        Point ppos = Layer.Util.layerToParent(pinfo.layer, _root.layer, 0, 0);
         return ppos.y - 2;
     }
 

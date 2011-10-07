@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 
 import playn.core.GroupLayer;
 import playn.core.ImageLayer;
+import playn.core.Layer;
 import playn.core.Pointer;
 import playn.core.SurfaceLayer;
 import static playn.core.PlayN.*;
@@ -23,7 +24,6 @@ import pythagoras.f.Rectangle;
 
 import react.Slot;
 
-import tripleplay.util.Coords;
 import tripleplay.util.PointerInput;
 
 import com.threerings.nexus.distrib.DValue;
@@ -249,7 +249,7 @@ public class Board
 
         // position it at the piecen to start and float it up and fade it out
         Feature f = pglyph.tile.terrain.features[p.featureIdx];
-        Point start = Coords.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
+        Point start = Layer.Util.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
         _screen.anim.add(tiles, sglyph.layer);
         _screen.anim.tweenXY(sglyph.layer).in(2000f).easeOut().from(start.x, start.y).
             to(start.x, start.y-sglyph.layer.canvas().height());
