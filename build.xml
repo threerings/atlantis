@@ -129,6 +129,9 @@
         <delete file="${instroot.dir}/lib/@{file}"/>
       </sequential>
     </for>
+    <!-- TEMP: but we need to readd guice-multibindings until samsara is updated -->
+    <copy todir="${instroot.dir}/lib"
+          file="${com.google.inject.extensions:guice-multibindings:jar}"/>
 
     <!-- unpack the atlantis-html war into the right place -->
     <mkdir dir="${instroot.dir}/web"/>
