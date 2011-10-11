@@ -36,26 +36,6 @@
     <!-- generate a build version and create our Build.java file -->
     <tstamp><format property="build.version" pattern="yyyyMMddHHmmss"/></tstamp>
     <tstamp><format property="build.time" pattern="yyyy-MM-dd HH:mm:ss"/></tstamp>
-<!--
-    <copy file="${src.dir}/com/threerings/everything/data/Build.java.tmpl"
-          tofile="${src.dir}/com/threerings/everything/data/Build.java" overwrite="true">
-      <filterset>
-        <filter token="build_time" value="${build.time}"/>
-        <filter token="build_version" value="${build.version}"/>
-        <filter token="facebook_appid" value="${facebook_appid}"/>
-        <filter token="facebook_key" value="${facebook_key}"/>
-        <filter token="candidate_facebook_appid" value="${candidate_facebook_appid}"/>
-        <filter token="candidate_facebook_key" value="${candidate_facebook_key}"/>
-        <filter token="facebook_got_tmpl" value="${facebook_got_tmpl}"/>
-        <filter token="facebook_gotgift_tmpl" value="${facebook_gotgift_tmpl}"/>
-        <filter token="facebook_gotcomp_tmpl" value="${facebook_gotcomp_tmpl}"/>
-        <filter token="facebook_gave_tmpl" value="${facebook_gave_tmpl}"/>
-        <filter token="facebook_want_tmpl" value="${facebook_want_tmpl}"/>
-        <filter token="kontagent_key" value="${kontagent_key}"/>
-        <filter token="billing_url" value="${billing_url}"/>
-      </filterset>
-    </copy>
--->
     <echo>Assigned build version ${build.version}.</echo>
   </target>
 
@@ -69,7 +49,25 @@
   </target>
 
   <target name="package" depends="-version" description="Builds all artifacts.">
-    <!-- TODO: generate customized Deployment.jar -->
+    <!-- generate customized Deployment.java -->
+    <property file="${config.dir}/atlantis.properties"/>
+    <property name="deploy.java" value="core/src/main/java/atlantis/shared/Deployment.java"/>
+    <copy file="${deploy.java}.tmpl" tofile="${deploy.java}" overwrite="true">
+      <filterset>
+        <filter token="build_time" value="${build.time}"/>
+        <filter token="build_version" value="${build.version}"/>
+        <filter token="nexus_server_host" value="${nexus_server_host}"/>
+        <filter token="nexus_socket_port" value="${nexus_socket_port}"/>
+        <filter token="nexus_web_port" value="${nexus_web_port}"/>
+        <filter token="nexus_web_path" value="${nexus_web_path}"/>
+<!--
+        <filter token="facebook_appid" value="${facebook_appid}"/>
+        <filter token="facebook_key" value="${facebook_key}"/>
+        <filter token="candidate_facebook_appid" value="${candidate_facebook_appid}"/>
+        <filter token="candidate_facebook_key" value="${candidate_facebook_key}"/>
+-->
+      </filterset>
+    </copy>
 
     <!-- run Maven to build and package everything up; we have to install it into the local
          Maven repository so that we can resolve our dependencies in -install-app -->
@@ -79,7 +77,11 @@
       <arg value="samsara"/>
     </exec>
 
-    <!-- TODO: revert customized Deployment.jar -->
+    <!-- revert customized Deployment.java -->
+    <exec executable="git" failonerror="true">
+      <arg value="checkout"/>
+      <arg value="${deploy.java}"/>
+    </exec>
 
     <!-- create our various configuration jars -->
     <jar destfile="${deploy.dir}/config-${ooo.distribution}.jar">

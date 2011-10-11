@@ -1,6 +1,12 @@
 #
 # Atlantis app configuration
 
+# Our server configuration
+nexus_server_host = localhost
+nexus_socket_port = 4321
+nexus_web_port = 8080
+nexus_web_path = /nexusws
+
 # Our Facebook app configuration
 facebook_appname = atlantisgame
 facebook_appid = APP_ID
