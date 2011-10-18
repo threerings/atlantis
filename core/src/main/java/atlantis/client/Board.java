@@ -26,8 +26,6 @@ import react.Slot;
 
 import tripleplay.util.PointerInput;
 
-import com.threerings.nexus.distrib.DValue;
-
 import atlantis.client.util.TextGlyph;
 import atlantis.shared.Feature;
 import atlantis.shared.GameObject;
@@ -90,8 +88,8 @@ public class Board
         _gobj = gobj;
 
         // when the turn-holder changes, update all of the other bits
-        _gobj.turnHolder.connect(new DValue.Listener<Integer>() {
-            @Override public void onChange (Integer turnHolder) {
+        _gobj.turnHolder.connect(new Slot<Integer>() {
+            @Override public void onEmit (Integer turnHolder) {
                 GameTile placing = _gobj.placing.get();
                 if (placing != null) {
                     Glyphs.Play pglyph = new Glyphs.Play(_screen.anim, placing);
