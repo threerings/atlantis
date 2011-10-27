@@ -20,7 +20,7 @@ object AtlantisBuild extends Build {
 
   val coreLocals = Depends(
     ("tripleplay", null,  "com.threerings" % "tripleplay" % "1.0-SNAPSHOT"),
-    ("nexus",     "core", "com.threerings" % "nexus-core" % nexusVersion)
+    ("nexus",     "core", "com.threerings.nexus" % "nexus-core" % nexusVersion)
   )
   lazy val core = coreLocals.addDeps(Project(
     "core", file("core"), settings = commonSettings ++ Seq(
@@ -32,14 +32,14 @@ object AtlantisBuild extends Build {
         "com.google.guava" % "guava" % "r09",
         // test dependencies
         "junit" % "junit" % "4.+" % "test",
- 	      "com.novocode" % "junit-interface" % "0.7" % "test->default"
+        "com.novocode" % "junit-interface" % "0.7" % "test->default"
       )
     )
   ))
 
   val javaLocals = Depends(
     ("playn", "java",   "com.googlecode.playn" % "playn-java" % playnVersion),
-    ("nexus", "jvm-io", "com.threerings" % "nexus-jvm-io" % nexusVersion)
+    ("nexus", "jvm-io", "com.threerings.nexus" % "nexus-jvm-io" % nexusVersion)
   )
   lazy val java = javaLocals.addDeps(Project(
     "java", file("java"), settings = commonSettings ++ Seq(
@@ -52,7 +52,7 @@ object AtlantisBuild extends Build {
 
   val htmlLocals = Depends(
     ("playn", "html",   "com.googlecode.playn" % "playn-html" % playnVersion),
-    ("nexus", "gwt-io", "com.threerings" % "nexus-gwt-io" % nexusVersion)
+    ("nexus", "gwt-io", "com.threerings.nexus" % "nexus-gwt-io" % nexusVersion)
   )
   lazy val html = htmlLocals.addDeps(Project(
     "html", file("html"), settings = commonSettings ++ gwtSettings ++ Seq(
@@ -67,8 +67,8 @@ object AtlantisBuild extends Build {
   )) dependsOn(core)
 
   val serverLocals = Depends(
-    ("nexus", "gwt-server", "com.threerings" % "nexus-gwt-server" % nexusVersion),
-    ("nexus", "jvm-server", "com.threerings" % "nexus-jvm-server" % nexusVersion)
+    ("nexus", "gwt-server", "com.threerings.nexus" % "nexus-gwt-server" % nexusVersion),
+    ("nexus", "jvm-server", "com.threerings.nexus" % "nexus-jvm-server" % nexusVersion)
   )
   lazy val server = serverLocals.addDeps(Project(
     "server", file("server"), settings = commonSettings ++ gwtSettings ++ Seq(
