@@ -1,7 +1,6 @@
 import sbt._
 import Keys._
 import com.samskivert.condep.Depends
-import net.thunderklaus.GwtPlugin._
 
 object AtlantisBuild extends Build {
   val playnVersion = "1.0-SNAPSHOT"
@@ -29,7 +28,7 @@ object AtlantisBuild extends Build {
       unmanagedResources in Compile ~= (_.filterNot(_.isDirectory)), // work around SBT bug
       libraryDependencies ++= coreLocals.libDeps ++ Seq(
         // compile dependencies
-        "com.google.guava" % "guava" % "r09",
+        "com.google.guava" % "guava" % "10.0.1",
         // test dependencies
         "junit" % "junit" % "4.+" % "test",
         "com.novocode" % "junit-interface" % "0.7" % "test->default"
@@ -55,12 +54,10 @@ object AtlantisBuild extends Build {
     ("nexus", "gwt-io", "com.threerings.nexus" % "nexus-gwt-io" % nexusVersion)
   )
   lazy val html = htmlLocals.addDeps(Project(
-    "html", file("html"), settings = commonSettings ++ gwtSettings ++ Seq(
-      name       := "atlantis-html",
-      gwtVersion := "2.3.0",
+    "html", file("html"), settings = commonSettings ++ Seq(
+      name := "atlantis-html",
       libraryDependencies ++= htmlLocals.libDeps ++ Seq(
-        // TODO: sbt bug? causes inherited guava to be overridden by below
-        "com.google.guava" % "guava" % "r09" classifier "gwt",
+        "com.google.guava" % "guava-gwt" % "10.0.1",
         "allen_sauer" % "gwt-log" % "3.1.4"
       )
     )
@@ -71,7 +68,7 @@ object AtlantisBuild extends Build {
     ("nexus", "jvm-server", "com.threerings.nexus" % "nexus-jvm-server" % nexusVersion)
   )
   lazy val server = serverLocals.addDeps(Project(
-    "server", file("server"), settings = commonSettings ++ gwtSettings ++ Seq(
+    "server", file("server"), settings = commonSettings ++ Seq(
       name := "atlantis-server",
       libraryDependencies ++= serverLocals.libDeps ++ Seq(
         // nada for now
