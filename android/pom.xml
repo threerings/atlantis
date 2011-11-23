@@ -23,7 +23,7 @@
     <dependency>
       <groupId>com.googlecode.playn</groupId>
       <artifactId>playn-android</artifactId>
-      <version>${project.version}</version>
+      <version>${playn.version}</version>
     </dependency>
 
     <dependency>

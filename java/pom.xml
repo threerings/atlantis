@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>Atlantis Java client</name>
 
-  <properties>
-    <exec.mainClass>atlantis.java.Atlantis</exec.mainClass>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -36,4 +32,31 @@
       <version>${nexus.version}</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <!-- allows testing of Java backend via: mvn test -Ptest-java -->
+    <profile>
+      <id>test-java</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.1.1</version>
+            <executions>
+              <execution>
+                <phase>test</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>atlantis.client.AtlantisJava</mainClass>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
