@@ -13,13 +13,13 @@ import playn.core.PlayN;
 
 import react.UnitSlot;
 
-import tripleplay.ui.AxisLayout;
 import tripleplay.ui.Background;
 import tripleplay.ui.Button;
 import tripleplay.ui.Label;
 import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
+import tripleplay.ui.layout.AxisLayout;
 
 import atlantis.shared.Deployment;
 import atlantis.shared.GameObject;

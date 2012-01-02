@@ -23,7 +23,6 @@ import react.Functions;
 import react.Slot;
 import react.Value;
 
-import tripleplay.ui.AxisLayout;
 import tripleplay.ui.Background;
 import tripleplay.ui.Element;
 import tripleplay.ui.Group;
@@ -31,8 +30,9 @@ import tripleplay.ui.Label;
 import tripleplay.ui.Root;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
-import tripleplay.ui.TableLayout;
-import static tripleplay.ui.TableLayout.COL;
+import tripleplay.ui.layout.AxisLayout;
+import tripleplay.ui.layout.TableLayout;
+import static tripleplay.ui.layout.TableLayout.COL;
 
 import com.threerings.nexus.distrib.DSet;
 
