@@ -1,1 +1,2 @@
-addSbtPlugin("com.samskivert" % "sbt-pom-plugin" % "1.0-SNAPSHOT")
+// pom-util POM helpers
+libraryDependencies += "com.samskivert" % "sbt-pom-util" % "0.1"
