@@ -206,7 +206,7 @@ public class Board
         sglyph.layer.setDepth(1);
         _screen.anim.add(tiles, sglyph.layer);
         _screen.anim.tweenXY(sglyph.layer).in(2000f).easeOut().
-            from(0, sglyph.layer.canvas().height()).to(0, -sglyph.layer.canvas().height());
+            from(0, sglyph.height()).to(0, -sglyph.height());
         _screen.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f).
             then().destroy(sglyph.layer);
     }
@@ -252,7 +252,7 @@ public class Board
         Point start = Layer.Util.layerToParent(pglyph.layer, tiles, f.piecenSpot, new Point());
         _screen.anim.add(tiles, sglyph.layer);
         _screen.anim.tweenXY(sglyph.layer).in(2000f).easeOut().from(start.x, start.y).
-            to(start.x, start.y-sglyph.layer.canvas().height());
+            to(start.x, start.y-sglyph.height());
         _screen.anim.tweenAlpha(sglyph.layer).in(2000f).easeOut().from(1f).to(0f).
             then().destroy(sglyph.layer);
 

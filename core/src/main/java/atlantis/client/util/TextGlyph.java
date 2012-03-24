@@ -4,7 +4,8 @@
 
 package atlantis.client.util;
 
-import playn.core.CanvasLayer;
+import playn.core.CanvasImage;
+import playn.core.ImageLayer;
 import playn.core.TextFormat;
 import playn.core.TextLayout;
 import static playn.core.PlayN.*;
@@ -51,7 +52,17 @@ public class TextGlyph
     }
 
     /** The current layer in use by this glyph. */
-    public CanvasLayer layer;
+    public final ImageLayer layer = graphics().createImageLayer();
+
+    /** Returns the width of this glyph. */
+    public float width () {
+        return _image.width();
+    }
+
+    /** Returns the height of this glyph. */
+    public float height () {
+        return _image.height();
+    }
 
     /**
      * Sets the text on this layer. Note that the text must be the same width or shorter than the
@@ -60,23 +71,23 @@ public class TextGlyph
      */
     public TextGlyph setText (String text) {
         TextLayout layout = graphics().layoutText(text, _format);
-        if (layer == null) {
+        if (_image == null) {
             createLayer(layout);
         } else {
-            layer.canvas().clear();
+            _image.canvas().clear();
         }
-        float x = _format.align.getX(layout.width(), layer.canvas().width());
-        layer.canvas().drawText(layout, x, 0);
+        float x = _format.align.getX(layout.width(), _image.canvas().width());
+        _image.canvas().drawText(layout, x, 0);
         return this;
     }
 
     public TextGlyph setOriginBottomCenter () {
-        layer.setOrigin(layer.canvas().width()/2, layer.canvas().height());
+        layer.setOrigin(_image.canvas().width()/2, _image.canvas().height());
         return this;
     }
 
     public Rectangle bounds () {
-        return new Rectangle(0, 0, layer.canvas().width(), layer.canvas().height());
+        return new Rectangle(0, 0, _image.canvas().width(), _image.canvas().height());
     }
 
     protected void createLayer (TextLayout layout) {
@@ -84,12 +95,13 @@ public class TextGlyph
     }
 
     protected void createLayer (int width, int height) {
-        layer = graphics().createCanvasLayer(width, height);
+        layer.setImage(_image = graphics().createImage(width, height));
     }
 
     protected TextGlyph (TextFormat format) {
         _format = format;
     }
 
+    protected CanvasImage _image;
     protected final TextFormat _format;
 }

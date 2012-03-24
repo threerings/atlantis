@@ -24,25 +24,11 @@ public class AtlantisScreen extends Screen
     public final PointerInput input = new PointerInput();
 
     /** Manages our user interfaces. */
-    public final Interface iface = new Interface(input.plistener);
+    public final Interface iface = new Interface();
 
     @Override // from Screen
     public void wasShown () {
-        PlayN.pointer().setListener(new Pointer.Listener() {
-            public void onPointerStart (Pointer.Event event) {
-                iface.plistener.onPointerStart(event);
-                // disable weird selection behavior in iOS browser
-                event.setPreventDefault(true);
-            }
-            public void onPointerEnd (Pointer.Event event) {
-                iface.plistener.onPointerEnd(event);
-            }
-            public void onPointerDrag (Pointer.Event event) {
-                iface.plistener.onPointerDrag(event);
-                // disable all scrolling in iOS/touch web browsers
-                event.setPreventDefault(true);
-            }
-        });
+        PlayN.pointer().setListener(input.plistener);
     }
 
     @Override // from Screen

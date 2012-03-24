@@ -12,7 +12,7 @@ import atlantis.client.AtlantisClient;
 public class AtlantisActivity extends GameActivity
 {
     @Override public void main () {
-        platform().assetManager().setPathPrefix("atlantis/images");
+        platform().assets().setPathPrefix("atlantis/images");
         PlayN.run(new AtlantisClient());
     }
 }

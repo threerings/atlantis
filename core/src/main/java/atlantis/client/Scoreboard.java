@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import playn.core.TextFormat;
-import playn.core.CanvasLayer;
+import playn.core.CanvasImage;
 import playn.core.GroupLayer;
 import playn.core.Font;
 import playn.core.ImageLayer;
@@ -71,9 +71,10 @@ public class Scoreboard
                     // create our turn-holder indicator
                     int width = (int)Math.ceil(_root.size().width());
                     int height = (int)Math.ceil(childAt(0).size().height()) + 4;
-                    _turnHolder = graphics().createCanvasLayer(width, height);
-                    _turnHolder.canvas().setFillColor(0xFF99CCFF);
-                    _turnHolder.canvas().fillRect(0, 0, width, height);
+                    CanvasImage thi = graphics().createImage(width, height);
+                    thi.canvas().setFillColor(0xFF99CCFF);
+                    thi.canvas().fillRect(0, 0, width, height);
+                    _turnHolder = graphics().createImageLayer(thi);
                     _turnHolder.setDepth(-1); // render below player names
                     _turnHolder.setTranslation(0, playerRowPos(0)); // start on player 0
                     _turnHolder.setVisible(false);
@@ -160,7 +161,7 @@ public class Scoreboard
 
     protected GameScreen _screen;
     protected Root _root;
-    protected CanvasLayer _turnHolder;
+    protected ImageLayer _turnHolder;
     protected float _playersY, _nextTileY;
     protected Group _pgroup;
     protected Label _curtile;

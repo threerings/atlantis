@@ -18,7 +18,7 @@ public class AtlantisJava
 {
     public static void main (String[] args) {
         JavaPlatform platform = JavaPlatform.register();
-        platform.assetManager().setPathPrefix("atlantis/images");
+        platform.assets().setPathPrefix("atlantis/images");
         Atlantis.setClient(JVMClient.create(Deployment.nexusSocketPort()));
         PlayN.run(new AtlantisClient());
     }

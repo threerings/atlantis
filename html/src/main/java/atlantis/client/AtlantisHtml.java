@@ -23,7 +23,7 @@ public class AtlantisHtml extends HtmlGame
 {
     @Override public void start() {
         HtmlPlatform platform = HtmlPlatform.register();
-        platform.assetManager().setPathPrefix("atlantis/");
+        platform.assets().setPathPrefix("atlantis/");
         Atlantis.setClient(GWTClient.create(Deployment.nexusWebPort(), Deployment.nexusWebPath(),
                                             new AtlantisSerializer()));
         PlayN.run(new AtlantisClient());
