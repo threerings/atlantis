@@ -24,20 +24,8 @@ public class AtlantisClient implements Game
         // user-agent is appropriate
         graphics().setSize(graphics().screenWidth(), Math.max(416, graphics().screenHeight()));
 
-        Logger.setImpl(new Logger.Impl() {
-            public void debug (String message, Throwable t) {
-                if (t != null) log().debug(message, t);
-                else log().debug(message);
-            }
-            public void info (String message, Throwable t) {
-                if (t != null) log().info(message, t);
-                else log().info(message);
-            }
-            public void warning (String message, Throwable t) {
-                if (t != null) log().warn(message, t);
-                else log().warn(message);
-            }
-        });
+        // route our logging through PlayN
+        Logger.setImpl(new Logger.PlayNImpl());
 
         // start our various media a loadin'
         Atlantis.media.init();
