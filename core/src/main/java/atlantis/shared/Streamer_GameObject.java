@@ -4,10 +4,6 @@
 
 package atlantis.shared;
 
-import com.threerings.nexus.distrib.DMap;
-import com.threerings.nexus.distrib.DSet;
-import com.threerings.nexus.distrib.DSignal;
-import com.threerings.nexus.distrib.DValue;
 import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
 

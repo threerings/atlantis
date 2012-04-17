@@ -48,7 +48,7 @@ public class Scoreboard
     public Scoreboard (GameScreen screen) {
         _screen = screen;
         _root = screen.iface.createRoot(AxisLayout.vertical().gap(10), UI.stylesheet);
-        _root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFCCCCCC, 16))));
+        _root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFCCCCCC).inset(16))));
         // adjust the depth of the UI layer; see Board for other layer depths
         _root.layer.setDepth(+1);
         screen.layer.add(_root.layer);

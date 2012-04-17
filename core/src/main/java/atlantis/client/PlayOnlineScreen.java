@@ -36,7 +36,7 @@ public class PlayOnlineScreen extends AtlantisScreen
         super.wasAdded();
 
         Root root = iface.createRoot(AxisLayout.vertical().gap(25), UI.stylesheet);
-        root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFFFFFFF, 5))));
+        root.addStyles(Styles.make(Style.BACKGROUND.is(Background.solid(0xFFFFFFFF).inset(5))));
         layer.add(root.layer);
 
         final Label status = new Label("Connecting...");

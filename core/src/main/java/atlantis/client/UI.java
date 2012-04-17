@@ -42,8 +42,8 @@ public class UI
         Styles elemStyles = Styles.none().
             add(Style.FONT.is(graphics().createFont("Helvetica", Font.Style.PLAIN, 18)));
         Styles buttonStyles = Styles.none().
-            add(Style.BACKGROUND.is(Background.solid(0xFF99CCFF, 5))).
-            addSelected(Style.BACKGROUND.is(Background.solid(0xFFCCCCCC, 6, 4, 4, 6)));
+            add(Style.BACKGROUND.is(Background.solid(0xFF99CCFF).inset(5))).
+            addSelected(Style.BACKGROUND.is(Background.solid(0xFFCCCCCC).inset(6, 4, 4, 6)));
         return Stylesheet.builder().
             add(Element.class, elemStyles).
             add(Button.class, buttonStyles).
