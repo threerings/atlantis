@@ -119,11 +119,9 @@ public class Scoreboard
             Label s, p;
             final int curidx = pidx++;
             _pgroup.add(
-                new Label(player, nameStyles).setConstraint(
-                    AxisLayout.stretched()),
+                new Label(player, nameStyles).setConstraint(AxisLayout.stretched()),
                 s = new Label(numberStyles),
-                p = new Label(numberStyles).setIcon(
-                    Atlantis.media.getPiecensImage(), Atlantis.media.getPiecenBounds(curidx)));
+                p = new Label(numberStyles).setIcon(Atlantis.media.getPiecenImage(curidx)));
             gobj.scores.getView(curidx).map(Functions.TO_STRING).connectNotify(s.text.slot());
             _piecens.add(Value.create(gobj.piecensAvailable(curidx)));
             _piecens.get(_piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.text.slot());

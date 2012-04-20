@@ -56,12 +56,9 @@ public class Tiles
 
     protected void initTileLayer (ImageLayer layer, Image source, int tileWidth, int tileHeight,
                                   int tileIdx) {
-        layer.setImage(source);
-        layer.setWidth(tileWidth);
-        layer.setHeight(tileHeight);
         int tilesPerRow = (source.width() / tileWidth);
         int row = tileIdx / tilesPerRow, col = tileIdx % tilesPerRow;
-        layer.setSourceRect(col * tileWidth, row * tileWidth, tileWidth, tileHeight);
+        layer.setImage(source.subImage(col * tileWidth, row * tileWidth, tileWidth, tileHeight));
     }
 
     protected void reportError (String errmsg, Throwable cause) {
