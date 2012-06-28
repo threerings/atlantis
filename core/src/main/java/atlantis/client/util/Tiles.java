@@ -56,7 +56,7 @@ public class Tiles
 
     protected void initTileLayer (ImageLayer layer, Image source, int tileWidth, int tileHeight,
                                   int tileIdx) {
-        int tilesPerRow = (source.width() / tileWidth);
+        int tilesPerRow = (int)(source.width() / tileWidth);
         int row = tileIdx / tilesPerRow, col = tileIdx % tilesPerRow;
         layer.setImage(source.subImage(col * tileWidth, row * tileWidth, tileWidth, tileHeight));
     }

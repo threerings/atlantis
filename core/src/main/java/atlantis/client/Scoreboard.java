@@ -87,10 +87,10 @@ public class Scoreboard
         // create our various scoreboard interface elements
         Label remain;
         _root.add(
-            new Label("Atlantis", titleStyles),
+            new Label("Atlantis").addStyles(titleStyles),
             _pgroup,
-            remain = new Label(nameStyles),
-            new Label("Current tile:", nameStyles),
+            remain = new Label().addStyles(nameStyles),
+            new Label("Current tile:").addStyles(nameStyles),
             _curtile = new Label() {
                 @Override protected Dimension computeSize (float hintX, float hintY) {
                     return new Dimension(Media.TERRAIN_SIZE);
@@ -119,9 +119,10 @@ public class Scoreboard
             Label s, p;
             final int curidx = pidx++;
             _pgroup.add(
-                new Label(player, nameStyles).setConstraint(AxisLayout.stretched()),
-                s = new Label(numberStyles),
-                p = new Label(numberStyles).setIcon(Atlantis.media.getPiecenImage(curidx)));
+                new Label(player).addStyles(nameStyles).setConstraint(AxisLayout.stretched()),
+                s = new Label().addStyles(numberStyles),
+                p = new Label().addStyles(numberStyles).setIcon(
+                    Atlantis.media.getPiecenImage(curidx)));
             gobj.scores.getView(curidx).map(Functions.TO_STRING).connectNotify(s.text.slot());
             _piecens.add(Value.create(gobj.piecensAvailable(curidx)));
             _piecens.get(_piecens.size()-1).map(Functions.TO_STRING).connectNotify(p.text.slot());

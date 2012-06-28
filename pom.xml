@@ -32,33 +32,36 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <playn.version>1.2-SNAPSHOT</playn.version>
+    <playn.version>1.4-SNAPSHOT</playn.version>
     <nexus.version>1.0-SNAPSHOT</nexus.version>
     <guava.version>10.0.1</guava.version>
   </properties>
 
   <modules>
     <module>core</module>
-    <module>java</module>
-    <module>html</module>
     <module>server</module>
   </modules>
 
   <profiles>
     <profile>
-      <id>default</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>android</module>
-      </modules>
+      <id>java</id>
+      <modules><module>java</module></modules>
     </profile>
     <profile>
-      <id>samsara</id>
-      <modules>
-        <module>samsara</module>
-      </modules>
+      <id>android</id>
+      <modules><module>android</module></modules>
+    </profile>
+    <profile>
+      <id>ios</id>
+      <modules><module>ios</module></modules>
+    </profile>
+    <profile>
+      <id>html</id>
+      <modules><module>html</module></modules>
+    </profile>
+    <profile>
+      <id>flash</id>
+      <modules><module>flash</module></modules>
     </profile>
   </profiles>
 </project>

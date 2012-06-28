@@ -5,7 +5,6 @@
 package atlantis.client;
 
 import playn.core.Font;
-import playn.core.TextFormat;
 import static playn.core.PlayN.*;
 
 import tripleplay.ui.Background;
@@ -14,6 +13,7 @@ import tripleplay.ui.Element;
 import tripleplay.ui.Style;
 import tripleplay.ui.Styles;
 import tripleplay.ui.Stylesheet;
+import tripleplay.util.TextConfig;
 
 /**
  * Contains user interface configuration and utilities.
@@ -26,14 +26,14 @@ public class UI
     /** The font used for buttons and labels and such. */
     public static final Font UI_FONT = graphics().createFont("Helvetica", Font.Style.PLAIN, 18);
 
-    /** Returns a text format for displaying scores in the specified color. */
-    public static final TextFormat scoreFormat (int color) {
-        return BASE_SCORE_FORMAT.withTextColor(color);
+    /** Returns a text config for displaying scores in the specified color. */
+    public static final TextConfig scoreConfig (int color) {
+        return BASE_SCORE_CFG.withColor(color);
     }
 
     /** Returns a text format for displaying buttons, labels and such. */
-    public static final TextFormat uiFormat (int color) {
-        return BASE_UI_FORMAT.withTextColor(color);
+    public static final TextConfig uiConfig (int color) {
+        return BASE_UI_CFG.withColor(color);
     }
 
     /** Our default stylesheet. */
@@ -50,7 +50,8 @@ public class UI
             create();
     }
 
-    protected static final TextFormat BASE_SCORE_FORMAT = new TextFormat().
-        withFont(SCORE_FONT).withEffect(TextFormat.Effect.outline(0xFF000000));
-    protected static final TextFormat BASE_UI_FORMAT = new TextFormat().withFont(UI_FONT);
+    protected static final TextConfig BASE_SCORE_CFG =
+        new TextConfig(0xFFFFFFFF).withFont(SCORE_FONT).withOutline(0xFF000000);
+    protected static final TextConfig BASE_UI_CFG =
+        new TextConfig(0xFFFFFFFF).withFont(UI_FONT);
 }
