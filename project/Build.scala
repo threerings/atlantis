@@ -40,12 +40,12 @@ object AtlantisBuild extends Build {
     )
     override def projectSettings (name :String) = name match {
       case "core" => Nexus.config ++ Seq(
-        unmanagedResourceDirectories in Compile <+= baseDirectory / "src/main/java",
         libraryDependencies ++= Seq(
           // scala test dependencies
           "com.novocode" % "junit-interface" % "0.7" % "test->default"
         )
       )
+      case "java" => LWJGLPlugin.lwjglSettings
       case _ => Nil
     }
   }
