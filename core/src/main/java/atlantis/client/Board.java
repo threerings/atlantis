@@ -124,6 +124,9 @@ public class Board
             @Override public void onPointerEnd (Pointer.Event event) {
                 _drag = null;
             }
+            @Override public void onPointerCancel (Pointer.Event event) {
+                onPointerEnd(event);
+            }
             protected Point _drag;
         });
 

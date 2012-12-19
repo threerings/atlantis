@@ -57,7 +57,7 @@ public class Glyphs
                 if (_rotA == null || !_rotA.cancel()) {
                     rotA.from(_orient.rotation());
                 }
-                _rotA = rotA;
+                _rotA = rotA.handle();
             } else {
                 if (_rotA != null) _rotA.cancel();
                 layer.transform().setRotation(orient.rotation());
@@ -70,10 +70,9 @@ public class Glyphs
             if (_moveA != null) _moveA.cancel();
             float x = loc.x * Media.TERRAIN_WIDTH, y = loc.y * Media.TERRAIN_HEIGHT;
             if (animate) {
-                _moveA = _anim.tweenXY(layer).easeInOut().to(x, y).in(1000);
-                if (onComplete != null) {
-                    _moveA.then().action(onComplete);
-                }
+                Animation moveA = _anim.tweenXY(layer).easeInOut().to(x, y).in(1000);
+                if (onComplete != null) moveA = moveA.then().action(onComplete);
+                _moveA = moveA.handle();
             } else {
                 layer.transform().setTranslation(x, y);
                 if (onComplete != null) {
@@ -91,7 +90,7 @@ public class Glyphs
         }
 
         protected Animator _anim;
-        protected Animation _rotA, _moveA;
+        protected Animation.Handle _rotA, _moveA;
         protected Orient _orient = Orient.NORTH;
     }
 

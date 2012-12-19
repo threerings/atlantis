@@ -37,9 +37,9 @@ public class Player
     public final Value<String> name = Value.create("<anonymous>");
 
     /** A signal that's emitted when this player disconnects from the server. */
-    public final SignalView<Void> onDisconnect;
+    public final SignalView<Throwable> onDisconnect;
 
-    protected Player (SignalView<Void> onDisconnect) {
+    protected Player (SignalView<Throwable> onDisconnect) {
         this.onDisconnect = onDisconnect;
     }
 }
