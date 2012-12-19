@@ -6,11 +6,11 @@ package atlantis.shared;
 
 import java.util.Arrays;
 
+import pythagoras.f.AffineTransform;
 import pythagoras.f.FloatMath;
 import pythagoras.f.IPoint;
 import pythagoras.f.Path;
 import pythagoras.f.Point;
-import pythagoras.f.RigidTransform;
 
 import static atlantis.shared.Edge.*;
 
@@ -130,7 +130,7 @@ public class Feature
         }
 
         // now create the three other orientations
-        RigidTransform xform = new RigidTransform();
+        AffineTransform xform = new AffineTransform();
         for (int orient = 1; orient < 4; orient++) {
             // rotate the xform into the next orientation
             xform.translate(Constants.TILE_WIDTH, 0);
